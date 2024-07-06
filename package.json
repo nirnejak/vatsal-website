@@ -1,6 +1,6 @@
 {
-  "name": "nextjs-typescript-starter",
-  "description": "Next.js TypeScript Starter",
+  "name": "vatsal-website",
+  "description": "Personal website of Vatsal Dhameliya, a machine learning scientist.",
   "version": "1.0.0",
   "author": "Jitendra Nirnejak <jeetnirnejak@gmail.com>",
   "scripts": {
@@ -68,9 +68,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nirnejak/nextjs-typescript-starter"
+    "url": "https://github.com/nirnejak/vatsal-website"
   },
   "bugs": {
-    "url": "https://github.com/nirnejak/nextjs-typescript-starter/issues"
+    "url": "https://github.com/nirnejak/vatsal-website/issues"
   }
 }
