@@ -74,31 +74,41 @@ const Home: React.FC = () => {
         <h1 className="mb-7 text-xl font-medium text-zinc-800 dark:text-zinc-300">
           Vatsal Dhameliya
         </h1>
-        <p className="mb-8 font-serif text-base text-zinc-600">
+        <p className="mb-8 font-serif text-base text-zinc-600 dark:text-zinc-400">
           I{"'"}m a{" "}
-          <span className="font-semibold text-zinc-800">
+          <span className="font-semibold text-zinc-800 dark:text-zinc-300">
             Senior AI scientist at
           </span>{" "}
-          <span className="font-semibold text-zinc-800">Jupiter Money</span>.
-          With a degree in{" "}
-          <span className="font-semibold text-zinc-800">
+          <span className="font-semibold text-zinc-800 dark:text-zinc-300">
+            Jupiter Money
+          </span>
+          . With a degree in{" "}
+          <span className="font-semibold text-zinc-800 dark:text-zinc-300">
             Artificial Intelligence
           </span>{" "}
           from{" "}
-          <span className="font-semibold text-zinc-800">IIIT Bangalore</span>, I
-          specialize in developing innovative AI solutions. My expertise spans
-          computer vision, natural language processing, and predictive
+          <span className="font-semibold text-zinc-800 dark:text-zinc-300">
+            IIIT Bangalore
+          </span>
+          , I specialize in developing innovative AI solutions. My expertise
+          spans computer vision, natural language processing, and predictive
           analytics. I strive to bridge theoretical research and practical
           applications, driving impact across industries while actively
           contributing to the AI community through mentoring and open-source
           projects.
         </p>
-        <div className="flex items-center justify-between gap-2 border-t border-dashed border-zinc-300 pt-4 text-gray-600">
-          <a href="/">
-            <LinkedinFill className="size-5 hover:text-gray-800" />
+        <div className="flex items-center justify-between gap-2 border-t border-dashed border-zinc-300 pt-4 dark:border-zinc-600">
+          <a
+            href="/"
+            className="text-gray-600 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
+          >
+            <LinkedinFill size={20} />
           </a>
-          <a href="/">
-            <TwitterFill className="size-5 hover:text-gray-800" />
+          <a
+            href="/"
+            className="text-gray-600 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
+          >
+            <TwitterFill size={20} />
           </a>
         </div>
       </div>
