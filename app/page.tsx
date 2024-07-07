@@ -99,13 +99,13 @@ const Home: React.FC = () => {
         </p>
         <div className="flex items-center justify-between gap-2 border-t border-dashed border-zinc-300 pt-4 dark:border-zinc-600">
           <a
-            href="/"
+            href="https://www.linkedin.com/in/vatsal-dhameliya-70420b112/"
             className="text-gray-600 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
           >
             <LinkedinFill size={20} />
           </a>
           <a
-            href="/"
+            href="https://x.com/199vatsal/"
             className="text-gray-600 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
           >
             <TwitterFill size={20} />
