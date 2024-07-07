@@ -93,8 +93,7 @@ const Home: React.FC = () => {
           contributing to the AI community through mentoring and open-source
           projects.
         </p>
-        <div className="mb-4 h-px bg-zinc-300" />
-        <div className="flex items-center justify-between gap-2 text-gray-600">
+        <div className="flex items-center justify-between gap-2 border-t border-dashed border-zinc-300 pt-4 text-gray-600">
           <a href="/">
             <LinkedinFill className="size-5 hover:text-gray-800" />
           </a>
