@@ -105,7 +105,7 @@ const HomePage: React.FC = () => {
             <LinkedinFill size={20} />
           </a>
           <a
-            href="https://x.com/199vatsal/"
+            href="https://x.com/vats_al_/"
             className="text-gray-600 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
           >
             <TwitterFill size={20} />
