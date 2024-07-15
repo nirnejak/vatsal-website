@@ -13,7 +13,7 @@ export const metadata: Metadata = generateMetadata({
     "Personal website of Vatsal Dhameliya, a machine learning scientist.",
 })
 
-const Home: React.FC = () => {
+const HomePage: React.FC = () => {
   return (
     <main className="grid min-h-screen place-content-center">
       <div className="mx-auto max-w-[580px] px-4 md:px-0">
@@ -116,4 +116,4 @@ const Home: React.FC = () => {
   )
 }
 
-export default Home
+export default HomePage
