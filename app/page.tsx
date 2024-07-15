@@ -2,7 +2,7 @@ import * as React from "react"
 
 import { type Metadata } from "next"
 
-import { LinkedinFill, TwitterFill } from "akar-icons"
+import { LinkedinFill, TwitterFill, Envelope, GithubFill } from "akar-icons"
 
 import generateMetadata from "utils/seo"
 
@@ -111,6 +111,20 @@ const HomePage: React.FC = () => {
             target="_blank"
           >
             <TwitterFill size={20} />
+          </a>
+          <a
+            href="https://github.com/vats-al/"
+            className="text-gray-600 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
+            target="_blank"
+          >
+            <GithubFill size={20} />
+          </a>
+          <a
+            href="mailto:vatsalkumar.dhameliya@gmail.com"
+            className="text-gray-600 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
+            target="_blank"
+          >
+            <Envelope size={20} />
           </a>
         </div>
       </div>
