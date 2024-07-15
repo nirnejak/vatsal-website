@@ -101,12 +101,14 @@ const HomePage: React.FC = () => {
           <a
             href="https://www.linkedin.com/in/vatsal-dhameliya-70420b112/"
             className="text-gray-600 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
+            target="_blank"
           >
             <LinkedinFill size={20} />
           </a>
           <a
             href="https://x.com/vats_al_/"
             className="text-gray-600 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
+            target="_blank"
           >
             <TwitterFill size={20} />
           </a>
