@@ -41,7 +41,13 @@ interface Props {
 const RootLayout: React.FC<Props> = ({ children }) => {
   return (
     <html lang="en">
-      <head></head>
+      <head>
+        <script
+          defer
+          data-domain="vatsal.website"
+          src="https://plausible.io/js/script.js"
+        />
+      </head>
 
       <body
         className={classNames(
