@@ -1,6 +1,6 @@
 import { type Metadata } from "next"
 
-export const BASE_URL = "https://example.com" // Don't include slash at the end
+export const BASE_URL = "https://vatsal.website" // Don't include slash at the end
 
 interface MetadataArgs {
   path: string
@@ -23,21 +23,21 @@ const generateMetadata = ({
     title: metaTitle,
     description: metaDescription,
 
-    applicationName: "<Application Name>",
-    creator: "<Creator Name>",
-    authors: [{ name: "<Author Name>", url: "<Author Name or Email>" }],
+    applicationName: "Vatsal Dhameliya",
+    creator: "Vatsal Dhameliya",
+    authors: [{ name: "Jitendra Nirnejak", url: "https://nirnejak.com/" }],
     robots:
       "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
     keywords: [
-      "Next.js",
-      "TailwindCSS",
-      "Framer Motion",
-      "TypeScript",
-      "Akar Icons",
-      "ESLint",
-      "Prettier",
-      "JavaScript",
-      "Postgres",
+      "Vatsal",
+      "Dhameliya",
+      "Artificial Intelligence",
+      "AI",
+      "Machine Learning",
+      "ML",
+      "LLM",
+      "Large Language Model",
+      "Transformers",
     ],
 
     icons: {
@@ -50,7 +50,7 @@ const generateMetadata = ({
     openGraph: {
       type: "website",
       url: `${BASE_URL}${path}`,
-      siteName: "<Site Name>",
+      siteName: "Vatsal Dhameliya",
       title: metaTitle,
       description: metaDescription,
       images: metaImage,
@@ -59,8 +59,8 @@ const generateMetadata = ({
 
     twitter: {
       card: "summary_large_image",
-      site: "@site",
-      creator: "@creator",
+      site: "@vats_al_",
+      creator: "@vats_al_",
       title: metaTitle,
       description: metaDescription,
       images: metaImage,
