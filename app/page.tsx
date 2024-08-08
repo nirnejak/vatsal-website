@@ -15,7 +15,7 @@ export const metadata: Metadata = generateMetadata({
 
 const HomePage: React.FC = () => {
   return (
-    <main className="grid min-h-screen flex-1 place-content-center">
+    <main className="flex min-h-screen flex-1 items-center justify-center">
       <div className="mx-auto max-w-[580px] px-4 md:px-0">
         <h1 className="mb-7 text-5xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300">
           Hello, I{"'"}m <br />{" "}
@@ -23,7 +23,7 @@ const HomePage: React.FC = () => {
             Vatsal Dhameliya
           </span>
         </h1>
-        <p className="mb-16 text-base text-neutral-600 dark:text-neutral-400">
+        <p className="mb-20 text-base text-neutral-600 dark:text-neutral-400">
           I{"'"}m a{" "}
           <span className="font-semibold text-neutral-800 dark:text-neutral-300">
             Senior AI Scientist @
