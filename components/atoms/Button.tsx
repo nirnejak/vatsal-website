@@ -8,7 +8,7 @@ const buttonVariants = cva("rounded-md", {
   variants: {
     variant: {
       primary: "bg-white",
-      secondary: "bg-gray-400",
+      secondary: "bg-neutral-400",
     },
     size: {
       sm: "px-5 py-1.5 text-sm",
