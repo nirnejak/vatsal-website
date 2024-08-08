@@ -19,7 +19,9 @@ const HomePage: React.FC = () => {
       <div className="mx-auto max-w-[580px] px-4 md:px-0">
         <h1 className="mb-7 text-5xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300">
           Hello, I{"'"}m <br />{" "}
-          <span className="text-neutral-700">Vatsal Dhameliya</span>
+          <span className="text-neutral-300 dark:text-neutral-700">
+            Vatsal Dhameliya
+          </span>
         </h1>
         <p className="mb-16 text-base text-neutral-600 dark:text-neutral-400">
           I{"'"}m a{" "}
@@ -43,7 +45,7 @@ const HomePage: React.FC = () => {
         <div className="flex items-center justify-stretch gap-2">
           <a
             href="https://www.linkedin.com/in/vatsal-dhameliya-70420b112/"
-            className="flex items-center gap-2.5 rounded-md bg-neutral-800 px-5 py-2.5 text-neutral-600 transition-colors hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-300"
+            className="flex items-center gap-2.5 rounded-md bg-neutral-300 px-5 py-2.5 text-neutral-600 transition-colors hover:text-neutral-800 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-300"
             target="_blank"
           >
             <LinkedinFill size={15} />
@@ -51,7 +53,7 @@ const HomePage: React.FC = () => {
           </a>
           <a
             href="https://x.com/vats_al_/"
-            className="flex items-center gap-2.5 rounded-md bg-neutral-800 px-5 py-2.5 text-neutral-600 transition-colors hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-300"
+            className="flex items-center gap-2.5 rounded-md bg-neutral-300 px-5 py-2.5 text-neutral-600 transition-colors hover:text-neutral-800 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-300"
             target="_blank"
           >
             <TwitterFill size={15} />
@@ -59,7 +61,7 @@ const HomePage: React.FC = () => {
           </a>
           <a
             href="https://github.com/vats-al/"
-            className="flex items-center gap-2.5 rounded-md bg-neutral-800 px-5 py-2.5 text-neutral-600 transition-colors hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-300"
+            className="flex items-center gap-2.5 rounded-md bg-neutral-300 px-5 py-2.5 text-neutral-600 transition-colors hover:text-neutral-800 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-300"
             target="_blank"
           >
             <GithubFill size={15} />
@@ -67,7 +69,7 @@ const HomePage: React.FC = () => {
           </a>
           <a
             href="mailto:vatsalkumar.dhameliya@gmail.com"
-            className="flex items-center gap-2.5 rounded-md bg-neutral-800 px-5 py-2.5 text-neutral-600 transition-colors hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-300"
+            className="flex items-center gap-2.5 rounded-md bg-neutral-300 px-5 py-2.5 text-neutral-600 transition-colors hover:text-neutral-800 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-300"
             target="_blank"
           >
             <Envelope size={15} />
