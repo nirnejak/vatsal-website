@@ -50,7 +50,7 @@ const PhotosPage: React.FC = () => {
         </h1>
         <div className="mb-24 grid grid-cols-4 gap-5">
           {photos.map((photo, index) => (
-            <div key={index} className="rounded-3xl bg-white p-2.5">
+            <div key={index} className="rounded-3xl bg-white p-2.5 shadow-lg">
               <Image
                 src={`/photos/${photo}`}
                 alt={photo}
