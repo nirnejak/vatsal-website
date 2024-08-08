@@ -92,7 +92,6 @@ const config: Config = {
     },
     fontFamily: {
       sans: ["var(--sans-font)"],
-      serif: ["var(--serif-font)"],
       mono: ["var(--mono-font)"],
     },
   },

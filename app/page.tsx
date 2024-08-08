@@ -15,7 +15,7 @@ export const metadata: Metadata = generateMetadata({
 
 const HomePage: React.FC = () => {
   return (
-    <main className="grid min-h-screen place-content-center">
+    <main className="grid min-h-screen flex-1 place-content-center">
       <div className="mx-auto max-w-[580px] px-4 md:px-0">
         <div className="mb-3.5">
           <svg
@@ -74,7 +74,7 @@ const HomePage: React.FC = () => {
         <h1 className="mb-7 text-xl font-medium text-neutral-800 dark:text-neutral-300">
           Vatsal Dhameliya
         </h1>
-        <p className="mb-8 font-serif text-base text-neutral-600 dark:text-neutral-400">
+        <p className="mb-8 text-base text-neutral-600 dark:text-neutral-400">
           I{"'"}m a{" "}
           <span className="font-semibold text-neutral-800 dark:text-neutral-300">
             Senior AI scientist at
@@ -97,7 +97,7 @@ const HomePage: React.FC = () => {
           contributing to the AI community through mentoring and open-source
           projects.
         </p>
-        <div className="flex items-center justify-between gap-2 border-t border-dashed border-neutral-300 pt-4 dark:border-neutral-600">
+        <div className="flex items-center justify-between gap-2 border-t border-dashed border-neutral-300 pt-4 dark:border-neutral-800">
           <a
             href="https://www.linkedin.com/in/vatsal-dhameliya-70420b112/"
             className="text-neutral-600 transition-colors hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-300"
