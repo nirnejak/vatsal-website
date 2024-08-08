@@ -55,7 +55,6 @@ dark:hover:text-neutral-300"
             </Tooltip.Portal>
           </Tooltip.Root>
         ))}
-        {/* <div className="border-t border-dashed border-neutral-300 dark:border-neutral-800" /> */}
       </Tooltip.Provider>
     </aside>
   )
