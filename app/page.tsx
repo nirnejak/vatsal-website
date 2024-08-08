@@ -71,23 +71,23 @@ const HomePage: React.FC = () => {
             </g>
           </svg>
         </div>
-        <h1 className="mb-7 text-xl font-medium text-zinc-800 dark:text-zinc-300">
+        <h1 className="mb-7 text-xl font-medium text-neutral-800 dark:text-neutral-300">
           Vatsal Dhameliya
         </h1>
-        <p className="mb-8 font-serif text-base text-zinc-600 dark:text-zinc-400">
+        <p className="mb-8 font-serif text-base text-neutral-600 dark:text-neutral-400">
           I{"'"}m a{" "}
-          <span className="font-semibold text-zinc-800 dark:text-zinc-300">
+          <span className="font-semibold text-neutral-800 dark:text-neutral-300">
             Senior AI scientist at
           </span>{" "}
-          <span className="font-semibold text-zinc-800 dark:text-zinc-300">
+          <span className="font-semibold text-neutral-800 dark:text-neutral-300">
             Jupiter Money
           </span>
           . With a degree in{" "}
-          <span className="font-semibold text-zinc-800 dark:text-zinc-300">
+          <span className="font-semibold text-neutral-800 dark:text-neutral-300">
             Artificial Intelligence
           </span>{" "}
           from{" "}
-          <span className="font-semibold text-zinc-800 dark:text-zinc-300">
+          <span className="font-semibold text-neutral-800 dark:text-neutral-300">
             IIIT Bangalore
           </span>
           , I specialize in developing innovative AI solutions. My expertise
@@ -97,31 +97,31 @@ const HomePage: React.FC = () => {
           contributing to the AI community through mentoring and open-source
           projects.
         </p>
-        <div className="flex items-center justify-between gap-2 border-t border-dashed border-zinc-300 pt-4 dark:border-zinc-600">
+        <div className="flex items-center justify-between gap-2 border-t border-dashed border-neutral-300 pt-4 dark:border-neutral-600">
           <a
             href="https://www.linkedin.com/in/vatsal-dhameliya-70420b112/"
-            className="text-gray-600 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
+            className="text-neutral-600 transition-colors hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-300"
             target="_blank"
           >
             <LinkedinFill size={20} />
           </a>
           <a
             href="https://x.com/vats_al_/"
-            className="text-gray-600 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
+            className="text-neutral-600 transition-colors hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-300"
             target="_blank"
           >
             <TwitterFill size={20} />
           </a>
           <a
             href="https://github.com/vats-al/"
-            className="text-gray-600 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
+            className="text-neutral-600 transition-colors hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-300"
             target="_blank"
           >
             <GithubFill size={20} />
           </a>
           <a
             href="mailto:vatsalkumar.dhameliya@gmail.com"
-            className="text-gray-600 transition-colors hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
+            className="text-neutral-600 transition-colors hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-300"
             target="_blank"
           >
             <Envelope size={20} />
