@@ -12,9 +12,10 @@ export const metadata: Metadata = generateMetadata({
 
 const BlogsPage: React.FC = () => {
   return (
-    <main className="grid min-h-screen flex-1 place-content-center">
+    <main className="flex min-h-screen flex-1 items-center justify-center">
       <div className="mx-auto w-full max-w-[580px] px-4 md:px-0">
-        <h1 className="mb-7 text-5xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300">
+        <h1 className="text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300">
+          Coming <br />
           <span className="text-neutral-300 dark:text-neutral-700">Soon.</span>
         </h1>
       </div>
