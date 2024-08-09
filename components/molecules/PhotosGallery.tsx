@@ -58,7 +58,7 @@ const PhotosGallery: React.FC = () => {
           <motion.div
             initial={{ scale: 0.9, rotate: "5deg", opacity: 0 }}
             animate={{ scale: 1, rotate: "0deg", opacity: 1 }}
-            transition={{ delay: 0.1 * index + 1, ...BASE_TRANSITION }}
+            transition={{ delay: 0.1 + 0.1 * (index + 1), ...BASE_TRANSITION }}
             key={index}
             className="rounded-3xl bg-white p-2.5 shadow-lg"
           >
