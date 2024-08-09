@@ -37,19 +37,19 @@ const Sidebar: React.FC = () => {
             <Tooltip.Trigger asChild>
               <Link
                 href={link.href}
-                className="rounded-md p-2.5 text-neutral-600 transition-colors hover:bg-neutral-300 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                className="rounded-md p-2.5 text-neutral-600 transition-colors hover:bg-neutral-200 dark:text-neutral-400 dark:hover:bg-neutral-800"
               >
                 {link.value}
               </Link>
             </Tooltip.Trigger>
             <Tooltip.Portal>
               <Tooltip.Content
-                className="select-none rounded-md bg-neutral-300 px-3.5 py-2.5 text-sm leading-none text-neutral-600 will-change-[transform,opacity] data-[state=delayed-open]:data-[side=bottom]:animate-slideUpAndFade data-[state=delayed-open]:data-[side=left]:animate-slideRightAndFade data-[state=delayed-open]:data-[side=right]:animate-slideLeftAndFade data-[state=delayed-open]:data-[side=top]:animate-slideDownAndFade dark:bg-neutral-800 dark:text-neutral-300"
+                className="select-none rounded-md bg-neutral-200 px-3.5 py-2.5 text-sm leading-none text-neutral-600 will-change-[transform,opacity] data-[state=delayed-open]:data-[side=bottom]:animate-slideUpAndFade data-[state=delayed-open]:data-[side=left]:animate-slideRightAndFade data-[state=delayed-open]:data-[side=right]:animate-slideLeftAndFade data-[state=delayed-open]:data-[side=top]:animate-slideDownAndFade dark:bg-neutral-800 dark:text-neutral-300"
                 sideOffset={5}
                 side="right"
               >
                 {link.text}
-                <Tooltip.Arrow className="fill-neutral-300 dark:fill-neutral-800" />
+                <Tooltip.Arrow className="fill-neutral-200 dark:fill-neutral-800" />
               </Tooltip.Content>
             </Tooltip.Portal>
           </Tooltip.Root>

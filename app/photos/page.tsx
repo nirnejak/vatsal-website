@@ -44,7 +44,7 @@ const PhotosPage: React.FC = () => {
       <div className="mx-auto max-w-[980px] px-4 md:px-0">
         <h1 className="mb-7 mt-24 text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300">
           Moments <br />
-          <span className="text-neutral-300 dark:text-neutral-700">
+          <span className="text-neutral-400 dark:text-neutral-600">
             & Pictures.
           </span>
         </h1>

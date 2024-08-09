@@ -16,7 +16,7 @@ const BlogsPage: React.FC = () => {
       <div className="mx-auto w-full max-w-[580px] px-4 md:px-0">
         <h1 className="text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300">
           Coming <br />
-          <span className="text-neutral-300 dark:text-neutral-700">Soon.</span>
+          <span className="text-neutral-400 dark:text-neutral-600">Soon.</span>
         </h1>
       </div>
     </main>

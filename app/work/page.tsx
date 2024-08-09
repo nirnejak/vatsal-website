@@ -17,7 +17,7 @@ const WorkPage: React.FC = () => {
       <div className="mx-auto w-full max-w-[580px] px-4 md:px-0">
         <h1 className="mb-20 text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300">
           Work <br />
-          <span className="text-neutral-300 dark:text-neutral-700">
+          <span className="text-neutral-400 dark:text-neutral-600">
             Experience.
           </span>
         </h1>
