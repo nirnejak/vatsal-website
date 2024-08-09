@@ -17,7 +17,7 @@ const HomePage: React.FC = () => {
   return (
     <main className="flex min-h-screen flex-1 items-center justify-center">
       <div className="mx-auto max-w-[580px] px-4 md:px-0">
-        <h1 className="mb-7 text-4xl font-semibold leading-snug text-neutral-800 md:text-5xl dark:text-neutral-300">
+        <h1 className="mb-7 text-4xl font-semibold text-neutral-800 md:text-5xl md:leading-snug dark:text-neutral-300">
           Hello, I{"'"}m <br />{" "}
           <span className="text-neutral-400 dark:text-neutral-600">
             Vatsal Dhameliya.
