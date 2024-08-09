@@ -4,20 +4,15 @@ import * as React from "react"
 import { LinkedinFill, TwitterFill, Envelope, GithubFill } from "akar-icons"
 import { motion } from "framer-motion"
 
-const HomeHero: React.FC = () => {
-  const baseTransition = {
-    duration: 0.15,
-    type: "spring",
-    stiffness: 200,
-    damping: 15,
-  }
+import { BASE_TRANSITION } from "@/utils/animation"
 
+const HomeHero: React.FC = () => {
   return (
     <div className="mx-auto max-w-[580px] px-4 md:px-0">
       <motion.h1
         initial={{ translateY: 10, opacity: 0 }}
         animate={{ translateY: 0, opacity: 1 }}
-        transition={{ delay: 0, ...baseTransition }}
+        transition={{ delay: 0, ...BASE_TRANSITION }}
         className="text-4xl font-semibold leading-snug text-neutral-800 md:text-5xl md:leading-snug dark:text-neutral-300"
       >
         Hello, I{"'"}m
@@ -25,7 +20,7 @@ const HomeHero: React.FC = () => {
       <motion.h1
         initial={{ translateY: 10, opacity: 0 }}
         animate={{ translateY: 0, opacity: 1 }}
-        transition={{ delay: 0.1, ...baseTransition }}
+        transition={{ delay: 0.1, ...BASE_TRANSITION }}
         className="mb-7 text-4xl font-semibold leading-snug text-neutral-800 md:text-5xl md:leading-snug dark:text-neutral-300"
       >
         <span className="text-neutral-400 dark:text-neutral-600">
@@ -35,7 +30,7 @@ const HomeHero: React.FC = () => {
       <motion.p
         initial={{ translateY: 10, opacity: 0 }}
         animate={{ translateY: 0, opacity: 1 }}
-        transition={{ delay: 0.2, ...baseTransition }}
+        transition={{ delay: 0.2, ...BASE_TRANSITION }}
         className="mb-20 text-sm text-neutral-600 md:text-base dark:text-neutral-500"
       >
         I{"'"}m a{" "}
@@ -59,7 +54,7 @@ const HomeHero: React.FC = () => {
       <motion.div
         initial={{ translateY: 10, opacity: 0 }}
         animate={{ translateY: 0, opacity: 1 }}
-        transition={{ delay: 0.3, ...baseTransition }}
+        transition={{ delay: 0.3, ...BASE_TRANSITION }}
         className="grid grid-cols-2 gap-4 md:grid-cols-4"
       >
         <a
