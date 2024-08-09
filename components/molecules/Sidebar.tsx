@@ -44,7 +44,7 @@ const Sidebar: React.FC = () => {
             </Tooltip.Trigger>
             <Tooltip.Portal>
               <Tooltip.Content
-                className="select-none rounded-md bg-neutral-200 px-3.5 py-2.5 text-sm leading-none text-neutral-600 will-change-[transform,opacity] data-[state=delayed-open]:data-[side=bottom]:animate-slideUpAndFade data-[state=delayed-open]:data-[side=left]:animate-slideRightAndFade data-[state=delayed-open]:data-[side=right]:animate-slideLeftAndFade data-[state=delayed-open]:data-[side=top]:animate-slideDownAndFade dark:bg-neutral-800 dark:text-neutral-300"
+                className="select-none rounded-md bg-neutral-200 px-3.5 py-2.5 text-sm leading-none text-neutral-700 will-change-[transform,opacity] data-[state=delayed-open]:data-[side=bottom]:animate-slideUpAndFade data-[state=delayed-open]:data-[side=left]:animate-slideRightAndFade data-[state=delayed-open]:data-[side=right]:animate-slideLeftAndFade data-[state=delayed-open]:data-[side=top]:animate-slideDownAndFade dark:bg-neutral-800 dark:text-neutral-300"
                 sideOffset={5}
                 side="right"
               >

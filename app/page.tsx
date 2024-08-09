@@ -23,7 +23,7 @@ const HomePage: React.FC = () => {
             Vatsal Dhameliya.
           </span>
         </h1>
-        <p className="mb-20 text-base text-neutral-600 dark:text-neutral-400">
+        <p className="mb-20 text-base text-neutral-600 dark:text-neutral-500">
           I{"'"}m a{" "}
           <span className="font-semibold text-neutral-800 dark:text-neutral-300">
             Senior AI Scientist @
