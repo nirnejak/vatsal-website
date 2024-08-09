@@ -20,7 +20,7 @@ const HomePage: React.FC = () => {
         <h1 className="mb-7 text-5xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300">
           Hello, I{"'"}m <br />{" "}
           <span className="text-neutral-300 dark:text-neutral-700">
-            Vatsal Dhameliya
+            Vatsal Dhameliya.
           </span>
         </h1>
         <p className="mb-20 text-base text-neutral-600 dark:text-neutral-400">
