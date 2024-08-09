@@ -48,7 +48,7 @@ const PhotosPage: React.FC = () => {
             & Pictures.
           </span>
         </h1>
-        <div className="mb-24 grid grid-cols-4 gap-5">
+        <div className="mb-24 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
           {photos.map((photo, index) => (
             <div key={index} className="rounded-3xl bg-white p-2.5 shadow-lg">
               <Image
