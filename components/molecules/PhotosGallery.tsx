@@ -41,7 +41,7 @@ const PhotosGallery: React.FC = () => {
         transition={{ delay: 0, ...BASE_TRANSITION }}
         className="mt-24 text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300"
       >
-        Moments <br />
+        Moments
       </motion.h1>
       <motion.h1
         initial={{ translateY: 10, opacity: 0 }}
