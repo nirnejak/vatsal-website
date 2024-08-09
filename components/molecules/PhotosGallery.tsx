@@ -39,9 +39,16 @@ const PhotosGallery: React.FC = () => {
         initial={{ translateY: 10, opacity: 0 }}
         animate={{ translateY: 0, opacity: 1 }}
         transition={{ delay: 0, ...BASE_TRANSITION }}
-        className="mb-7 mt-24 text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300"
+        className="mt-24 text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300"
       >
         Moments <br />
+      </motion.h1>
+      <motion.h1
+        initial={{ translateY: 10, opacity: 0 }}
+        animate={{ translateY: 0, opacity: 1 }}
+        transition={{ delay: 0.1, ...BASE_TRANSITION }}
+        className="mb-7 text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300"
+      >
         <span className="text-neutral-400 dark:text-neutral-600">
           & Pictures.
         </span>
@@ -49,9 +56,9 @@ const PhotosGallery: React.FC = () => {
       <div className="mb-24 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
         {photos.map((photo, index) => (
           <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1 * index, ...BASE_TRANSITION }}
+            initial={{ scale: 0.9, rotate: "5deg", opacity: 0 }}
+            animate={{ scale: 1, rotate: "0deg", opacity: 1 }}
+            transition={{ delay: 0.1 * index + 1, ...BASE_TRANSITION }}
             key={index}
             className="rounded-3xl bg-white p-2.5 shadow-lg"
           >
