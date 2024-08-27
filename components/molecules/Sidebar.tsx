@@ -30,7 +30,7 @@ const links = [
 
 const Sidebar: React.FC = () => {
   return (
-    <aside className="flex items-center justify-center gap-1 border-b border-neutral-300 px-2 md:h-screen md:flex-col md:border-b-0 md:border-r dark:border-neutral-800">
+    <aside className="fixed flex items-center justify-center gap-1 border-b border-neutral-300 px-2 md:h-screen md:flex-col md:border-b-0 md:border-r dark:border-neutral-800">
       <Tooltip.Provider delayDuration={200}>
         {links.map((link) => (
           <Tooltip.Root key={link.text}>
