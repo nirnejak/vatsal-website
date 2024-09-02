@@ -13,7 +13,7 @@ export const metadata: Metadata = generateMetadata({
 
 const BlogsPage: React.FC = () => {
   return (
-    <main className="flex min-h-screen flex-1 items-center justify-center">
+    <main className="flex min-h-screen items-center justify-center">
       <ComingSoon />
     </main>
   )

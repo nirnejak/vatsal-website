@@ -49,7 +49,7 @@ const RootLayout: React.FC<Props> = ({ children }) => {
         className={classNames(
           sansFont.variable,
           monoFont.variable,
-          "overflow-x-hidden bg-neutral-50 dark:bg-neutral-900 font-sans flex flex-col md:flex-row"
+          "overflow-x-hidden bg-neutral-50 dark:bg-neutral-900 font-sans"
         )}
       >
         <Sidebar />
