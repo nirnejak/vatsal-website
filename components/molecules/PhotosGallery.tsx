@@ -35,24 +35,26 @@ const photos = [
 const PhotosGallery: React.FC = () => {
   return (
     <div className="mx-auto max-w-[980px] px-4 md:px-0">
-      <motion.h1
-        initial={{ translateY: 10, opacity: 0 }}
-        animate={{ translateY: 0, opacity: 1 }}
-        transition={{ delay: 0, ...BASE_TRANSITION }}
-        className="mt-24 text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300"
-      >
-        Moments
-      </motion.h1>
-      <motion.h1
-        initial={{ translateY: 10, opacity: 0 }}
-        animate={{ translateY: 0, opacity: 1 }}
-        transition={{ delay: 0.1, ...BASE_TRANSITION }}
-        className="mb-7 text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300"
-      >
-        <span className="text-neutral-400 dark:text-neutral-600">
-          & Pictures.
-        </span>
-      </motion.h1>
+      <h1>
+        <motion.span
+          initial={{ translateY: 10, opacity: 0 }}
+          animate={{ translateY: 0, opacity: 1 }}
+          transition={{ delay: 0, ...BASE_TRANSITION }}
+          className="mt-24 flex text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300"
+        >
+          Moments
+        </motion.span>
+        <motion.span
+          initial={{ translateY: 10, opacity: 0 }}
+          animate={{ translateY: 0, opacity: 1 }}
+          transition={{ delay: 0.1, ...BASE_TRANSITION }}
+          className="mb-7 flex text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300"
+        >
+          <span className="text-neutral-400 dark:text-neutral-600">
+            & Pictures.
+          </span>
+        </motion.span>
+      </h1>
       <div className="mb-24 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
         {photos.map((photo, index) => (
           <motion.div
