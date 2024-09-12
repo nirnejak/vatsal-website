@@ -1,8 +1,7 @@
-"use client"
 import * as React from "react"
 
 import { LinkedinFill, TwitterFill, Envelope, GithubFill } from "akar-icons"
-import { motion } from "framer-motion"
+import * as motion from "framer-motion/client"
 
 import { BASE_TRANSITION } from "@/utils/animation"
 
