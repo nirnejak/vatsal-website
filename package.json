@@ -17,7 +17,7 @@
     "akar-icons": "^1.9.31",
     "class-variance-authority": "^0.7.0",
     "dotenv": "^16.4.5",
-    "framer-motion": "^11.11.0",
+    "framer-motion": "^11.11.1",
     "next": "^14.2.14",
     "notion-client": "^6.16.0",
     "react": "^18.3.1",
@@ -26,7 +26,7 @@
     "sharp": "^0.33.5"
   },
   "devDependencies": {
-    "@types/node": "^22.7.4",
+    "@types/node": "^22.7.5",
     "@types/react": "^18.3.11",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
