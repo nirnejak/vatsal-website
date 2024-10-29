@@ -5,7 +5,7 @@ import type { Viewport } from "next"
 import { Inter } from "next/font/google"
 import localFont from "next/font/local"
 
-import Sidebar from "components/molecules/Sidebar"
+import Navbar from "components/molecules/Navbar"
 import classNames from "utils/classNames"
 
 import "../styles/main.css"
@@ -52,7 +52,7 @@ const RootLayout: React.FC<Props> = ({ children }) => {
           "overflow-x-hidden bg-neutral-50 dark:bg-neutral-900 font-sans"
         )}
       >
-        <Sidebar />
+        <Navbar />
         {children}
       </body>
     </html>
