@@ -13,7 +13,7 @@ const HomeHero: React.FC = () => {
           initial={{ translateY: 10, opacity: 0 }}
           animate={{ translateY: 0, opacity: 1 }}
           transition={{ delay: 0, ...BASE_TRANSITION }}
-          className="flex text-4xl font-semibold leading-snug text-neutral-800 md:text-5xl md:leading-snug dark:text-neutral-300"
+          className="flex text-4xl font-semibold leading-snug tracking-tight text-neutral-800 md:text-5xl md:leading-snug dark:text-neutral-300"
         >
           Hello, I{"'"}m
         </motion.span>
@@ -21,7 +21,7 @@ const HomeHero: React.FC = () => {
           initial={{ translateY: 10, opacity: 0 }}
           animate={{ translateY: 0, opacity: 1 }}
           transition={{ delay: 0.1, ...BASE_TRANSITION }}
-          className="mb-7 flex text-4xl font-semibold leading-snug text-neutral-800 md:text-5xl md:leading-snug dark:text-neutral-300"
+          className="mb-7 flex text-4xl font-semibold leading-snug tracking-tight text-neutral-800 md:text-5xl md:leading-snug dark:text-neutral-300"
         >
           <span className="text-neutral-400 dark:text-neutral-600">
             Vatsal Dhameliya.
