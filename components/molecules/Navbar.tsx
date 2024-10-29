@@ -6,22 +6,22 @@ import Link from "next/link"
 
 const links = [
   {
-    value: <Home size={18} />,
+    value: <Home size={16} />,
     text: "Home",
     href: "/",
   },
   {
-    value: <DoubleCheck size={18} />,
+    value: <DoubleCheck size={16} />,
     text: "Work",
     href: "/work/",
   },
   {
-    value: <Newspaper size={18} />,
+    value: <Newspaper size={16} />,
     text: "Blogs",
     href: "/blogs/",
   },
   {
-    value: <ImageIcon size={18} />,
+    value: <ImageIcon size={16} />,
     text: "Photos",
     href: "/photos/",
   },
@@ -29,14 +29,14 @@ const links = [
 
 const Navbar: React.FC = () => {
   return (
-    <nav className="fixed bottom-3 left-1/2 z-[999] flex w-min -translate-x-1/2 items-center justify-center gap-1 rounded-3xl border border-neutral-300 bg-white shadow-lg dark:border-neutral-800">
+    <nav className="fixed bottom-3 left-1/2 z-[999] flex w-min -translate-x-1/2 items-center justify-center gap-1 rounded-3xl border border-neutral-300 bg-neutral-50 shadow-lg dark:border-neutral-800 dark:bg-neutral-900">
       <Tooltip.Provider delayDuration={200}>
         {links.map((link) => (
           <Tooltip.Root key={link.text}>
             <Tooltip.Trigger asChild>
               <Link
                 href={link.href}
-                className="inline-flex items-center gap-2 rounded-3xl px-4 py-2.5 text-neutral-600 transition-colors hover:bg-neutral-200 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                className="inline-flex items-center gap-2 rounded-3xl px-3.5 py-2 text-neutral-600 transition-colors hover:bg-neutral-200 dark:text-neutral-400 dark:hover:bg-neutral-800"
               >
                 {link.value} {link.text}
               </Link>
