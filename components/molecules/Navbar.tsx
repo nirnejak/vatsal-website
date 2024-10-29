@@ -35,7 +35,7 @@ const Navbar: React.FC = () => {
       initial={{ width: 0, borderWidth: 0 }}
       animate={{ width: "min-content", borderWidth: 1 }}
       transition={{ delay: 0.2 }}
-      className="fixed bottom-3 left-1/2 z-[999] -translate-x-1/2 rounded-3xl border-neutral-300 bg-neutral-50 shadow-lg dark:border-neutral-800 dark:bg-neutral-900"
+      className="fixed bottom-5 left-1/2 z-[999] -translate-x-1/2 rounded-3xl border-neutral-300 bg-neutral-50 shadow-lg dark:border-neutral-800 dark:bg-neutral-900"
     >
       <motion.div
         initial={{ opacity: 0 }}
