@@ -5,6 +5,9 @@ import * as Tooltip from "@radix-ui/react-tooltip"
 import { DoubleCheck, Home, Image as ImageIcon, Newspaper } from "akar-icons"
 import * as motion from "framer-motion/client"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
+
+import classNames from "@/utils/classNames"
 
 const links = [
   {
@@ -30,6 +33,8 @@ const links = [
 ]
 
 const Navbar: React.FC = () => {
+  const pathname = usePathname()
+
   return (
     <motion.nav
       initial={{ width: 0, borderWidth: 0 }}
@@ -49,7 +54,12 @@ const Navbar: React.FC = () => {
               <Tooltip.Trigger asChild>
                 <Link
                   href={link.href}
-                  className="inline-flex items-center gap-2 rounded-3xl px-3.5 py-2 text-neutral-600 transition-colors hover:bg-neutral-200 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                  className={classNames(
+                    pathname === link.href
+                      ? "bg-neutral-200 dark:bg-neutral-800 shadow-inner"
+                      : "",
+                    "inline-flex items-center gap-2 rounded-3xl px-3.5 py-2 text-neutral-600 transition-colors hover:bg-neutral-200 dark:text-neutral-400 dark:hover:bg-neutral-800"
+                  )}
                 >
                   {link.value} {link.text}
                 </Link>
