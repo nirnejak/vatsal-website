@@ -41,7 +41,7 @@ const Navbar: React.FC = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="flex items-center justify-center gap-1"
+        className="flex items-center justify-center"
       >
         <Tooltip.Provider delayDuration={200}>
           {links.map((link) => (
