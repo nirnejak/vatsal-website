@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
       initial={{ width: 0, borderWidth: 0 }}
       animate={{ width: "min-content", borderWidth: 1 }}
       transition={{ delay: 0.2 }}
-      className="fixed bottom-5 left-1/2 z-[999] -translate-x-1/2 rounded-3xl border-neutral-800 bg-neutral-900 shadow-lg"
+      className="fixed bottom-2 left-1/2 z-[999] -translate-x-1/2 rounded-3xl border-neutral-800 bg-neutral-900 shadow-lg md:bottom-5"
     >
       <motion.div
         initial={{ opacity: 0 }}
@@ -56,7 +56,7 @@ const Navbar: React.FC = () => {
                   href={link.href}
                   className={classNames(
                     pathname === link.href ? "bg-neutral-800" : "",
-                    "inline-flex items-center gap-2 rounded-3xl px-3.5 py-2 transition-colors text-neutral-200 dark:text-neutral-400 hover:bg-neutral-800"
+                    "inline-flex items-center gap-2 rounded-3xl px-2.5 py-1.5 md:px-3.5 md:py-2 transition-colors text-neutral-200 dark:text-neutral-400 hover:bg-neutral-800"
                   )}
                 >
                   {link.value} {link.text}
