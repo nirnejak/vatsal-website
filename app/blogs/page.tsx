@@ -2,6 +2,7 @@ import * as React from "react"
 
 import { type Metadata } from "next"
 
+import { ArrowRight } from "akar-icons"
 import * as motion from "framer-motion/client"
 import Link from "next/link"
 
@@ -65,11 +66,13 @@ const BlogsPage: React.FC = () => {
               >
                 <Link
                   href={`/blogs/${blog.slug}`}
-                  className="flex items-center gap-2"
+                  className="group flex items-center justify-between gap-2"
                 >
                   <p className="font-medium">{blog.title}</p>
-                  <div className="flex-1 border-t border-dashed border-neutral-300 dark:border-neutral-800" />
-                  <p>{blog.date}</p>
+                  <ArrowRight
+                    size={15}
+                    className="transition-transform group-hover:translate-x-1"
+                  />
                 </Link>
               </motion.div>
             ))}
