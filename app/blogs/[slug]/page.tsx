@@ -9,14 +9,22 @@ import { BASE_TRANSITION } from "utils/animation"
 import { getBlogBySlug } from "utils/blog"
 import classNames from "utils/classNames"
 import markdownToHtml from "utils/markdownToHtml"
-import generateMetadata from "utils/seo"
+import generateBaseMetadata from "utils/seo"
 
-export const metadata: Metadata = generateMetadata({
-  // TODO: get these from the markdown
-  path: "/blogs/slug-of-the-blog/",
-  title: "Blogs | Vatsal Dhameliya - AI Scientist",
-  description: "Blogs on AI and tech writted by Vatsal Dhameliya",
-})
+export const generateMetadata = ({ params }: Props): Metadata => {
+  const post = getBlogBySlug(params.slug, [
+    "slug",
+    "title",
+    "description",
+    "image",
+  ])
+
+  return generateBaseMetadata({
+    path: `/blogs/${params.slug}/`,
+    title: `${post.title} | Vatsal Dhameliya - AI Scientist`,
+    description: post.description,
+  })
+}
 
 interface Props {
   params: {
