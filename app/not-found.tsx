@@ -9,7 +9,7 @@ import { BASE_TRANSITION } from "utils/animation"
 import generateMetadata from "utils/seo"
 
 export const metadata: Metadata = generateMetadata({
-  path: "/404",
+  path: "/404/",
   title: "Not Found | Vatsal Dhameliya - AI Scientist",
   description: "Cannot find the page you're looking for",
 })
