@@ -15,8 +15,44 @@ const BlogLoadingPage: React.FC = () => {
           transition={{ delay: 0, ...BASE_TRANSITION }}
           className="mb-4 mt-24 text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300"
         >
-          <Skeleton />
+          <Skeleton className="h-[82.5px]" />
         </motion.h1>
+        <motion.p
+          initial={{ translateY: 10, opacity: 0 }}
+          animate={{ translateY: 0, opacity: 1 }}
+          transition={{ delay: 0.1, ...BASE_TRANSITION }}
+          className="mb-8 text-base leading-snug text-neutral-400 dark:text-neutral-600"
+        >
+          <Skeleton className="h-[66px]" />
+        </motion.p>
+        <motion.div
+          initial={{ translateY: 10, opacity: 0 }}
+          animate={{ translateY: 0, opacity: 1 }}
+          transition={{ delay: 0.2, ...BASE_TRANSITION }}
+          className="mb-8"
+        >
+          <Skeleton className="h-[387px]" />
+        </motion.div>
+        <motion.div
+          initial={{ translateY: 10, opacity: 0 }}
+          animate={{ translateY: 0, opacity: 1 }}
+          transition={{ delay: 0.2, ...BASE_TRANSITION }}
+          className="mb-8"
+        >
+          <Skeleton className="h-[387px]" />
+        </motion.div>
+        <motion.div
+          initial={{ translateY: 10, opacity: 0 }}
+          animate={{ translateY: 0, opacity: 1 }}
+          transition={{ delay: 0.3, ...BASE_TRANSITION }}
+          className="mb-24 space-y-2 text-neutral-800 dark:text-neutral-400"
+        >
+          <Skeleton className="h-[140px]" />
+          <Skeleton className="h-[140px]" />
+          <Skeleton className="h-[140px]" />
+          <Skeleton className="h-[140px]" />
+          <Skeleton className="h-[140px]" />
+        </motion.div>
       </div>
     </main>
   )
