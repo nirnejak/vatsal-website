@@ -8,7 +8,10 @@ const Skeleton: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 }) => {
   return (
     <div
-      className={classNames("animate-pulse rounded-md bg-muted", className)}
+      className={classNames(
+        "animate-pulse rounded-md bg-neutral-800/30",
+        className
+      )}
       {...props}
     />
   )
