@@ -1,4 +1,5 @@
 import * as React from "react"
+import Skeleton from "react-loading-skeleton"
 
 import * as motion from "framer-motion/client"
 
@@ -14,7 +15,7 @@ const BlogLoadingPage: React.FC = () => {
           transition={{ delay: 0, ...BASE_TRANSITION }}
           className="mb-4 mt-24 text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300"
         >
-          Loading...
+          <Skeleton />
         </motion.h1>
       </div>
     </main>
