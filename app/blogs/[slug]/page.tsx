@@ -18,8 +18,14 @@ export const metadata: Metadata = generateMetadata({
   description: "Blogs on AI and tech writted by Vatsal Dhameliya",
 })
 
-const BlogPage: React.FC = async ({ params }) => {
-  const post = getBlogBySlug(params.slug as string, [
+interface Props {
+  params: {
+    slug: string
+  }
+}
+
+const BlogPage: React.FC<Props> = async ({ params }) => {
+  const post = getBlogBySlug(params.slug, [
     "content_type",
     "active",
     "image",
