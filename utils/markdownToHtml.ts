@@ -1,4 +1,3 @@
-// import rehypeShiki from "@shikijs/rehype"
 import rehypeFormat from "rehype-format"
 import rehypeMathjax from "rehype-mathjax"
 import rehypeRaw from "rehype-raw"
@@ -16,11 +15,6 @@ export default async function markdownToHtml(
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(math)
     .use(rehypeMathjax)
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    // .use(rehypeShiki, {
-    //   inline: "tailing-curly-colon",
-    //   theme: "vitesse-black",
-    // })
     .use(rehypeRaw)
     .use(rehypeFormat)
     .use(rehypeStringify)
