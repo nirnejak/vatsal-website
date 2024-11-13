@@ -30,41 +30,29 @@ As shown in the figure, each word is associated with a query, key, and value vec
 
 Given an input sequence with nnn words, we create matrices **Q**, **K**, and **V**:
 
-```math
-Q = [q_1, q_2, \ldots, q_n]
-```
+$Q = [q_1, q_2, \ldots, q_n]$
 
-```math
-K = [k_1, k_2, \ldots, k_n]
-```
+$K = [k_1, k_2, \ldots, k_n]$
 
-```math
-V = [v_1, v_2, \ldots, v_n]
-```
+$V = [v_1, v_2, \ldots, v_n]$
 
 ### Step 2: Computing Attention Scores
 
 To determine how much attention each word should pay to the others, we compute the dot product of the query with each key:
 
-```math
-\text{Attention Score}_{ij} = q_i \cdot k_j^T
-```
+$\text{Attention Score}_{ij} = q_i \cdot k_j^T$
 
 This gives a similarity measure between word $i$ and word $j$.
 
 To prevent large values, we scale these scores by $\sqrt{d_k}$, where $d_k$ is the dimension of the key vectors:
 
-```math
- \text{Scaled Attention Score}_{ij} = \frac{q_i \cdot k_j^T}{\sqrt{d_k}}
-```
+$\text{Scaled Attention Score}_{ij} = \frac{q_i \cdot k_j^T}{\sqrt{d_k}}$
 
 ### Step 3: Applying Softmax
 
 Next, we apply the softmax function to the scaled scores to convert them into probabilities. This helps determine the relative importance of each word in the sequence:
 
-```math
-\text{Attention Weights}_{ij} = \text{softmax}\left(\frac{q_i \cdot k_j^T}{\sqrt{d_k}}\right)
-```
+$\text{Attention Weights}_{ij} = \text{softmax}\left(\frac{q_i \cdot k_j^T}{\sqrt{d_k}}\right)$
 
 These weights, shown in the figure under the "Softmax" layer, indicate how much attention each word (column) should pay to other words (rows).
 
@@ -72,9 +60,7 @@ These weights, shown in the figure under the "Softmax" layer, indicate how much 
 
 Finally, we compute the output for each word by taking a weighted sum of the value vectors:
 
-```math
- \text{Output}_i = \sum_{j=1}^{n} \text{Attention Weights}_{ij} \cdot v_j
-```
+$\text{Output}_i = \sum_{j=1}^{n} \text{Attention Weights}_{ij} \cdot v_j$
 
 This weighted sum, shown at the top of the figure, represents each word as a combination of all the other words, weighted by their importance.
 
