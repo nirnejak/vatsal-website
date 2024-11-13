@@ -26,11 +26,10 @@ interface Props {
 
 const BlogPage: React.FC<Props> = async ({ params }) => {
   const post = getBlogBySlug(params.slug, [
-    "active",
-    "image",
     "slug",
     "title",
     "description",
+    "image",
     "content",
   ])
   const content = await markdownToHtml(
