@@ -3,7 +3,7 @@ import { join } from "path"
 
 import matter from "gray-matter"
 
-const blogsDirectory = join(process.cwd(), "blogs")
+const blogsDirectory = join(process.cwd(), "content")
 
 export const getBlogDirectories = (): any => {
   return fs.readdirSync(blogsDirectory)
