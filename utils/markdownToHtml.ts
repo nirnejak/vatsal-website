@@ -14,7 +14,7 @@ export default async function markdownToHtml(
     .use(remarkRehype, { allowDangerousHtml: true })
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     .use(rehypeShiki, {
-      theme: "vitesse-dark",
+      theme: "vitesse-black",
     })
     .use(rehypeRaw)
     .use(rehypeFormat)
