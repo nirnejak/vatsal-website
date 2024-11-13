@@ -35,10 +35,15 @@ export const getBlogBySlug = (slug: string, fields: string[] = []): any => {
 }
 
 export const getAllBlogs = (fields: string[] = []): any[] => {
-  const directories = getBlogDirectories()
-  const blogs = directories
-    .map((slug: string) => getBlogBySlug(slug, fields))
-    .filter((blog: any) => blog.active)
-    .sort((blog1: any, blog2: any) => (blog1.date > blog2.date ? -1 : 1))
-  return blogs
+  try {
+    const directories = getBlogDirectories()
+    const blogs = directories
+      .map((slug: string) => getBlogBySlug(slug, fields))
+      .filter((blog: any) => blog.active)
+      .sort((blog1: any, blog2: any) => (blog1.date > blog2.date ? -1 : 1))
+    return blogs
+  } catch (err) {
+    console.log(err)
+    return []
+  }
 }
