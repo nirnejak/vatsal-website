@@ -28,7 +28,6 @@ const BlogPage: React.FC<Props> = async ({ params }) => {
   const post = getBlogBySlug(params.slug, [
     "active",
     "image",
-    "date",
     "slug",
     "title",
     "description",
@@ -75,7 +74,7 @@ const BlogPage: React.FC<Props> = async ({ params }) => {
           initial={{ translateY: 10, opacity: 0 }}
           animate={{ translateY: 0, opacity: 1 }}
           transition={{ delay: 0.3, ...BASE_TRANSITION }}
-          className="mb-12 space-y-2 text-neutral-800 dark:text-neutral-400"
+          className="mb-24 space-y-2 text-neutral-800 dark:text-neutral-400"
         >
           <article
             className={classNames(
@@ -95,15 +94,6 @@ const BlogPage: React.FC<Props> = async ({ params }) => {
             dangerouslySetInnerHTML={{ __html: content }}
           />
         </motion.div>
-        <motion.p
-          initial={{ translateY: 10, opacity: 0 }}
-          animate={{ translateY: 0, opacity: 1 }}
-          transition={{ delay: 0.2, ...BASE_TRANSITION }}
-          className="mb-24 leading-snug text-neutral-800 dark:text-neutral-300"
-        >
-          <span className="font-semibold">Published on: </span>
-          {post.date}
-        </motion.p>
       </div>
     </main>
   )
