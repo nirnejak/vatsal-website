@@ -1,5 +1,6 @@
 import rehypeFormat from "rehype-format"
 import rehypeMathjax from "rehype-mathjax"
+import rehypePrettyCode from "rehype-pretty-code"
 import rehypeRaw from "rehype-raw"
 import rehypeStringify from "rehype-stringify"
 import math from "remark-math"
@@ -15,6 +16,9 @@ export default async function markdownToHtml(
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(math)
     .use(rehypeMathjax)
+    .use(rehypePrettyCode, {
+      theme: "vitesse-black",
+    })
     .use(rehypeRaw)
     .use(rehypeFormat)
     .use(rehypeStringify)
