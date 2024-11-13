@@ -15,3 +15,7 @@
 * {
   -webkit-font-smoothing: antialiased;
 }
+
+.MathJax {
+  display: inline-flex;
+}
