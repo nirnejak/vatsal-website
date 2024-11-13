@@ -16,5 +16,13 @@
   },
   "javascript.updateImportsOnFileMove.enabled": "always",
   "typescript.updateImportsOnFileMove.enabled": "always",
-  "cSpell.words": ["classname", "nextjs", "precommit", "tailwindcss"]
+  "cSpell.words": [
+    "classname",
+    "Dhameliya",
+    "mathjax",
+    "nextjs",
+    "precommit",
+    "tailwindcss",
+    "Vatsal"
+  ]
 }
