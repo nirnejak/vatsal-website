@@ -51,7 +51,7 @@ const BlogPage: React.FC<Props> = async ({ params }) => {
           initial={{ translateY: 10, opacity: 0 }}
           animate={{ translateY: 0, opacity: 1 }}
           transition={{ delay: 0, ...BASE_TRANSITION }}
-          className="mb-4 mt-24 text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300"
+          className="mb-4 mt-24 text-3xl font-semibold leading-snug tracking-tight text-neutral-800 dark:text-neutral-300"
         >
           {post.title}
         </motion.h1>
