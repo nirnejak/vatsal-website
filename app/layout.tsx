@@ -8,7 +8,6 @@ import localFont from "next/font/local"
 import Navbar from "components/molecules/Navbar"
 import classNames from "utils/classNames"
 
-import "react-loading-skeleton/dist/skeleton.css"
 import "../styles/main.css"
 
 const sansFont = Inter({

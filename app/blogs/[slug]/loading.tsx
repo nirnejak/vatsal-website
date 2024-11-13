@@ -1,8 +1,8 @@
 import * as React from "react"
-import Skeleton from "react-loading-skeleton"
 
 import * as motion from "framer-motion/client"
 
+import { Skeleton } from "@/components/atoms/Skeleton"
 import { BASE_TRANSITION } from "utils/animation"
 
 const BlogLoadingPage: React.FC = () => {
