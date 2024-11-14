@@ -97,7 +97,7 @@ const BlogPage: React.FC<Props> = async ({ params }) => {
               "prose-ul:opacity-85 dark:prose-ul:opacity-80",
               "prose-ol:opacity-85 dark:prose-ol:opacity-80",
               "prose-li:opacity-85 dark:prose-li:opacity-80",
-              "prose-img:border-[40px] prose-img:border-solid prose-img:border-neutral-50"
+              "prose-img:scale-125 prose-img:my-28 prose-img:border-[40px] prose-img:border-solid prose-img:border-neutral-50"
             )}
             dangerouslySetInnerHTML={{ __html: content }}
           />
