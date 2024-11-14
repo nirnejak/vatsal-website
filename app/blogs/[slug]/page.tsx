@@ -70,7 +70,7 @@ const BlogPage: React.FC<Props> = async ({ params }) => {
           className="mb-8"
         >
           <Image
-            className="rounded-md shadow"
+            className="rounded-xl"
             src={`/images/blogs/${post.slug}/${post.image}`}
             alt={post.title}
             width={680}
@@ -96,7 +96,8 @@ const BlogPage: React.FC<Props> = async ({ params }) => {
               "prose-h3:opacity-85 dark:prose-h3:opacity-80",
               "prose-ul:opacity-85 dark:prose-ul:opacity-80",
               "prose-ol:opacity-85 dark:prose-ol:opacity-80",
-              "prose-li:opacity-85 dark:prose-li:opacity-80"
+              "prose-li:opacity-85 dark:prose-li:opacity-80",
+              "prose-img:rounded-xl  prose-img:border"
             )}
             dangerouslySetInnerHTML={{ __html: content }}
           />
