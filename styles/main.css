@@ -17,5 +17,9 @@
 }
 
 .MathJax {
-  display: inline-flex;
+  @apply inline-flex;
+}
+
+p > .MathJax:only-child {
+  @apply flex justify-center;
 }
