@@ -16,7 +16,7 @@
     "akar-icons": "^1.9.31",
     "class-variance-authority": "^0.7.0",
     "dotenv": "^16.4.5",
-    "framer-motion": "^11.11.15",
+    "framer-motion": "^11.11.17",
     "gray-matter": "^4.0.3",
     "next": "^14.2.18",
     "react": "^18.3.1",
@@ -57,7 +57,7 @@
     "postcss": "^8.4.49",
     "prettier": "^3.3.3",
     "prettier-plugin-tailwindcss": "^0.6.8",
-    "tailwindcss": "^3.4.14",
+    "tailwindcss": "^3.4.15",
     "typescript": "^5.6.3"
   },
   "lint-staged": {
