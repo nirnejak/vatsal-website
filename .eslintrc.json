@@ -27,9 +27,9 @@
     "@typescript-eslint/no-explicit-any": "off",
 
     "react/prop-types": "off",
+    "react/no-multi-comp": "off",
     "react/react-in-jsx-scope": "off",
     "react/jsx-no-useless-fragment": "error",
-    "react/no-multi-comp": "error",
     "react/sort-comp": "error",
 
     "react-hooks/exhaustive-deps": "warn",
