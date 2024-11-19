@@ -21,7 +21,7 @@ export const generateMetadata = ({ params }: Props): Metadata => {
 
   return generateBaseMetadata({
     path: `/blogs/${params.slug}/`,
-    title: `${post.title} | Vatsal Dhameliya - AI Scientist`,
+    title: `${post.title} | Vatsal Dhameliya`,
     description: post.description,
   })
 }
