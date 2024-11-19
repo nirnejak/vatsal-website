@@ -16,10 +16,10 @@
   -webkit-font-smoothing: antialiased;
 }
 
-.MathJax {
-  @apply inline-flex;
+p:has(img) {
+  opacity: 1 !important;
 }
 
-p > .MathJax:only-child {
-  @apply flex justify-center;
+p > img[title="Cover"] {
+  @apply scale-100 rounded-xl my-0 border-0;
 }
