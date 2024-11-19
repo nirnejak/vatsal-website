@@ -52,8 +52,9 @@ const components: MDXComponents = {
     ...props
   }: React.ComponentPropsWithoutRef<"code">) => {
     const codeHTML = await codeToHtml(children as string, {
-      lang: "python", // TODO: Add Language Detection
+      lang: "python", // TODO: Add Language Detection, don't highlight oneline
       theme: "vitesse-black",
+      structure: "classic",
     })
     return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />
   },
