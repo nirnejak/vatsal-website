@@ -134,7 +134,7 @@ In a single-head attention mechanism, each token's representation is influenced 
 
 ### Implementation Approach
 
-In our implementation for simplicity, we leverage the single-head self-attention mechanism as a building block. By creating multiple instances of the single-head attention module, each head computes attention independently on a different subspace of the embedding (with dimensionality `embed_size / heads`). Each head transforms the input using its own query, key, and value projections, then computes attention and produces an output vector for each token. These individual outputs from each head are then concatenated and passed through a final linear layer to merge the information back into the original embedding space.
+In our implementation for simplicity, we leverage the single-head self-attention mechanism as a building block. By creating multiple instances of the single-head attention module, each head computes attention independently on a different subspace of the embedding (with dimensionality **embed_size / heads**). Each head transforms the input using its own query, key, and value projections, then computes attention and produces an output vector for each token. These individual outputs from each head are then concatenated and passed through a final linear layer to merge the information back into the original embedding space.
 
 ### Benefits of Multi-Head Attention
 
