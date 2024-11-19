@@ -13,6 +13,10 @@
     "prepare": "husky install"
   },
   "dependencies": {
+    "@mdx-js/loader": "^3.1.0",
+    "@mdx-js/react": "^3.1.0",
+    "@next/mdx": "^15.0.3",
+    "@types/mdx": "^2.0.13",
     "akar-icons": "^1.9.31",
     "class-variance-authority": "^0.7.0",
     "dotenv": "^16.4.5",
@@ -22,6 +26,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "rehype-format": "^5.0.1",
+    "rehype-katex": "^7.0.1",
     "rehype-mathjax": "^6.0.0",
     "rehype-pretty-code": "^0.14.0",
     "rehype-raw": "^7.0.0",

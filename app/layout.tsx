@@ -8,6 +8,7 @@ import localFont from "next/font/local"
 import Navbar from "components/molecules/Navbar"
 import classNames from "utils/classNames"
 
+import "katex/dist/katex.min.css"
 import "../styles/main.css"
 
 const sansFont = Inter({
