@@ -8,7 +8,6 @@ import Link from "next/link"
 
 import ComingSoon from "components/molecules/ComingSoon"
 import { BASE_TRANSITION } from "utils/animation"
-import { getAllBlogs } from "utils/blog"
 import generateMetadata from "utils/seo"
 
 export const metadata: Metadata = generateMetadata({
@@ -17,16 +16,14 @@ export const metadata: Metadata = generateMetadata({
   description: "Blogs and articles on AI and tech written by Vatsal Dhameliya",
 })
 
-const BlogsPage: React.FC = () => {
-  const blogs = getAllBlogs([
-    "active",
-    "image",
-    "date",
-    "slug",
-    "title",
-    "description",
-  ])
+const blogs = [
+  {
+    slug: "self-attention",
+    title: "Mastering Self-Attention: Queries, Keys, and Values in Action",
+  },
+]
 
+const BlogsPage: React.FC = () => {
   return (
     <main className="flex min-h-screen items-center justify-center">
       {blogs.length === 0 ? (
