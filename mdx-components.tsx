@@ -34,7 +34,7 @@ const BlogWrapper: React.FC<Props> = ({ children }) => {
             "prose-li:opacity-85 dark:prose-li:opacity-80",
             "prose-blockquote:opacity-85 dark:prose-blockquote:opacity-80",
             "prose-hr:opacity-85 dark:prose-hr:opacity-80",
-            "prose-img:scale-125 prose-img:my-28 prose-img:border-[40px] prose-img:border-solid prose-img:border-neutral-50",
+            "md:prose-img:scale-125 md:prose-img:my-28 md:prose-img:border-[40px] md:prose-img:border-solid md:prose-img:border-neutral-50",
             "dark:prose-tr:bg-neutral-800 dark:prose-th:bg-neutral-950/30",
             "prose-pre:p-0 prose-pre:bg-black prose-code:text-sm prose-pre:px-3"
           )}
