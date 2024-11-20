@@ -15,7 +15,7 @@ export const metadata = generateMetadata({
   complex relationships.
 </span>
 
-![Self-attention Diagram](/images/blogs/self-attention/banner.jpeg "Cover")
+![Self-attention Diagram](/blog-images/self-attention/banner.jpeg "Cover")
 
 Self-attention, or scaled dot-product attention, computes a representation of each word in a sequence by considering all other words in the sequence. This allows the model to capture contextual relationships between words. In the attached figure, each word (e.g., "Time," "for," "a," "break") attends to every other word through a combination of operations.
 
@@ -29,7 +29,7 @@ The self-attention mechanism relies on three key components:
 
 For each word in the sequence, we compute a weighted sum of the values where the weights are determined by the similarity between the query and the keys.
 
-![Self-attention Diagram](/images/blogs/self-attention/self_attention_diagram.png)
+![Self-attention Diagram](/blog-images/self-attention/self_attention_diagram.png)
 
 ### How self attention works
 
@@ -130,7 +130,7 @@ Multi-head attention allows the model to capture diverse types of relationships 
 
 In a single-head attention mechanism, each token's representation is influenced by all other tokens based on a single attention distribution. However, this single perspective may not fully capture the complex and varied relationships present in language. Multi-head attention addresses this limitation by performing multiple attention calculations in parallel, each with a different set of projections for queries, keys, and values. These independent attention heads allow the model to learn various aspects of the relationships between tokens, providing a richer contextual understanding.
 
-![Multi Head Attention Diagram.png](/images/blogs/self-attention/multi_head_attention_diagram.png)
+![Multi Head Attention Diagram.png](/blog-images/self-attention/multi_head_attention_diagram.png)
 
 ### Implementation Approach
 
