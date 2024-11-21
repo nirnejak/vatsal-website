@@ -31,7 +31,7 @@ const BlogWrapper: React.FC<Props> = ({ children }) => {
           "prose-pre:p-0 prose-pre:bg-black prose-code:text-sm prose-pre:px-3",
           "prose-table:rounded-xl prose-table:overflow-hidden prose-tr:bg-neutral-200 prose-th:bg-neutral-300 dark:prose-tr:bg-neutral-800 dark:prose-th:bg-neutral-950/30 prose-td:py-2 prose-td:px-2.5 prose-th:py-2 prose-th:px-2.5",
 
-          "md:prose-img:scale-125 md:prose-img:my-28 md:prose-img:border-[40px] md:prose-img:border-solid md:prose-img:border-neutral-50"
+          "md:prose-img:scale-125 md:prose-img:my-28"
         )}
       >
         {children}
