@@ -4,22 +4,6 @@
 
 ---
 
-## Included
-
-- `seo.ts` util to generate SEO metadata
-- `manifest.json` for site info
-- `classnames` util for easily managing classes
-- `components/atoms/Button.tsx` a button component with variants
-
-## Additional Packages Used
-
-- Tailwind CSS - for styling
-- Framer Motion - for animations
-- Akar Icons - library for rounded icons
-- Sonner - for toast messages
-- use-sound - for using sounds
-- Class Variance Authority - for type-safely managing class names
-
 ## Available Scripts
 
 **Install Dependencies**
