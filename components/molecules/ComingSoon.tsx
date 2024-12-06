@@ -2,7 +2,7 @@ import * as React from "react"
 
 import * as motion from "framer-motion/client"
 
-import { BASE_TRANSITION } from "@/utils/animation"
+import { BASE_TRANSITION } from "utils/animation"
 
 const ComingSoon: React.FC = () => {
   return (
