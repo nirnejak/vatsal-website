@@ -15,6 +15,29 @@ export const metadata: Metadata = generateMetadata({
     "Personal website of Vatsal Dhameliya, a machine learning scientist.",
 })
 
+const SOCIAL_LINKS = [
+  {
+    icon: <LinkedinFill size={15} />,
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/in/vatsal-patel-70420b112/",
+  },
+  {
+    icon: <XFill size={15} />,
+    label: "Twitter",
+    href: "https://x.com/vats_al_/",
+  },
+  {
+    icon: <GithubFill size={15} />,
+    label: "Github",
+    href: "https://github.com/vats-al/",
+  },
+  {
+    icon: <Envelope size={15} />,
+    label: "Email",
+    href: "mailto:vatsalkumar.dhameliya@gmail.com",
+  },
+]
+
 const HomePage: React.FC = () => {
   return (
     <main className="flex min-h-screen items-center justify-center">
@@ -69,38 +92,17 @@ const HomePage: React.FC = () => {
           transition={{ delay: 0.3, ...BASE_TRANSITION }}
           className="grid grid-cols-2 gap-4 md:grid-cols-4"
         >
-          <a
-            href="https://www.linkedin.com/in/vatsal-patel-70420b112/"
-            className="flex items-center justify-center gap-2.5 rounded-md bg-neutral-200 px-3.5 py-2 text-xs text-neutral-700 transition-colors hover:bg-neutral-300 md:px-5 md:py-2.5 md:text-base dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300"
-            target="_blank"
-          >
-            <LinkedinFill size={15} />
-            <span className="text-sm">LinkedIn</span>
-          </a>
-          <a
-            href="https://x.com/vats_al_/"
-            className="flex items-center justify-center gap-2.5 rounded-md bg-neutral-200 px-3.5 py-2 text-xs text-neutral-700 transition-colors hover:bg-neutral-300 md:px-5 md:py-2.5 md:text-base dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300"
-            target="_blank"
-          >
-            <XFill size={15} />
-            <span className="text-sm">X / Twitter</span>
-          </a>
-          <a
-            href="https://github.com/vats-al/"
-            className="flex items-center justify-center gap-2.5 rounded-md bg-neutral-200 px-3.5 py-2 text-xs text-neutral-700 transition-colors hover:bg-neutral-300 md:px-5 md:py-2.5 md:text-base dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300"
-            target="_blank"
-          >
-            <GithubFill size={15} />
-            <span className="text-sm">Github</span>
-          </a>
-          <a
-            href="mailto:vatsalkumar.dhameliya@gmail.com"
-            className="flex items-center justify-center gap-2.5 rounded-md bg-neutral-200 px-3.5 py-2 text-xs text-neutral-700 transition-colors hover:bg-neutral-300 md:px-5 md:py-2.5 md:text-base dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300"
-            target="_blank"
-          >
-            <Envelope size={15} />
-            <span className="text-sm">Email</span>
-          </a>
+          {SOCIAL_LINKS.map((link, i) => (
+            <a
+              key={i}
+              href={link.href}
+              className="flex items-center justify-center gap-2.5 rounded-md bg-neutral-200 px-3.5 py-2 text-xs text-neutral-700 transition-colors hover:bg-neutral-300 md:px-5 md:py-2.5 md:text-base dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300"
+              target="_blank"
+            >
+              {link.icon}
+              <span className="text-sm">{link.label}</span>
+            </a>
+          ))}
         </motion.div>
       </div>
     </main>
