@@ -5,6 +5,7 @@ import type { Viewport } from "next"
 import { Inter } from "next/font/google"
 import localFont from "next/font/local"
 
+import DotPattern from "components/atoms/DotPattern"
 import Navbar from "components/molecules/Navbar"
 import classNames from "utils/classNames"
 
@@ -55,6 +56,8 @@ const RootLayout: React.FC<Props> = ({ children }) => {
       >
         <Navbar />
         {children}
+
+        <DotPattern />
       </body>
     </html>
   )
