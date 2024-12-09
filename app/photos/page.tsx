@@ -49,7 +49,7 @@ const PhotosPage: React.FC = () => {
                 ...BASE_TRANSITION,
               }}
               key={index}
-              className="rounded-3xl bg-white p-2.5 shadow-lg"
+              className="rounded-3xl bg-white p-2.5 shadow-lg dark:bg-neutral-100/10"
             >
               <Image
                 src={photo}
