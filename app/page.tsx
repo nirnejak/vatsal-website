@@ -5,8 +5,8 @@ import { type Metadata } from "next"
 import { LinkedinFill, Envelope, GithubFill, XFill } from "akar-icons"
 import * as motion from "framer-motion/client"
 
-import { BASE_TRANSITION } from "utils/animation"
-import generateMetadata from "utils/seo"
+import { BASE_TRANSITION } from "@/utils/animation"
+import generateMetadata from "@/utils/seo"
 
 export const metadata: Metadata = generateMetadata({
   path: "/",

@@ -5,9 +5,9 @@ import { type Metadata } from "next"
 import * as motion from "framer-motion/client"
 import Image from "next/image"
 
-import { BASE_TRANSITION } from "utils/animation"
-import { photos } from "utils/photos"
-import generateMetadata from "utils/seo"
+import { BASE_TRANSITION } from "@/utils/animation"
+import { photos } from "@/utils/photos"
+import generateMetadata from "@/utils/seo"
 
 export const metadata: Metadata = generateMetadata({
   path: "/photos/",

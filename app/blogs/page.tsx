@@ -6,9 +6,9 @@ import { ArrowRight } from "akar-icons"
 import * as motion from "framer-motion/client"
 import Link from "next/link"
 
-import ComingSoon from "components/molecules/ComingSoon"
-import { BASE_TRANSITION } from "utils/animation"
-import generateMetadata from "utils/seo"
+import ComingSoon from "@/components/molecules/ComingSoon"
+import { BASE_TRANSITION } from "@/utils/animation"
+import generateMetadata from "@/utils/seo"
 
 export const metadata: Metadata = generateMetadata({
   path: "/blogs/",
@@ -23,7 +23,7 @@ const blogs = [
   },
 ]
 
-const BlogsPage: React.FC = () => {
+const BlogsPage: React.FC = async () => {
   return (
     <main className="flex min-h-screen items-center justify-center">
       {blogs.length === 0 ? (

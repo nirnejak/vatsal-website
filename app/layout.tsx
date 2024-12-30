@@ -4,9 +4,9 @@ import type { Viewport } from "next"
 
 import { Inter, JetBrains_Mono } from "next/font/google"
 
-import DotPattern from "components/atoms/DotPattern"
-import Navbar from "components/molecules/Navbar"
-import classNames from "utils/classNames"
+import DotPattern from "@/components/atoms/DotPattern"
+import Navbar from "@/components/molecules/Navbar"
+import classNames from "@/utils/classNames"
 
 import "katex/dist/katex.min.css"
 import "../styles/main.css"
