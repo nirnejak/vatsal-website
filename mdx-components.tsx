@@ -44,8 +44,12 @@ const components: MDXComponents = {
     children,
     ...props
   }: React.ComponentPropsWithoutRef<"code">) => {
+    const { className } = props
     const codeHTML = await codeToHtml(children as string, {
-      lang: "python",
+      lang:
+        typeof className === "string"
+          ? className.replace("language-", "")
+          : "python",
       theme: "vitesse-black",
     })
     return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />
