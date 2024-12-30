@@ -20,7 +20,7 @@ const BlogWrapper: React.FC<Props> = ({ children }) => {
         animate={{ translateY: 0, opacity: 1 }}
         transition={{ delay: 0.3, ...BASE_TRANSITION }}
         className={classNames(
-          "mb-24 prose prose-neutral dark:prose-invert",
+          "mb-24 prose prose-neutral dark:prose-invert prose:leading-snug prose:tracking-tight",
           "prose-p:opacity-85 dark:prose-p:opacity-80",
           "prose-ul:opacity-85 dark:prose-ul:opacity-80",
           "prose-ol:opacity-85 dark:prose-ol:opacity-80",
@@ -41,18 +41,29 @@ const BlogWrapper: React.FC<Props> = ({ children }) => {
 
 const components: MDXComponents = {
   code: async ({
+    className,
     children,
     ...props
   }: React.ComponentPropsWithoutRef<"code">) => {
-    const { className } = props
+    const isInline = !className?.includes("language-")
+
     const codeHTML = await codeToHtml(children as string, {
-      lang:
-        typeof className === "string"
-          ? className.replace("language-", "")
-          : "python",
+      lang: className?.replace(/language-/, "") || "text",
       theme: "vitesse-black",
     })
-    return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />
+
+    if (isInline) {
+      return (
+        <code
+          className="bg-neutral-100 dark:bg-neutral-950 font-semibold py-0.5 text-green-600 dark:text-green-400 rounded before:hidden after:hidden px-1.5"
+          {...props}
+        >
+          {(children as string).replaceAll("`", "")}
+        </code>
+      )
+    } else {
+      return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />
+    }
   },
   a: ({
     href = "",
