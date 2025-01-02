@@ -2,17 +2,17 @@ import generateMetadata from "utils/seo"
 
 export const metadata = generateMetadata({
   path: "/blogs/self-attention/",
-  title: "Mastering Self-Attention: Queries, Keys, and Values in Action",
+  title: "Self-Attention: Queries, Keys, and Values in Action",
   description:
-    "Explore self-attention in NLP models: how each word gains context through queries, keys, and values, plus a look at multi-head attention for capturing complex relationships.",
+    "Dive into the core of transformer models. Self-attention mechanism and power of multi-head attention for richer contextual understanding in NLP applications.",
 })
 
-# Mastering Self-Attention: Queries, Keys, and Values in Action
+# Self-Attention: Queries, Keys, and Values in Action
 
 <span className="text-base leading-snug text-neutral-500">
-  Explore self-attention in NLP models: how each word gains context through
-  queries, keys, and values, plus a look at multi-head attention for capturing
-  complex relationships.
+  Dive into the core of transformer models. Self-attention mechanism and power
+  of multi-head attention for richer contextual understanding in NLP
+  applications.
 </span>
 
 ![Self-attention Diagram](/blog-images/self-attention/banner.jpeg "Self-attention in NLP models")
@@ -182,3 +182,7 @@ class MultiHeadSelfAttention(nn.Module):
 
         return out
 ```
+
+## Conclusion
+
+Self-attention, the core of transformer architectures, dynamically focuses on relevant words to capture rich contextual relationships. Enhanced by multi-head attention, it powers state-of-the-art NLP models like BERT and GPT, revolutionizing sequential data processing and enabling diverse, parallel insights for advanced AI applications.

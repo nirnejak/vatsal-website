@@ -19,7 +19,12 @@ export const metadata: Metadata = generateMetadata({
 const blogs = [
   {
     slug: "self-attention",
-    title: "Mastering Self-Attention: Queries, Keys, and Values in Action",
+    title: "Self-Attention: Queries, Keys, and Values in Action",
+  },
+  {
+    slug: "encoder-decoder-architecture",
+    title:
+      "Sequence to Sequence Learning with Neural Networks: Encoder - Decoder Architecture",
   },
 ]
 
