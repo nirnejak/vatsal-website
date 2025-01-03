@@ -45,17 +45,17 @@ const components: MDXComponents = {
     children,
     ...props
   }: React.ComponentPropsWithoutRef<"code">) => {
-    const isInline = !className?.includes("language-")
+    const isInline =
+      className !== null && (className?.includes("language-") ?? false)
 
     const codeHTML = await codeToHtml(children as string, {
-      lang: className?.replace(/language-/, "") || "text",
+      lang: className != null ? className.replace(/language-/, "") : "text",
       theme: "vitesse-black",
     })
-
     if (isInline) {
       return (
         <code
-          className="bg-neutral-100 dark:bg-neutral-950 font-semibold py-0.5 text-green-600 dark:text-green-400 rounded before:hidden after:hidden px-1.5"
+          className="rounded bg-neutral-100 px-1.5 py-0.5 font-semibold text-green-600 before:hidden after:hidden dark:bg-neutral-950 dark:text-green-400"
           {...props}
         >
           {(children as string).replaceAll("`", "")}
