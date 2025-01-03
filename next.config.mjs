@@ -5,7 +5,6 @@ import remarkMath from "remark-math"
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  swcMinify: true,
   trailingSlash: true,
   reactStrictMode: true,
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
