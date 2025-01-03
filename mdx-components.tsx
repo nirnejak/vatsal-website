@@ -41,17 +41,17 @@ const BlogWrapper: React.FC<Props> = ({ children }) => {
 
 const components: MDXComponents = {
   code: async ({
-    className,
+    className = "",
     children,
     ...props
   }: React.ComponentPropsWithoutRef<"code">) => {
-    const isInline =
-      className !== null && (className?.includes("language-") ?? false)
+    const isInline = !className.includes("language-")
 
     const codeHTML = await codeToHtml(children as string, {
       lang: className != null ? className.replace(/language-/, "") : "text",
       theme: "vitesse-black",
     })
+
     if (isInline) {
       return (
         <code
