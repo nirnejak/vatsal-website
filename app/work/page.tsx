@@ -42,7 +42,7 @@ const WorkPage: React.FC = () => {
           initial={{ translateY: 10, opacity: 0 }}
           animate={{ translateY: 0, opacity: 1 }}
           transition={{ delay: 0.2, ...BASE_TRANSITION }}
-          className="space-y-2 text-neutral-800 dark:text-neutral-400"
+          className="space-y-2.5 text-neutral-800 dark:text-neutral-400"
         >
           <div className="flex items-center gap-2">
             <p className="font-medium">Jupiter Money</p>
