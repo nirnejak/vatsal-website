@@ -58,7 +58,7 @@ const BlogsPage: React.FC = async () => {
               </span>
             </motion.span>
           </h1>
-          <div className="space-y-2 text-neutral-800 dark:text-neutral-400">
+          <div className="space-y-2.5 text-neutral-800 dark:text-neutral-400">
             {blogs.map((blog, index) => (
               <motion.div
                 key={index}
