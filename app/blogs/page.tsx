@@ -25,6 +25,10 @@ const blogs = [
     slug: "self-attention",
     title: "Self-Attention: Queries, Keys, and Values in Action",
   },
+  {
+    slug: "attention-mechanism",
+    title: "Attention Mechanism in Encoder - Decoder Architecture",
+  },
 ]
 
 const BlogsPage: React.FC = async () => {
