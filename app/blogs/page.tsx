@@ -26,6 +26,10 @@ const blogs = [
     title:
       "Sequence to Sequence Learning with Neural Networks: Encoder - Decoder Architecture",
   },
+  {
+    slug: "attention-mechanism",
+    title: "Attention Mechanism in Encoder - Decoder Architecture",
+  },
 ]
 
 const BlogsPage: React.FC = async () => {
