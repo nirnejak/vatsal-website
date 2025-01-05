@@ -22,8 +22,6 @@ const BlogWrapper: React.FC<Props> = ({ children }) => {
         className={classNames(
           "mb-24 prose prose-neutral dark:prose-invert prose:leading-snug prose:tracking-tight",
           "prose-p:opacity-85 dark:prose-p:opacity-80",
-          "prose-ul:opacity-85 dark:prose-ul:opacity-80",
-          "prose-ol:opacity-85 dark:prose-ol:opacity-80",
           "prose-blockquote:opacity-85 dark:prose-blockquote:opacity-80",
           "prose-headings:font-semibold prose-headings:opacity-85 dark:prose-headings:opacity-80",
           "prose-h1:tracking-tight prose-h1:mt-24 prose-h1:mb-0 prose-h1:text-3xl prose-h1:leading-snug",
