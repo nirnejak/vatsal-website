@@ -1,7 +1,8 @@
-import generateMetadata from "@/utils/seo"
 import Image from "next/image"
+import generateMetadata from "@/utils/seo"
 
 import CoverImage from "./banner.jpg"
+import EncoderDecoderImage from "./Encoder_Decoder_with_Attention.png"
 
 export const metadata = generateMetadata({
   path: "/blogs/attention-mechanism/",
@@ -24,7 +25,11 @@ In traditional sequence-to-sequence (seq2seq) models, neural machine translation
 
 The key idea behind attention is to allow the Decoder to "focus" on different parts of the source sentence for each output word it generates, rather than relying solely on a single fixed context vector. Instead of just feeding the final hidden state of the Encoder to the Decoder, the model calculates a weighted combination of all Encoder hidden states for each target word. This weighted combination is what we call the **context vector**, but now it dynamically changes with each step of the decoding process.
 
-![Encoder Decoder with Attention.png](/blog-images/attention-mechanism/Encoder_Decoder_with_Attention.png)
+<Image
+  src={EncoderDecoderImage}
+  alt={"Encoder Decoder with Attention"}
+  placeholder="blur"
+/>
 
 ### How Attention Works
 

@@ -1,7 +1,8 @@
-import generateMetadata from "@/utils/seo"
 import Image from "next/image"
+import generateMetadata from "@/utils/seo"
 
 import CoverImage from "./banner.jpg"
+import EncoderDecoderDiagram from "./Encoder_Decoder_Diagram.png"
 
 export const metadata = generateMetadata({
   path: "/blogs/encoder-decoder-architecture/",
@@ -25,7 +26,11 @@ The Encoder-Decoder architecture is widely used in sequence-to-sequence tasks, p
 
 In the attached figure, the Encoder-Decoder model illustrates a machine translation task, where a sequence of words in one language (German: "guten morgen") is encoded and then decoded to generate the equivalent translation in another language (English: "good morning").
 
-![Encoder Decoder Diagram.png](/blog-images/encoder-decoder-architecture/Encoder_Decoder_Diagram.png)
+<Image
+  src={EncoderDecoderDiagram}
+  alt={"Encoder Decoder Diagram"}
+  placeholder="blur"
+/>
 
 ### Encoder
 

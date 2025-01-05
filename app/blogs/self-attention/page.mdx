@@ -2,6 +2,8 @@ import generateMetadata from "@/utils/seo"
 import Image from "next/image"
 
 import CoverImage from "./banner.jpeg"
+import SelfAttentionDiagram from "./self_attention_diagram.png"
+import MultiHeadAttentionDiagram from "./multi_head_attention_diagram.png"
 
 export const metadata = generateMetadata({
   path: "/blogs/self-attention/",
@@ -33,7 +35,11 @@ The self-attention mechanism relies on three key components:
 
 For each word in the sequence, we compute a weighted sum of the values where the weights are determined by the similarity between the query and the keys.
 
-![Self-attention Diagram](/blog-images/self-attention/self_attention_diagram.png)
+<Image
+  src={SelfAttentionDiagram}
+  alt={"Self-attention Diagram"}
+  placeholder="blur"
+/>
 
 ## How self attention works
 
@@ -134,7 +140,11 @@ Multi-head attention allows the model to capture diverse types of relationships 
 
 In a single-head attention mechanism, each token's representation is influenced by all other tokens based on a single attention distribution. However, this single perspective may not fully capture the complex and varied relationships present in language. Multi-head attention addresses this limitation by performing multiple attention calculations in parallel, each with a different set of projections for queries, keys, and values. These independent attention heads allow the model to learn various aspects of the relationships between tokens, providing a richer contextual understanding.
 
-![Multi Head Attention Diagram.png](/blog-images/self-attention/multi_head_attention_diagram.png)
+<Image
+  src={MultiHeadAttentionDiagram}
+  alt={"Multi Head Attention Diagram"}
+  placeholder="blur"
+/>
 
 ### Implementation Approach
 
