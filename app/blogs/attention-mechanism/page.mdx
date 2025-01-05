@@ -1,10 +1,14 @@
 import generateMetadata from "@/utils/seo"
+import Image from "next/image"
+
+import CoverImage from "./banner.jpg"
 
 export const metadata = generateMetadata({
   path: "/blogs/attention-mechanism/",
   title: "Attention Mechanism in Encoder - Decoder Architecture",
   description:
     "Dive into the limitations of traditional Seq2Seq models and how attention mechanisms revolutionized neural machine translation.",
+  image: CoverImage.src,
 })
 
 # Attention Mechanism in Encoder - Decoder Architecture
@@ -14,7 +18,7 @@ export const metadata = generateMetadata({
   mechanisms revolutionized neural machine translation.
 </span>
 
-![Self-attention Diagram](/blog-images/attention-mechanism/banner.jpg "Cover")
+<Image src={CoverImage} alt={"Attention Mechanism Cover"} placeholder="blur" />
 
 In traditional sequence-to-sequence (seq2seq) models, neural machine translation relies on an Encoder-Decoder architecture. The Encoder compresses the entire source sentence into a single fixed-length context vector, which is then used by the Decoder to generate the translated sequence. While effective, this approach struggles with long sentences, as condensing the entire input into a single vector can lead to information loss. To address this limitation, Bahdanau, Cho, and Bengio introduced the **attention mechanism** in their landmark paper, "Neural Machine Translation by Jointly Learning to Align and Translate."
 

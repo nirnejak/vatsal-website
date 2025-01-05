@@ -1,10 +1,14 @@
 import generateMetadata from "@/utils/seo"
+import Image from "next/image"
+
+import CoverImage from "./banner.jpeg"
 
 export const metadata = generateMetadata({
   path: "/blogs/self-attention/",
   title: "Self-Attention: Queries, Keys, and Values in Action",
   description:
     "Dive into the core of transformer models. Self-attention mechanism and power of multi-head attention for richer contextual understanding in NLP applications.",
+  image: CoverImage.src,
 })
 
 # Self-Attention: Queries, Keys, and Values in Action
@@ -15,7 +19,7 @@ export const metadata = generateMetadata({
   applications.
 </span>
 
-![Self-attention Diagram](/blog-images/self-attention/banner.jpeg "Cover")
+<Image src={CoverImage} alt={"Self-attention Cover"} placeholder="blur" />
 
 Self-attention, or scaled dot-product attention, computes a representation of each word in a sequence by considering all other words in the sequence. This allows the model to capture contextual relationships between words. In the attached figure, each word (e.g., "Time," "for," "a," "break") attends to every other word through a combination of operations.
 

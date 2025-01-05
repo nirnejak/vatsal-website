@@ -20,6 +20,6 @@ p:has(img) {
   opacity: 1 !important;
 }
 
-p > img[title="Cover"] {
+article > img:first-of-type {
   @apply scale-100 rounded-xl my-0 border-0;
 }
