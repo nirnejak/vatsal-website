@@ -18,16 +18,20 @@ export const metadata: Metadata = generateMetadata({
 
 const blogs = [
   {
+    slug: "pca",
+    title: "A Lagrange Multiplier Approach to PCA",
+  },
+  {
     slug: "encoder-decoder-architecture",
     title: "Seq2Seq Learning - An Encoder-Decoder Approach",
   },
   {
-    slug: "self-attention",
-    title: "Self-Attention: Queries, Keys, and Values in Action",
-  },
-  {
     slug: "attention-mechanism",
     title: "Attention Mechanism in Encoder - Decoder Architecture",
+  },
+  {
+    slug: "self-attention",
+    title: "Self-Attention: Queries, Keys, and Values in Action",
   },
 ]
 

@@ -1,0 +1,151 @@
+import Image from "next/image"
+import generateMetadata from "@/utils/seo"
+
+import CoverImage from "./banner.jpg"
+
+export const metadata = generateMetadata({
+  path: "/blogs/pca/",
+  title: "A Lagrange Multiplier Approach to PCA",
+  description:
+    "Learn how Principal Component Analysis uses Lagrange multipliers to maximize data variance.",
+  image: CoverImage.src,
+})
+
+# A Lagrange Multiplier Approach to PCA
+
+<span className="text-base leading-snug text-neutral-500">
+  Learn how Principal Component Analysis uses Lagrange multipliers to maximize
+  data variance.
+</span>
+
+<Image src={CoverImage} alt={"PCA Cover"} placeholder="blur" />
+
+Principal Component Analysis (PCA) aims to find the directions (principal components) that maximize the variance of the projected data while ensuring that these directions are orthogonal and of unit length. This optimization problem can be elegantly solved using the method of Lagrange multipliers.
+
+In this derivation, we'll:
+
+1. **Set up the optimization problem**: Maximize the variance of the projected data.
+2. **Introduce the Lagrangian**: Incorporate the constraints using Lagrange multipliers.
+3. **Derive the eigenvalue equation**: Show that maximizing variance leads to solving an eigenvalue problem.
+
+### **1. Setting Up the Optimization Problem**
+
+**Objective**: Find a vector $\mathbf{w}$ (principal component) that maximizes the variance of the projected data $\mathbf{w}^\top \mathbf{X}$.
+
+**Given**:
+
+- Data matrix $\mathbf{X}$ of size $n \times p$ (centered so that each variable has zero mean).
+  PCA is sensitive to the scale of the variables. Standardize the dataset so that each variable has a mean of zero and a standard deviation of one.
+  $$
+  \mathbf{Z} = \frac{\mathbf{X} - \bar{\mathbf{X}}}{\sigma}
+  $$
+  - $\mathbf{Z}$ is the standardized data matrix.
+  - $\bar{\mathbf{X}}$ is the mean of each variable.
+  - $\sigma$ is the standard deviation of each variable.
+- Covariance matrix
+  Covariance measures how much two variables change together. If two variables increase or decrease together, they have positive covariance; if one increases while the other decreases, they have negative covariance. By calculating the covariance matrix, you quantify the degree to which variables are linearly related to each other across the dataset. for zero-centered data covariance matrix can be computed as below:
+  $$
+  \mathbf{C} = \frac{1}{n-1} \mathbf{X}^\top \mathbf{X}
+  $$
+  Variance of Projected Data:
+  $$
+  \text{Var}(\mathbf{w}^\top \mathbf{X}) = \mathbf{w}^\top \mathbf{C} \mathbf{w}
+  $$
+
+**Constraint**:
+
+- The principal component $\mathbf{w}$ should be a unit vector:
+  $$
+  \mathbf{w}^\top \mathbf{w} = 1
+  $$
+
+### **2. Formulating the Lagrangian**
+
+Let’s say we have objective function $f(x)$ to maximize, subject to below euqality and non equality constarints
+
+- **Inequality constraints:**
+  $$
+  h(x) \leq d
+  $$
+- **Equality constraints:**
+  $$
+  g(x) = c
+  $$
+
+The Lagrangian $L(x, \lambda, \mu)$ incorporating both constraints is defined as:
+
+$$
+L(x, \lambda, \mu) = f(x) + \lambda \{g(x) - c\} + \mu \{h(x) - d\}
+$$
+
+where:
+
+- $\mu$ is the Lagrange multiplier for the inequality constraint $h(x)≤d$.
+- $\lambda$ is the Lagrange multiplier for the equality constraint $g(x)=c$.
+
+To maximize $\mathbf{w}^\top \mathbf{C} \mathbf{w}$ subject to $\mathbf{w}^\top \mathbf{w} = 1$, we introduce a Lagrange multiplier $\lambda$ and construct the Lagrangian function:
+
+$$
+\mathcal{L}(\mathbf{w}, \lambda) = \mathbf{w}^\top \mathbf{C} \mathbf{w} - \lambda (\mathbf{w}^\top \mathbf{w} - 1)
+$$
+
+- **Objective Function**: $\mathbf{w}^\top \mathbf{C} \mathbf{w}$
+- **Constraint**: $\mathbf{w}^\top \mathbf{w} - 1 = 0$
+
+### **3. Deriving the Eigenvalue Equation**
+
+**Compute the Gradient of the Lagrangian with respect to** $\mathbf{w}$ **and Set it to Zero**:
+
+$$
+\frac{\partial \mathcal{L}}{\partial \mathbf{w}} = 0
+$$
+
+**Calculate the Partial Derivative**:
+
+1. **Derivative of the Objective Function**:
+
+   $$
+   \frac{\partial}{\partial \mathbf{w}} (\mathbf{w}^\top \mathbf{C} \mathbf{w}) = 2 \mathbf{C} \mathbf{w}
+   $$
+
+2. **Derivative of the Constraint Term**:
+
+   $$
+   \frac{\partial}{\partial \mathbf{w}} [ -\lambda (\mathbf{w}^\top \mathbf{w} - 1) ] = -2 \lambda \mathbf{w}
+   $$
+
+**Set the Gradient to Zero**:
+
+$$
+\mathbf{C} \mathbf{w} - 2 \lambda \mathbf{w} = \mathbf{0}
+$$
+
+Simplify by dividing both sides by 2:
+
+$$
+\mathbf{C} \mathbf{w} = \lambda \mathbf{w}
+$$
+
+**Interpretation**:
+
+- This is the **eigenvalue equation**.
+- $\mathbf{w}$ is an **eigenvector** of the covariance matrix $\mathbf{C}$.
+- $\lambda$ is the corresponding **eigenvalue**.
+
+By decomposing the covariance matrix, PCA transforms the correlated variables into a new set of uncorrelated variables (principal components) ordered by the amount of variance they capture.
+
+### **4. Finding Principal Components**
+
+PCA seeks directions (principal components) along which the variance of the data is maximized. The covariance matrix's eigenvalues and eigenvectors reveal these directions.
+
+**Eigenvalues and Eigenvectors**:
+
+- **Eigenvalues (**$\lambda_i$**)**: Represent the amount of variance captured by each principal component.
+- **Eigenvectors (**$\mathbf{w}_i$**)**: Directions in feature space along which variance is maximized.
+
+**Ordering Principal Components**:
+
+- Sort eigenvalues in descending order: $\lambda_1 \geq \lambda_2 \geq \dots \geq \lambda_p$
+- The corresponding eigenvectors $\mathbf{w}_1, \mathbf{w}_2, \dots, \mathbf{w}_p$ are the principal components.
+
+By choosing eigenvectors corresponding to the largest eigenvalues, you reduce the dimensionality while preserving as much information as possible.
