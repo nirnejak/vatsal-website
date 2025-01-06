@@ -18,7 +18,7 @@ export const metadata: Metadata = generateMetadata({
 
 const blogs = [
   {
-    slug: "pca",
+    slug: "a-lagrange-multiplier-approach-to-pca",
     title: "A Lagrange Multiplier Approach to PCA",
   },
   {
