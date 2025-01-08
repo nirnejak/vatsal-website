@@ -16,10 +16,6 @@
   -webkit-font-smoothing: antialiased;
 }
 
-p:has(img) {
-  opacity: 1 !important;
-}
-
 article > img:first-of-type {
   @apply scale-100 rounded-xl my-0 border-0;
 }
