@@ -148,22 +148,40 @@ Layer Normalization (LN) is a technique designed to normalize the inputs within 
 
 ## Comparing Batch and Layer Normalization
 
-$$
-\begin{array}{|l|l|l|}
-\hline
-\textbf{Feature} & \textbf{Batch Normalization} & \textbf{Layer Normalization} \\
-\hline
-\textbf{Normalization Axis} & \text{Across batch (samples) for each feature} & \text{Across features for each sample} \\
-\hline
-\textbf{Best For} & \text{Image and non-sequential data} & \text{Sequential data, e.g., NLP and transformers} \\
-\hline
-\textbf{Batch Size Dependency} & \text{Requires batch statistics} & \text{Independent of batch size} \\
-\hline
-\textbf{Effect on Training} & \text{Speeds up training, stabilizes gradients} & \text{Adapts well to varying sequence lengths} \\
-\hline
-\end{array}
-$$
+<table>
+  <thead>
+    <tr>
+      <th>Feature</th>
+      <th>Batch Normalization</th>
+      <th>Layer Normalization</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="font-bold">Normalization Axis</td>
+      <td>Across batch (samples) for each feature</td>
+      <td>Across features for each sample</td>
+    </tr>
+    <tr>
+      <td className="font-bold">Best For</td>
+      <td>Image and non-sequential data</td>
+      <td>Sequential data, e.g., NLP and transformers</td>
+    </tr>
+    <tr>
+      <td className="font-bold">Batch Size Dependency</td>
+      <td>Requires batch statistics</td>
+      <td>Independent of batch size</td>
+    </tr>
+    <tr>
+      <td className="font-bold">Effect on Training</td>
+      <td>Speeds up training, stabilizes gradients</td>
+      <td>Adapts well to varying sequence lengths</td>
+    </tr>
+  </tbody>
+</table>
 
 ## Conclusion
 
 By understanding and leveraging these normalization techniques appropriately, we can build more efficient and robust neural network models, paving the way for faster convergence and better generalization. While **Batch Normalization** excels in scenarios with large batches and non-sequential data, **Layer Normalization** proves its mettle in sequential and transformer-based architectures. Each technique is tailored to address specific challenges, such as batch dependency or sequence variability, making them complementary tools in a machine learning practitioner’s toolkit.
+
+## Comparison of Normalization Techniques
