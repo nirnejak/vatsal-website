@@ -1,0 +1,164 @@
+import Image from "next/image"
+import generateMetadata from "@/utils/seo"
+
+import CoverImage from "./banner.jpg"
+
+export const metadata = generateMetadata({
+  path: "/blogs/understanding-scaling-in-self-attention/",
+  title: "Understanding Scaling in Self-Attention",
+  description:
+    "Discover how scaling factor prevents sharp softmax outputs, stabilizes training, and enhances the performance of transformer architectures.",
+  image: CoverImage.src,
+})
+
+# Understanding Scaling with $d_k$ in Self-Attention
+
+<span className="text-base leading-snug text-neutral-500">
+  Discover how scaling factor prevents sharp softmax outputs, stabilizes
+  training, and enhances the performance of transformer architectures.
+</span>
+
+<Image src={CoverImage} alt={"Cover"} placeholder="blur" />
+
+## Understanding Scaling in Self-Attention: Why Use $\frac{1}{\sqrt{d_k}}$?
+
+In modern natural language processing (NLP), **self-attention** mechanisms have become fundamental to models like the Transformer. A key aspect of self-attention is the scaling factor $\frac{1}{\sqrt{d_k}}$, where $d_k$ is the dimension of the key vectors. But why is this scaling needed, and how does it improve the model's performance? Let’s dive into the reasoning behind this crucial element in self-attention and how it addresses a core challenge in high-dimensional spaces.
+
+## What is Self-Attention?
+
+Self-attention allows a model to focus on different parts of a sequence to compute the representation of each element. Given a query vector $\mathbf{Q}$, a set of key vectors $\mathbf{K}$, and value vectors $\mathbf{V}$, the attention mechanism computes attention scores as the dot product between the query and key vectors:
+
+$$
+\text{Attention Scores} = \mathbf{Q} \cdot \mathbf{K}^T
+$$
+
+These scores are then passed through a **softmax** function to produce a distribution of attention weights, which are used to weight the value vectors $\mathbf{V}$.
+
+## The Problems
+
+### Dot Products Grow with Dimension
+
+In the self-attention mechanism, the **dot product** between the query and key vectors determines the attention score. However, as the dimension $d_k$ of the vectors increases, the dot products naturally grow larger, even if the components of the vectors remain relatively small.
+
+Let’s see an example to illustrate this.
+
+**Example: Growth of Dot Products with Dimension**
+
+1. **2-Dimensional Vectors**:
+
+   $$
+   \mathbf{a} = [1, 2],
+   \mathbf{b} = [3, 4]
+   $$
+
+   $$
+   Dot product: \mathbf{a} \cdot \mathbf{b} = 1 \times 3 + 2 \times 4 = 11
+   $$
+
+2. **4-Dimensional Vectors**:
+
+   $$
+   \mathbf{a} = [1, 2, 3, 4],\mathbf{b} = [3, 4, 5, 6]
+   $$
+
+   $$
+   Dot product: \mathbf{a} \cdot \mathbf{b} = 50
+   $$
+
+3. **6-Dimensional Vectors**:
+   $$
+   \mathbf{a} = [1, 2, 3, 4, 5, 6], \mathbf{b} = [3, 4, 5, 6, 7, 8]
+   $$
+   $$
+   Dot product: \mathbf{a} \cdot \mathbf{b} = 133
+   $$
+
+As the dimensionality increases, even with the same types of components in the vectors, the dot product grows significantly. In high-dimensional spaces, this can cause the raw attention scores to become excessively large, which poses a challenge when applying the **softmax** function.
+
+### Softmax and Overly Large Values
+
+The softmax function is used to convert the raw attention scores into probabilities, determining how much attention each token should receive. The formula for softmax is:
+
+$$
+\text{softmax}(z_i) = \frac{e^{z_i}}{\sum_{j} e^{z_j}}
+$$
+
+However, when the raw attention scores are **very large**, the softmax function tends to produce probabilities that are extremely close to 0 or 1. This leads to **sharp attention distributions**, where the model pays overwhelming attention to a small set of tokens and ignores the rest. Such behavior can hurt the model’s ability to learn meaningful, balanced attention patterns.
+
+**Example: Unscaled Attention Scores (Sharp Softmax Output)**
+
+Let’s consider two raw attention scores before applying softmax:
+
+- $z_1 = 14$
+- $z_2 = 10$
+
+**Applying Softmax (Without Scaling):**
+
+$$
+\text{softmax}([14, 10]) = \left[ \frac{e^{14}}{e^{14} + e^{10}}, \frac{e^{10}}{e^{14} + e^{10}} \right]
+$$
+
+Calculating:
+
+- $e^{14} \approx 1,202,604.28$
+- $e^{10} \approx 22,026.47$
+- $e^{14} + e^{10} = 1,224,630.75$
+
+The softmax probabilities become:
+
+$$
+\text{softmax}([14, 10]) \approx [0.982, 0.018]
+$$
+
+Here, the model gives almost all attention to the first token (0.982), essentially ignoring the second token (0.018). This **sharp distribution** can hinder learning, as the model focuses too much on a single token, ignoring potentially useful information from other tokens.
+
+**Solution: Scaling by $\frac{1}{\sqrt{d_k}}$**
+
+To address this, we scale the dot product by $\frac{1}{\sqrt{d_k}}$. Assume $d_k = 4$, so the scaling factor is $\frac{1}{2}$.
+
+**Scaled Attention Scores:**
+
+- $z_1 = 14 \times 0.5 = 7$
+- $z_2 = 10 \times 0.5 = 5$
+
+**Applying Softmax (With Scaling):**
+
+$$
+\text{softmax}([7, 5]) = \left[ \frac{e^{7}}{e^{7} + e^{5}}, \frac{e^{5}}{e^{7} + e^{5}} \right]
+$$
+
+Calculating:
+
+- $e^{7} \approx 1,096.63$
+- $e^{5} \approx 148.41$
+- $e^{7} + e^{5} = 1,245.04$
+
+The softmax probabilities become:
+
+$$
+\text{softmax}([7, 5]) \approx [0.880, 0.120]
+$$
+
+After scaling, the softmax output is much more balanced. The model still favors the first token (0.880), but the second token now receives a reasonable amount of attention (0.120), resulting in a smoother attention distribution.
+
+## Connection to Exploding Gradients
+
+While the scaling factor $\frac{1}{\sqrt{d_k}}$ primarily controls the size of the dot products for the attention mechanism, it also indirectly helps in mitigating issues like **exploding gradients**, particularly in deep networks like transformers. Exploding gradients occur when the gradients during backpropagation become excessively large, causing instability in the model's learning.
+
+### Why Large Dot Products Could Contribute to Exploding Gradients
+
+1. **Sharp Attention Distributions**: As we saw earlier, large dot products lead to very peaked softmax outputs, making the model focus almost exclusively on a small subset of tokens. This can cause **uneven gradient flow** during backpropagation, where certain parts of the network receive much larger gradient updates than others.
+2. **Large Weight Updates**: If the attention scores are large, the gradients with respect to the query, key, and value weight matrices during backpropagation will also be large. These large gradients can lead to disproportionate updates to the weight matrices, which, in deep models with many layers, can propagate and cause **exploding gradients**.
+3. **Accumulation Across Layers**: In transformer models, where multiple layers of self-attention are stacked, the large gradients can accumulate across layers, exacerbating the problem and making the model harder to train.
+
+### How Scaling Helps Prevent Exploding Gradients
+
+By scaling the dot products with $\frac{1}{\sqrt{d_k}}$, the model keeps the attention scores at a reasonable magnitude, which leads to more stable gradients during backpropagation. This is similar to how **gradient clipping** is used in recurrent neural networks (RNNs) to prevent gradients from becoming too large.
+
+## Conclusion
+
+By addressing the issue of large dot products in high-dimensional spaces, it ensures that the softmax function produces balanced attention distributions, enabling the model to learn meaningful patterns across tokens. Additionally, this scaling mechanism contributes to stabilizing the training process by mitigating the risks of exploding gradients
+
+## Next Steps
+
+[Normalization in Deep Learning](/blogs/normalization-in-deep-learning)
