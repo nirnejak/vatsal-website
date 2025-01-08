@@ -1,0 +1,200 @@
+import generateMetadata from "@/utils/seo"
+import Image from "next/image"
+
+import CoverImage from "./banner.jpg"
+
+export const metadata = generateMetadata({
+  path: "/blogs/model-evaluation-sensitivity-specificity-and-roc-auc/",
+  title: "Model Evaluation: Sensitivity, Specificity, and ROC-AUC",
+  description:
+    "Discover the key metrics—Sensitivity, Specificity, and ROC-AUC—that define effective model evaluation for binary classification problems.",
+  image: CoverImage.src,
+})
+
+# Model Evaluation: Sensitivity, Specificity, and ROC-AUC
+
+<span className="text-base leading-snug text-neutral-500">
+  Discover the key metrics—Sensitivity, Specificity, and ROC-AUC—that define
+  effective model evaluation for binary classification problems.
+</span>
+
+<Image src={CoverImage} alt={"Cover"} placeholder="blur" />
+
+## Introduction
+
+In many classification problems—particularly those that involve predicting a binary outcome (e.g., disease vs. no disease in medical diagnostics)—evaluating model performance can be challenging when we only look at a single metric (like accuracy). Metrics such as **Sensitivity** (also known as Recall or True Positive Rate) and **Specificity** (True Negative Rate) can offer better insight into how well a model separates the positive class from the negative class.
+
+However, to synthesize performance over all possible thresholds, **Receiver Operating Characteristic (ROC) curves** are often used. The **Area Under the ROC Curve (AUC)**, a number between 0.0 and 1.0, aggregates the ROC curve’s information into a single value. It tells us, on average, how well the model distinguishes between the two classes (positive vs. negative) across all possible probability thresholds.
+
+## Confusion Matrix, Sensitivity, and Specificity
+
+Before diving into ROC curves and AUC, let us define the basic terms from the confusion matrix for a binary classification problem:
+
+$$
+\begin{array}{c|cc}
+& \text{Predicted Positive} & \text{Predicted Negative} \\
+\hline
+\text{Actual Positive} & \text{True Positive (TP)} & \text{False Negative (FN)} \\
+\text{Actual Negative} & \text{False Positive (FP)} & \text{True Negative (TN)}
+\end{array}
+$$
+
+- **Sensitivity** (also called Recall or True Positive Rate, TPR):
+  $\text{Sensitivity} = \text{TPR} = \frac{\text{TP}}{\text{TP} + \text{FN}}$
+  This indicates the proportion of actual positives that are correctly identified by the model.
+- **Specificity** (True Negative Rate, TNR):
+  $\text{Specificity} = \text{TNR} = \frac{\text{TN}}{\text{TN} + \text{FP}}$
+  This indicates the proportion of actual negatives that are correctly identified by the model.
+- **False Positive Rate (FPR)**:
+  $\text{FPR} = 1 - \text{Specificity} = \frac{\text{FP}}{\text{TN} + \text{FP}}$
+
+When we plot the **ROC curve**, we place **TPR (Sensitivity)** on the y-axis versus **FPR (1 – Specificity)** on the x-axis.
+
+### Sensitivity & Specificity in Practice
+
+Imagine we have **100** total samples:
+
+- **50** are actually positive.
+- **50** are actually negative.
+
+Our classifier outputs probabilities for each sample. Suppose we pick a **threshold** of **0.5**, and we get the following confusion matrix:
+
+$\begin{array}{c|cc}
+& \text{Predicted Positive} & \text{Predicted Negative} \\
+\hline
+\text{Actual Positive (50)} & \text{42 (TP)} & \text{8 (FN)} \\
+\text{Actual Negative (50)} & \text{10 (FP)} & \text{40 (TN)}
+\end{array}$
+
+- **Sensitivity** = $\frac{TP}{TP + FN} = \frac{42}{42 + 8} = \frac{42}{50} = 0.84$
+  - We correctly identify 84% of the actual positives.
+- **Specificity** = $\frac{TN}{TN + FP} = \frac{40}{40 + 10} = \frac{40}{50} = 0.80$
+  - We correctly identify 80% of the actual negatives.
+
+If we **lower** the threshold (say from 0.5 to 0.3), we tend to predict **more positives**, which usually increases **TP** but also increases **FP**. As a result:
+
+- **Sensitivity** tends to go **up** (fewer FNs).
+- **Specificity** tends to go **down** (more FPs).
+
+## Constructing the ROC Curve
+
+1. Consider your classifier outputs a probability score $\hat{p} \in [0, 1]$ for each sample.
+2. Sort the predictions by their probability scores (from highest to lowest).
+3. Sweep through possible threshold values from 1.0 down to 0.0.
+4. For each threshold:
+   - Classify as **positive** if $\hat{p} \ge \text{threshold}$.
+   - Classify as **negative** if $\hat{p} < \text{threshold}$.
+   - Compute $TPR$ and $FPR$.
+5. Plot $TPR$ (y-axis) against $FPR$ (x-axis) for each threshold.
+
+A perfect classifier would achieve a point at (FPR = 0, TPR = 1) (the top-left corner of the plot). A random guess classifier would follow roughly the diagonal from (0,0) to (1,1).
+
+### **Why Do We Plot $\text{Sensitivity}$ vs. 1 - $\text{Specificity}$ in an ROC Curve?**
+
+**1. Historical and Theoretical Roots**
+
+One of the **main reasons** we plot **TPR vs. FPR** (i.e., $\text{Sensitivity}$ **vs.** $1 - \text{Specificity}$) rather than other pairs of metrics comes from **signal detection theory**, developed for radar and radio communications in the mid-20th century. In that context:
+
+- **Sensitivity (TPR)** was known as the “hit rate,” reflecting the percentage of actual signals (positives) that are correctly detected.
+- **False Positive Rate (FPR)** was known as the “false alarm rate,” reflecting how often the radar raised an alarm when there was actually no signal.
+
+This framework naturally maps to our modern classification concepts:
+
+- A **“hit”** in classification is a **true positive** (TP).
+- A **“false alarm”** is a **false positive** (FP).
+
+Because real-world decision-makers (like radar operators) needed to understand how frequently they caught true signals vs. how often they got false alarms, plotting these two rates against each other provided a **powerful** and **intuitive** visual tool.
+
+**2. Clear Trade-off Interpretation**
+
+Another **key motivation** for this specific plot is how **directly** it captures the **trade-off** between true positives and false positives:
+
+- $\text{Sensitivity}$ **(TPR) tells us**: “Of all actual positives, how many did we catch?”
+- $1 - \text{Specificity}$ **(FPR) tells us**: “Of all actual negatives, how many did we incorrectly label as positive?”
+
+By sliding the decision threshold (e.g., from 0.0 to 1.0 if we have a probabilistic model), we get different points on the ROC curve. **Lowering** the threshold typically **increases** TPR (we catch more positives) but also **increases** FPR (we get more false alarms). **Raising** the threshold usually decreases both.
+
+This **visual** (and **quantitative**) depiction of “benefit” (higher TPR) vs. “cost” (higher FPR) is extremely valuable. It helps stakeholders pick an “acceptable” balance. For instance, in a medical test where missing a disease is worse than falsely flagging it, we might tolerate a higher FPR to achieve a higher TPR.
+
+## Area Under the ROC Curve (AUC)
+
+### Definition
+
+The **Area Under the ROC Curve (AUC)** is simply the **area** under the **ROC curve**:
+
+$$
+\text{AUC} = \int_{0}^{1} \text{TPR} \, d(\text{FPR})
+$$
+
+### Interpretation of AUC
+
+- **AUC = 1.0**: Indicates a **perfect** classifier.
+- **AUC = 0.5**: Equivalent to a **random guess**.
+- **0.5 < AUC < 1.0**: The classifier has some ability to distinguish between classes.
+- **AUC < 0.5**: The model is doing worse than random guessing (often implies an inverted decision boundary or systematic misclassification).
+
+### Comparing Models Using AUC
+
+When we say one model’s AUC is **higher** than another’s, we mean that **on average**, across all possible decision thresholds, that model does a **better job** ranking positive instances higher than negative instances.
+
+Let’s say we have three models tested on the **same** dataset:
+
+- **Model A**: AUC = 0.91
+- **Model B**: AUC = 0.85
+- **Model C**: AUC = 0.93
+
+Based on the AUC, we have: **Model C** > **Model A** > **Model B**. Model C, with the highest AUC, generally provides the best **discrimination** between positive and negative cases across all thresholds.
+
+**What does “better discrimination” mean?**
+
+- If we pick a random positive sample and a random negative sample, Model C is more likely to assign a **higher probability** to the positive sample than the negative sample compared to Models A or B.
+- At many operating points (thresholds), Model C will likely achieve higher TPR for the same FPR or lower FPR for the same TPR, reflecting a better trade-off between false positives and false negatives.
+
+Hence, saying **“one model’s AUC is higher, so that model is better”** essentially means that model has a higher probability of separating or ranking the actual positives above the actual negatives across all thresholds. It provides a single-figure metric that incorporates both **Sensitivity** and **Specificity** in a threshold-independent manner.
+
+## Advantages and Limitations of AUC
+
+### Advantages
+
+1. **Threshold-independent**: AUC summarizes performance across all possible classification thresholds.
+2. **Class distribution invariance (to some extent)**: AUC is often used even if the ratio of positive to negative instances changes, as it focuses on the ranking ability.
+
+### Limitations
+
+1. **Data distribution might still affect** results, particularly if positive and negative distributions overlap significantly.
+2. **Class imbalance**: In highly imbalanced data, AUC can sometimes give an overly optimistic view of a model’s performance. Alternative metrics such as **Precision-Recall AUC** may be more informative in extreme class-imbalance cases.
+3. **Ranking vs. Calibration**: AUC measures how well the model ranks examples, but it does not capture how well the predicted probabilities are **calibrated** (i.e., do predicted probabilities reflect true likelihoods?).
+
+## Implementation
+
+```python
+def plot_roc_auc_curve(y_test, y_pred):
+		# Compute ROC curve and AUC
+		fpr, tpr, thresholds = roc_curve(y_test, y_pred)
+		roc_auc = auc(fpr, tpr)
+
+		# Compute the optimal point (Youden's J statistic)
+		youden_index = np.argmax(tpr - fpr)
+		optimal_threshold = thresholds[youden_index]
+		optimal_point = (fpr[youden_index], tpr[youden_index])
+
+		# Plot the ROC curve
+		plt.figure(figsize=(8, 6))
+		plt.plot(fpr, tpr, label=f'ROC curve (AUC = {roc_auc:.2f})', lw=2)
+		plt.scatter(*optimal_point, color='red', label=f'Optimal Point\n(FPR={optimal_point[0]:.2f}, TPR={optimal_point[1]:.2f})', zorder=5)
+		plt.annotate(f'Threshold = {optimal_threshold:.2f}',
+		             xy=optimal_point, xytext=(optimal_point[0] + 0.1, optimal_point[1] - 0.1),
+		             arrowprops=dict(facecolor='black', arrowstyle='->'),
+		             fontsize=10, color='red')
+		plt.plot([0, 1], [0, 1], 'k--', lw=1)
+		plt.xlabel('False Positive Rate')
+		plt.ylabel('True Positive Rate')
+		plt.title('ROC Curve')
+		plt.legend(loc='lower right')
+		plt.grid()
+		plt.show()
+```
+
+## Conclusion
+
+In summary, the **ROC curve** and **AUC** provide a powerful framework for evaluating the performance of binary classifiers, especially when understanding the trade-off between sensitivity and specificity is critical. The **ROC-AUC metric** offers a threshold-independent summary of a model's ability to distinguish between positive and negative classes, making it invaluable in a wide range of applications, from medical diagnostics to fraud detection.

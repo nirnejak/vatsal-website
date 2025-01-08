@@ -1,0 +1,169 @@
+import generateMetadata from "@/utils/seo"
+import Image from "next/image"
+
+import CoverImage from "./banner.jpg"
+import BatchNormDiagram from "./batch_norm.png"
+import LayerNormDiagram from "./layer_norm.png"
+
+export const metadata = generateMetadata({
+  path: "/blogs/normalization-in-deep-learning/",
+  title: "Normalization in Deep Learning",
+  description:
+    "Explore the critical role of normalization in deep learning and understand how these techniques enhance model training, stability, and efficiency across different applications, from image processing to NLP and transformer-based architectures.",
+  image: CoverImage.src,
+})
+
+# Normalization in Deep Learning
+
+<span className="text-base leading-snug text-neutral-500">
+  Explore the critical role of normalization in deep learning and understand how
+  these techniques enhance model training, stability, and efficiency across
+  different applications, from image processing to NLP and transformer-based
+  architectures.
+</span>
+
+<Image src={CoverImage} alt={"Cover"} placeholder="blur" />
+
+In deep learning, normalization plays a critical role in speeding up the training process and stabilizing models, leading to better results. Normalization reduces the issues of gradient explosion and vanishing gradients, helping neural networks learn efficiently. Let’s break down two popular normalization techniques—**Batch Normalization** and **Layer Normalization**—and understand why each has a specific use.
+
+## What is Normalization?
+
+Normalization, along with standardization, has become a core concept in machine learning (ML) to handle the scale of data across features effectively. Generally, these terms refer to two distinct processes:
+
+1. **Normalization**: At its most basic, normalization is the process of adjusting values to fit within a specific range, typically [0, 1].
+
+   - Given an input x with a minimum value $x_{min}$ and maximum value $x_{max}$, normalization can be computed as:
+
+   $$
+   x_{\text{norm}} = \frac{x - x_{\text{min}}}{x_{\text{max}} - x_{\text{min}}}
+   $$
+
+   - This method scales the data proportionally, keeping the relationships between values while fitting them within a defined interval. Normalization is useful when features have very different ranges, as it reduces the differences across features, helping models to train more effectively.
+
+2. **Standardization**: Standardization is a different form of normalization that transforms data to have a **mean** of 0 and a **variance** of 1, resembling a standard normal (Gaussian) distribution.
+   - Given a dataset with values x, a mean μ, and a standard deviation σ, standardization can be defined as:
+     $$
+     x_{\text{std}} = \frac{x - \mu}{\sigma}
+     $$
+   - This method adjusts the scale while centering the data. Standardization is commonly used in deep learning and statistical models that assume data distribution is Gaussian, as it helps algorithms converge faster by balancing the impact of each feature.
+
+Over the years, **normalization** has become a generalized term covering both scaling approaches. However, when discussing deep learning, normalization typically applies to **activation normalization** within neural networks, which ensures smoother training by stabilizing the data passed between layers. **Batch Normalization** and **Layer Normalization** are examples of activation normalization.
+
+## Why Normalize in Neural Networks?
+
+Imagine you’re teaching two students with very different learning speeds: one is fast, and the other is slower. To help both learn effectively, you might tailor the pace of the lesson for each student. Similarly, when training neural networks, the input data can vary in scale and range, which can create “imbalances” in learning.
+
+Without normalization, data with widely different scales can lead to two major problems:
+
+1. **Longer Training Time**: If one feature has a higher scale than others, the model takes longer to converge because the gradient descent algorithm struggles with the varying scales.
+2. **Unstable Training**: If values in a layer increase too much, they can cause the network to have “exploding gradients,” making it harder to learn effectively.
+
+To prevent these issues, normalization techniques like Batch Normalization and Layer Normalization are used to standardize data across layers or batches.
+
+## Batch Normalization: Keeping Gradients Stable Across Batches
+
+Batch Normalization (BN) is a technique used to normalize the data within each mini-batch during training, meaning it applies to groups of data processed together, instead of each sample individually.
+
+<Image src={BatchNormDiagram} alt={"Batch Normalization"} placeholder="blur" />
+
+1.  **How Does It Work?**
+
+    - Imagine a neural network where each hidden layer’s output is passed to the next layer. In batch normalization, the output for each mini-batch of data is normalized to have a mean of 0 and variance of 1.
+    - This is done by first calculating the mean ($\mu$) and variance ($\sigma^2$) of the outputs in the mini-batch. Then, each output is adjusted to be around 0 and have a standard deviation of 1.
+
+    Mathematically, if $x$ is the input feature in a mini-batch of size $m$:
+
+    $$
+    \mu_B = \frac{1}{m} \sum_{i=1}^{m} x_i
+    $$
+
+    $$
+    \sigma_B^2 = \frac{1}{m} \sum_{i=1}^{m} (x_i - \mu_B)^2
+    $$
+
+    After calculating $\mu_B$ and $\sigma_B^2$, the batch-normalized version of each feature is:
+
+    $$
+    \hat{x}_i = \frac{x_i - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}
+    $$
+
+    where $\epsilon$ is a small number added to prevent division by zero.
+
+2.  **Adding Learnable Parameters**:
+    To avoid being too restrictive, BN introduces two parameters, $\gamma$ (scale) and $\beta$ (shift). These allow the network to “scale” and “shift” the normalized values as needed:
+
+    $$
+         y_i = \gamma \hat{x}_i + \beta
+    $$
+
+        With these parameters, BN gives the model flexibility to learn the ideal distribution for each hidden layer, smoothing out the learning process.
+
+3.  **Why Batch Normalization Works**:
+    - It stabilizes the range of outputs in each layer, allowing the network to train faster and reducing sensitivity to initial weights.
+    - It reduces the problem of “internal covariate shift,” meaning the network doesn’t have to adjust as much to new distributions in each mini-batch.
+
+### When Batch Normalization Isn’t Ideal: Limitations
+
+- **Small Batches**: In small batches, the mean and variance may not represent the whole dataset well, leading to unstable results.
+- **Sequential Data**: For sequential data like text or time series, batch normalization can be less effective since the sequence length may vary.
+
+## Layer Normalization: Per-Instance Normalization for Sequential Models
+
+Layer Normalization (LN) is a technique designed to normalize the inputs within each layer **independently for each sample**, rather than across the mini-batch. This approach works well for models like transformers or recurrent neural networks, which often deal with sequences of varying lengths.
+
+<Image src={LayerNormDiagram} alt={"Layer Normalization"} placeholder="blur" />
+
+1.  **How Does It Work?**
+
+    - Unlike batch normalization, layer normalization calculates the mean and variance across the features within a single sample rather than across a mini-batch. This makes it effective for models where the input size can vary, such as sequences in natural language processing (NLP).
+
+    For a feature vector $x$ of size $d$ in a layer, LN computes:
+
+    $$
+    \mu_L = \frac{1}{d} \sum_{i=1}^{d} x_i
+    $$
+
+    $$
+    \sigma_L^2 = \frac{1}{d} \sum_{i=1}^{d} (x_i - \mu_L)^2
+    $$
+
+    Each feature is normalized as:
+
+    $$
+    \hat{x}_i = \frac{x_i - \mu_L}{\sqrt{\sigma_L^2 + \epsilon}}
+    $$
+
+2.  **Adding Learnable Parameters**:
+    Similar to BN, LN includes learnable scale $\gamma$ and shift $\beta$ parameters:
+
+    $$
+        y_i = \gamma \hat{x}_i + \beta
+    $$
+
+        This allows the model to adjust the normalization to better fit the data distribution, even on a per-sample basis.
+
+3.  **Why Layer Normalization Works**:
+    - It makes the normalization process independent of the batch size, which is beneficial for small batches or sequential data.
+    - LN is more effective for transformers and other sequence models where each sample’s normalization needs to be handled separately.
+
+## Comparing Batch and Layer Normalization
+
+$$
+\begin{array}{|l|l|l|}
+\hline
+\textbf{Feature} & \textbf{Batch Normalization} & \textbf{Layer Normalization} \\
+\hline
+\textbf{Normalization Axis} & \text{Across batch (samples) for each feature} & \text{Across features for each sample} \\
+\hline
+\textbf{Best For} & \text{Image and non-sequential data} & \text{Sequential data, e.g., NLP and transformers} \\
+\hline
+\textbf{Batch Size Dependency} & \text{Requires batch statistics} & \text{Independent of batch size} \\
+\hline
+\textbf{Effect on Training} & \text{Speeds up training, stabilizes gradients} & \text{Adapts well to varying sequence lengths} \\
+\hline
+\end{array}
+$$
+
+## Conclusion
+
+By understanding and leveraging these normalization techniques appropriately, we can build more efficient and robust neural network models, paving the way for faster convergence and better generalization. While **Batch Normalization** excels in scenarios with large batches and non-sequential data, **Layer Normalization** proves its mettle in sequential and transformer-based architectures. Each technique is tailored to address specific challenges, such as batch dependency or sequence variability, making them complementary tools in a machine learning practitioner’s toolkit.

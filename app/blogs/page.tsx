@@ -22,6 +22,10 @@ const blogs = [
     title: "A Lagrange Multiplier Approach to PCA",
   },
   {
+    slug: "model-evaluation-sensitivity-specificity-and-roc-auc",
+    title: "Model Evaluation: Sensitivity, Specificity, and ROC-AUC",
+  },
+  {
     slug: "encoder-decoder-architecture",
     title: "Seq2Seq Learning - An Encoder-Decoder Approach",
   },
@@ -32,6 +36,14 @@ const blogs = [
   {
     slug: "self-attention",
     title: "Self-Attention: Queries, Keys, and Values in Action",
+  },
+  {
+    slug: "understanding-scaling-in-self-attention",
+    title: "Understanding scaling factor in Self-Attention",
+  },
+  {
+    slug: "normalization-in-deep-learning",
+    title: "Normalization in Deep Learning",
   },
 ]
 
