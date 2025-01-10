@@ -1,0 +1,195 @@
+import generateMetadata from "@/utils/seo"
+import Image from "next/image"
+
+import CoverImage from "./banner.jpg"
+import Bidirectional from "./bidirectional.png"
+import FineTuning from "./finetuning.png"
+import InputEmbedding from "./input_embedding.png"
+import PreTraining from "./pre_training.png"
+
+export const metadata = generateMetadata({
+  path: "/blogs/a-comprehensive-overview-of-bert/",
+  title: "A Comprehensive Overview of BERT",
+  description:
+    "Explore how BERT revolutionized NLP with its bidirectional pre-training, unsupervised learning tasks like Masked Language Modeling (MLM) and Next Sentence Prediction (NSP), and scalable architecture for various downstream tasks.",
+  image: CoverImage.src,
+})
+
+# A Comprehensive Overview of BERT
+
+<span className="text-base leading-snug text-neutral-500">
+  Explore how BERT revolutionized NLP with its bidirectional pre-training,
+  unsupervised learning tasks like Masked Language Modeling (MLM) and Next
+  Sentence Prediction (NSP), and scalable architecture for various downstream
+  tasks.
+</span>
+
+<Image src={CoverImage} alt={"Cover"} placeholder="blur" />
+
+## **Introduction**
+
+- **High-Level Overview**
+  - BERT (Bidirectional Encoder Representations from Transformers) is a **Transformer-based** language model that learns **bidirectional context** from large-scale text corpora.
+  - It introduced two novel pre-training tasks: **Masked Language Modeling (MLM)** and **Next Sentence Prediction (NSP)**, which enable a deep understanding of entire sequences.
+- **Key Architectural Details (BERT-Base vs. BERT-Large)**
+  - **BERT-Base**: 12 Encoder layers (Transformer blocks), hidden size of 768, 12 attention heads, ~110M parameters.
+  - **BERT-Large**: 24 Encoder layers, hidden size of 1024, 16 attention heads, ~340M parameters.
+  - **Token Length**: BERT can process input sequences up to 512 tokens long (after WordPiece tokenization).
+
+BERT revolutionized NLP by enabling models to understand words in context from both directions, leading to superior performance on language understanding tasks.
+
+## Unidirectional vs. Bidirectional Pre-training
+
+<Image src={Bidirectional} alt={"Bidirectional"} placeholder="blur" />
+
+### Unidirectional and Causal Masking
+
+Before BERT, many popular models used **unidirectional** (or “causal”) language modeling. For instance, GPT processes words from left to right, employing a causal mask so that each token can only attend to tokens on its left. While this approach is intuitive for text generation (since predicting the next word requires knowledge of only the preceding words), it is limiting for **language understanding** tasks. By only looking backward, such models do not benefit from the right-hand context that might clarify the meaning of a word in the middle of a sentence.
+
+### Bidirectional Pre-training in BERT
+
+BERT, on the other hand, leverages **bidirectional** pre-training. This means each token can attend to all other tokens in the sequence, providing a more complete picture of the linguistic context. In many language tasks—such as identifying the sentiment of a sentence or determining the answer to a question within a paragraph—words on both the left and right can carry crucial information. By capturing relationships in all directions, BERT can form richer and more nuanced representations that lead to improved performance across diverse tasks.
+
+## Unsupervised pre-training in BERT
+
+BERT’s pre-training objective is fundamentally different from traditional language modeling. Instead of predicting the next token in a sequence, BERT uses two complementary tasks—**Masked Language Modeling (MLM)** and **Next Sentence Prediction (NSP)**—to learn robust, context-aware representations.
+
+### Masked Language Modeling (MLM)
+
+**Core Idea**: The **MLM** task randomly selects 15% of the tokens in each sequence and replaces them with a special `[MASK]` token (80% of the time), a random token (10% of the time), or keeps them unchanged (10% of the time). BERT is then trained to **predict** these original tokens using the surrounding (unmasked) context.
+
+**Why It Enables Bidirectionality**: The model sees both the left and right contexts (except for masked tokens), forcing it to learn from the entire sentence.
+
+This is often presented as:
+
+$$
+\mathcal{L}_\text{MLM}
+= - \sum_{m \in M} \log P(x_m \mid \tilde{x})
+$$
+
+where $M$ is the set of masked positions, $x_m$ is the original token at position $m$, and $\tilde{x}$ is the modified sequence containing `[MASK]` or random tokens. By forcing the model to “fill in the blanks” MLM encourages **bidirectional encoding.** The model effectively sees all tokens to the left and right of the masked positions, learning how the entire sentence fits together.
+
+For example, in the sentence “I love reading books,” if “love” is masked, the model sees: `I [MASK] reading books`
+
+To solve this, BERT must consider not only the word “I” but also the phrase “reading books” to guess that “[MASK]” likely corresponds to “love.”
+
+### Next Sentence Prediction (NSP)
+
+In addition to MLM, BERT introduces **Next Sentence Prediction**. Many language tasks involve relationships across sentences—such as question answering, where a question might be followed by its answer, or entailment tasks, where one sentence may or may not logically follow from another. The **NSP** objective trains BERT to distinguish between an actual consecutive sentence pair and a random pair.
+
+Concretely, BERT’s training data includes pairs of segments:
+
+1. **Positive pairs**, where segment B is the true next sentence after segment A.
+2. **Negative pairs**, where segment B is randomly sampled from the corpus, bearing no meaningful connection to A.
+
+For Example:
+
+- **Segment A**: “I love cats.”
+- **Segment B** (Positive): “They are wonderful animals.”
+- **Segment B** (Negative): A random segment, e.g., “The stock market crashed today.”
+
+BERT uses the final hidden representation of the special `[CLS]` token (more details in next section) to make a binary classification—IsNext vs. NotNext—based on whether segment B really follows segment A. This additional signal guides the model to learn **inter-sentence coherence** and other discourse-level information, further improving its capabilities for tasks that involve relationships between sentences.
+
+This is often presented as:
+
+$$
+\mathcal{L}_\text{NSP} = - \Bigl[ y \log P(\text{IsNext} \mid \mathbf{h}_{CLS}) + (1 - y) \log \bigl(1 - P(\text{IsNext} \mid \mathbf{h}_{CLS}) \bigr) \Bigr]
+$$
+
+where $y = 1$ if $\text{Segment B}$ is the next segment (positive pairs), and $y = 0$ otherwise.
+
+<Image src={PreTraining} alt={"PreTraining"} placeholder="blur" />
+
+## BERT Architecture and Input Representation
+
+Fundamentally, BERT is composed of **Transformer encoders**. The **BERT-Base** version has 12 encoder layers, each with 12 attention heads, for a total of ~110M parameters. **BERT-Large** doubles the number of layers to 24 and increases the hidden dimension from 768 to 1024, resulting in ~340M parameters. This scaling tends to yield better performance but at higher computational cost during both pre-training and fine-tuning.
+
+### Embedding Dimensions and Model Inputs
+
+Each token in a BERT sequence is mapped to a **768-dimensional** embedding (in BERT-Base) or a **1024-dimensional** embedding (in BERT-Large). BERT also introduces a few special tokens:
+
+- **`[CLS]`** at the start of the sequence, whose final hidden state is used for classification or Next Sentence Prediction.
+- **`[SEP]`** to mark the boundary between sentence segments, especially useful when you have a pair of sentences (A and B).
+
+Additionally, BERT employs:
+
+- **Token Embeddings** $(\mathbf{E}_\text{token}(w_i))$, Learned embeddings for each token (using a WordPiece vocabulary).
+- **Segment Embeddings** $(\mathbf{E}_\text{segment}(s_i))$, indicating whether a token belongs to sentence A (0) or sentence B (1).
+- **Positional Embeddings** $(\mathbf{E}_\text{pos}(i))$, encoding the position (0 to 511) of each token in the sequence (like original Transformers).
+
+These three embeddings are summed to create a **comprehensive input representation**:
+
+$$
+\mathbf{E}_i
+= \mathbf{E}_\text{token}(w_i)
++ \mathbf{E}_\text{segment}(s_i)
++ \mathbf{E}_\text{pos}(i)
+$$
+
+<Image src={InputEmbedding} alt={"InputEmbedding"} placeholder="blur" />
+
+BERT can handle sequences of up to **512 tokens** (including `[CLS]` and `[SEP]`). If an input text exceeds 512 tokens, it must be truncated or split into multiple smaller chunks.
+
+### Example of a Two-Sentence Input
+
+Suppose you want to encode the following pair of sentences:
+
+- Sentence A: “I love cats.”
+- Sentence B: “They are wonderful animals.”
+
+The BERT input would look like:
+
+`[CLS] I love cats . [SEP] They are wonderful animals . [SEP]`
+
+All tokens belonging to “I love cats . [SEP]” have **segment embedding 0**, and all tokens in “They are wonderful animals . [SEP]” have **segment embedding 1**.
+
+### Output Representation
+
+After passing the input through BERT’s stack of bidirectional Transformer encoder layers, we obtain:
+
+- $\mathbf{h}_{[CLS]}$: The final hidden vector corresponding to the `[CLS]` token, typically used for:
+  - **Classification tasks**: A linear layer on top, e.g. $\mathbf{W}\cdot \mathbf{h}_{[CLS]}+ \mathbf{b}$.
+  - **Next Sentence Prediction**: Another binary classification on top of `[CLS]`.
+- $\mathbf{h}_{i}$ for each token i: The final hidden vector for each token, used for:
+  - **Token-level tasks**: Named Entity Recognition (NER), Part of Speech (POS) tagging, etc., by applying a classification layer on each token embedding.
+  - **Span-based tasks**: In question answering (e.g., SQuAD), the model learns to identify the start and end indices of the answer span by projecting $\mathbf{h}_i$ of each token into two separate distributions.
+
+## Fine-Tuning Procedures
+
+Once BERT is pre-trained on **MLM** and **NSP**, its powerful embeddings can be adapted to specific tasks through **fine-tuning**. In most cases, one simply adds a small classification layer or other lightweight task-specific heads on top of BERT’s final encoder outputs. The entire model, including the pre-trained weights, is then trained **end to end** on a labeled dataset for the downstream task.
+
+**Sequence Classification Tasks** (e.g., sentiment analysis, textual entailment) typically use the final hidden state of `[CLS]` and pass it through a linear layer that outputs class probabilities. A cross-entropy loss can then be computed against ground-truth labels.
+
+**Token-Level Tasks** (e.g., named entity recognition, part-of-speech tagging) utilize each token’s final hidden state for classification. For instance, in NER, each token embedding is mapped to an entity type or a “no entity” label.
+
+**Span-Level Tasks** (e.g., question answering on SQuAD) require the model to predict the start and end positions of an answer within a paragraph. Here, each token’s hidden state can be fed into two separate classification layers—one for the start index, another for the end index—and the model is trained to identify the correct span.
+
+<Image src={FineTuning} alt={"FineTuning"} placeholder="blur" />
+
+Thanks to BERT’s large-scale pre-training, **fine-tuning** usually requires far less data and time than training a model from scratch. Often, a single epoch (or a few epochs) of task-specific training can yield state-of-the-art or near-state-of-the-art results.
+
+## Successors to BERT
+
+BERT’s success inspired numerous follow-up models. Below is a non-exhaustive list of major successors and the key changes they introduced:
+
+1. **RoBERTa**
+   - **Key Changes**: Removes the Next Sentence Prediction objective, trains on much larger mini-batches, and uses more data. Also changes some hyperparameters (e.g., dynamic masking).
+   - **Effect**: Consistently outperforms BERT on multiple benchmarks by stabilizing training and improving the effectiveness of MLM.
+2. **DistilBERT**
+   - **Key Changes**: Uses _knowledge distillation_ to produce a smaller, faster model (about half the size of BERT) without a large drop in performance.
+   - **Effect**: Greatly reduces inference time and model size while maintaining competitive accuracy.
+3. **ELECTRA**
+   - **Key Changes**: Replaces the MLM objective with a _discriminator_ that learns to identify whether each token was replaced or not by a small _generator_.
+   - **Effect**: Can use more of the input tokens for learning (both corrupted and non-corrupted examples), leading to high accuracy with fewer training steps.
+4. **XLNet**
+   - **Key Changes**: Although not purely a BERT extension, XLNet integrates ideas from auto-regressive language models and permutation language modeling to capture bidirectional contexts without _masking_.
+   - **Effect**: Achieves competitive or better results than BERT in many tasks, though at higher computational cost.
+5. **DeBERTa**
+   - **Key Changes**: Uses _Disentangled Attention_ (separating content embeddings and position embeddings) and a new _absolute position encoding_.
+   - **Effect**: Further improves language understanding and achieves state-of-the-art results on numerous benchmarks.
+
+## Conclusion
+
+BERT remains a **landmark model** in modern NLP, illustrating that large-scale **bidirectional pre-training** can yield powerful, general-purpose language representations. Through its use of **Masked Language Modeling (MLM)** and **Next Sentence Prediction (NSP)**, BERT learns both **contextual and inter-sentence** information, making it extremely versatile.
+
+By simply adding a thin task-specific layer on top and fine-tuning on a labeled dataset, practitioners can quickly adapt BERT to solve tasks spanning classification, token labeling, and question answering with remarkable efficiency. Its revolutionary performance established a new baseline in NLP, leading to a wave of **successor models** that continue to push the boundaries of what language models can achieve.

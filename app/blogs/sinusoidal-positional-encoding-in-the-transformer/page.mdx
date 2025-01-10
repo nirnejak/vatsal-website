@@ -1,0 +1,341 @@
+import Image from "next/image"
+import generateMetadata from "@/utils/seo"
+
+import CoverImage from "./banner.jpg"
+import EncoderDecoderImage from "./sinusoidal_positional_encoding.png"
+
+export const metadata = generateMetadata({
+  path: "/blogs/sinusoidal-positional-encoding-in-the-transformer/",
+  title: "Sinusoidal Positional Encoding in the Transformer",
+  description:
+    "Learn how sine and cosine functions bring sequence order to Transformer models with detailed explanations and examples.",
+  image: CoverImage.src,
+})
+
+# Sinusoidal Positional Encoding in the Transformer
+
+<span className="text-base leading-snug text-neutral-500">
+  Learn how sine and cosine functions bring sequence order to Transformer models
+  with detailed explanations and examples.
+</span>
+
+<Image src={CoverImage} alt={"Cover"} placeholder="blur" />
+
+## Introduction
+
+The Transformer architecture, introduced by Vaswani et al. in 2017, revolutionized natural language processing by utilizing self-attention mechanisms instead of traditional recurrent or convolutional neural networks. One critical component of the Transformer is the **positional encoding**, which injects information about the position of each token in a sequence. This article delves into the sinusoidal positional encoding method, providing detailed explanations, equations, and illustrative examples using small vectors.
+
+## The Necessity of Positional Encoding
+
+Transformers process input sequences in parallel rather than sequentially. While this parallelism enhances computational efficiency, it also means that the model lacks inherent information about the order of tokens. In tasks like language translation or text summarization, understanding the sequence order is crucial. Positional encoding compensates for this by providing a way to include positional information in the input embeddings.
+
+## Sinusoidal Positional Encoding Explained
+
+Sinusoidal positional encoding adds position-specific patterns to the embeddings using sine and cosine functions of different frequencies. This method is deterministic and requires no additional learned parameters, making it efficient and effective for capturing positional relationships.
+
+### Mathematical Formulation
+
+For a sequence of length $N$ and an embedding dimension $d_{\text{model}}$, the positional encoding $\text{PE}$ at position $pos$ for dimension $dim$ is defined as:
+
+$$
+\begin{aligned}
+\text{PE}_{(pos, 2i)} &= \sin\left(\frac{pos}{10000^{\frac{2i}{d_{\text{model}}}}}\right) \\
+\text{PE}_{(pos, 2i+1)} &= \cos\left(\frac{pos}{10000^{\frac{2i}{d_{\text{model}}}}}\right)
+\end{aligned}
+$$
+
+where:
+
+- $pos$ is the token's position in the sequence (starting from 0).
+- $i$ is the index of the pair of sine and cosine functions.
+- $dim$ is the dimension index in the embedding (from 0 to $d_{\text{model}} - 1$).
+- $d_{\text{model}}$ is the model's embedding size.
+- $10000^{\frac{2i}{d_{\text{model}}}}$ scales the frequencies.
+
+### Key Properties
+
+- **Different Frequencies**: Each pair of sine and cosine functions corresponds to a unique frequency.
+- **Relative Positioning**: Enables the model to learn relative positions between tokens.
+- **Infinite Sequences**: Can generalize to sequence lengths longer than those seen during training.
+
+## Step-by-Step Example with Small Vectors
+
+Let's illustrate sinusoidal positional encoding with a simple example.
+
+### Parameters
+
+- **Sequence Length (**$N$**)**: 5 tokens.
+- **Embedding Dimension (**$d_{\text{model}}$**)**: 4 dimensions.
+
+### Calculating the Positional Encodings
+
+We compute the positional encoding for each position $pos$ (from 0 to 4) and each dimension $dim$ (from 0 to 3).
+
+### Understanding the Dimension Indices
+
+In the positional encoding formula, we use $2i$ and $2i + 1$ to index into the dimensions of the embedding. This means that for each $i$, we have two dimensions:
+
+- **Even Dimension (**$2i$**)**: Uses the sine function.
+- **Odd Dimension (**$2i + 1$**)**: Uses the cosine function.
+
+Since our embedding dimension $d_{\text{model}} = 4$, the possible values of $i$ are:
+
+- For $i=0$:
+  - $2i = 0$ (Dimension 0)
+  - $2i + 1 = 1$ (Dimension 1)
+- For $i=1$:
+  - $2i = 2$ (Dimension 2)
+  - $2i + 1 = 3$ (Dimension 3)
+
+This covers all dimensions from 0 to $d_{\text{model}} - 1$.
+
+<Image
+  src={EncoderDecoderImage}
+  alt={"Sinusoidal Positional Encoding"}
+  placeholder="blur"
+/>
+
+### Compute the Denominators
+
+For each $i$, calculate the scaling factor (denominator):
+
+$$
+\text{Denominator}_i = 10000^{\frac{2i}{d_{\text{model}}}}
+$$
+
+- For $i=0$:
+
+$$
+\frac{2i}{d_{\text{model}}} = \frac{2 \times 0}{4} = 0 \\
+\text{Denominator}_0 = 10000^{0} = 1
+$$
+
+- For $i=1$:
+
+$$
+\frac{2i}{d_{\text{model}}} = \frac{2 \times 1}{4} = 0.5 \\
+\text{Denominator}_1 = 10000^{0.5} = 100
+$$
+
+### Calculate $\theta$ Values
+
+For each position $pos$ and index $i$, compute:
+
+$$
+\theta_{(pos, i)} = \frac{pos}{\text{Denominator}_i}
+$$
+
+### Compute Sine and Cosine Values
+
+- For **Even Dimensions (**$2i$**)**:
+
+$$
+\text{PE}_{(pos, 2i)} = \sin(\theta_{(pos, i)})
+$$
+
+- For **Odd Dimensions (**$2i + 1$**)**:
+
+$$
+\text{PE}_{(pos, 2i+1)} = \cos(\theta_{(pos, i)})
+$$
+
+### Positional Encodings for Each Position
+
+Let's compute the positional encodings step by step.
+
+### Position $pos = 0$
+
+- **For** $i = 0$ **(Dimensions 0 and 1, Denominator = 1)**:
+  $$
+  \theta_{(0,0)} = \frac{0}{1} = 0
+  $$
+  - **Dimension 0** ($2i=0$):
+    $$
+    \text{PE}_{(0,0)} = \sin(0) = 0
+    $$
+  - **Dimension 1** ($2i+1=1$):
+    $$
+    \text{PE}_{(0,1)} = \cos(0) = 1
+    $$
+- **For** $i = 1$ **(Dimensions 2 and 3, Denominator = 100)**:
+  $$
+  \theta_{(0,1)} = \frac{0}{100} = 0
+  $$
+  - **Dimension 2** ($2i=2$):
+    $$
+    \text{PE}_{(0,2)} = \sin(0) = 0
+    $$
+  - **Dimension 3** ($2i+1=3$):
+    $$
+    \text{PE}_{(0,3)} = \cos(0) = 1
+    $$
+
+### Position $pos = 1$
+
+- **For** $i = 0$ **(Denominator = 1)**:
+  $$
+  \theta_{(1,0)} = \frac{1}{1} = 1
+  $$
+  - **Dimension 0**:
+    $$
+    \text{PE}_{(1,0)} = \sin(1) \approx 0.8415
+    $$
+  - **Dimension 1**:
+    $$
+    \text{PE}_{(1,1)} = \cos(1) \approx 0.5403
+    $$
+- **For** $i = 1$ **(Denominator = 100)**:
+  $$
+  \theta_{(1,1)} = \frac{1}{100} = 0.01
+  $$
+  - **Dimension 2**:
+    $$
+        \text{PE}_{(1,2)} = \sin(0.01) \approx 0.00999983
+    $$
+  - **Dimension 3**:
+    $$
+    \text{PE}_{(1,3)} = \cos(0.01) \approx 0.99995
+    $$
+
+similarly, we can calculate for pos=2, pos=3 and pos=4 as well.
+
+### Assembling the Positional Encoding Vectors
+
+For each position $pos$, the positional encoding vector is:
+
+$$
+\text{PE}_{(pos)} = [\text{PE}_{(pos,0)}, \text{PE}_{(pos,1)}, \text{PE}_{(pos,2)}, \text{PE}_{(pos,3)}]
+$$
+
+### Positional Encoding Matrix
+
+<table>
+  <thead>
+    <tr>
+      <th>Position ($pos$)</th>
+      <th>Dimension 0 ($\sin$)</th>
+      <th>Dimension 1 ($⁡\cos$)</th>
+      <th>Dimension 2 ($⁡\sin$)</th>
+      <th>Dimension 3 ($⁡\cos$)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="font-bold">0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td className="font-bold">1</td>
+      <td>0.8415</td>
+      <td>0.5403</td>
+      <td>0.00999983</td>
+      <td>0.99995</td>
+    </tr>
+    <tr>
+      <td className="font-bold">2</td>
+      <td>0.9093</td>
+      <td>-0.4161</td>
+      <td>0.0199987</td>
+      <td>0.99980</td>
+    </tr>
+    <tr>
+      <td className="font-bold">3</td>
+      <td>0.1411</td>
+      <td>-0.9899</td>
+      <td>0.0299955</td>
+      <td>0.99955</td>
+    </tr>
+    <tr>
+      <td className="font-bold">4</td>
+      <td>-0.7568</td>
+      <td>-0.6536</td>
+      <td>0.0399893</td>
+      <td>0.99920</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+    <tr>
+      <th>Position</th>
+      <th>Dimension 0</th>
+      <th>Dimension 1</th>
+      <th>Dimension 2</th>
+      <th>Dimension 3</th>
+    </tr>
+    <tr>
+      <th>($pos$)</th>
+      <th>($\sin$)</th>
+      <th>($⁡\cos$)</th>
+      <th>($⁡\sin$)</th>
+      <th>($⁡\cos$)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td className="font-bold">0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td className="font-bold">1</td>
+      <td>0.8415</td>
+      <td>0.5403</td>
+      <td>0.00999983</td>
+      <td>0.99995</td>
+    </tr>
+    <tr>
+      <td className="font-bold">2</td>
+      <td>0.9093</td>
+      <td>-0.4161</td>
+      <td>0.0199987</td>
+      <td>0.99980</td>
+    </tr>
+    <tr>
+      <td className="font-bold">3</td>
+      <td>0.1411</td>
+      <td>-0.9899</td>
+      <td>0.0299955</td>
+      <td>0.99955</td>
+    </tr>
+    <tr>
+      <td className="font-bold">4</td>
+      <td>-0.7568</td>
+      <td>-0.6536</td>
+      <td>0.0399893</td>
+      <td>0.99920</td>
+    </tr>
+  </tbody>
+</table>
+
+### Interpretation
+
+- **First Pair of Dimensions (0 & 1)**: Rapidly changing due to a smaller denominator ($\text{Denominator}_0 = 1$), capturing fine positional differences.
+- **Second Pair of Dimensions (2 & 3)**: Slowly changing due to a larger denominator ($\text{Denominator}_1 = 100$), capturing broader positional trends.
+- **Combination**: Provides both local and global positional information.
+
+## Incorporating Positional Encodings into the Transformer
+
+The positional encodings are added to the token embeddings before being fed into the Transformer layers:
+
+$$
+\text{Input}_{\text{Transformer}} = \text{Embedding} + \text{Positional Encoding}
+$$
+
+This addition allows the model to consider both the semantic meaning of the tokens and their positions in the sequence.
+
+## Advantages of Sinusoidal Positional Encoding
+
+- **Deterministic**: No additional parameters to learn, reducing complexity.
+- **Generalization**: Can handle sequences longer than those seen during training.
+- **Relative Positioning**: Facilitates learning of relative positions between tokens.
+
+## Conclusion
+
+Sinusoidal positional encoding is a cornerstone of the Transformer architecture, enabling it to capture sequence order without compromising the parallelism that makes it so efficient. By leveraging sine and cosine functions of varying frequencies, this approach elegantly embeds both local and global positional information into token embeddings.

@@ -1,0 +1,306 @@
+import generateMetadata from "@/utils/seo"
+import Image from "next/image"
+
+import CoverImage from "./banner.jpg"
+
+export const metadata = generateMetadata({
+  path: "/blogs/understanding-padding-and-look-ahead-mask-in-the-transformer-decoder/",
+  title: "Padding and Look-Ahead Mask in the Transformer Decoder",
+  description:
+    "Discover how padding masks and look-ahead masks empower the Transformer model to handle variable-length sequences and maintain autoregressive properties, enabling efficient and accurate sequence processing in NLP tasks.",
+  image: CoverImage.src,
+})
+
+# Padding and Look-Ahead Mask in the Transformer Decoder
+
+<span className="text-base leading-snug text-neutral-500">
+  Discover how padding masks and look-ahead masks empower the Transformer model
+  to handle variable-length sequences and maintain autoregressive properties,
+  enabling efficient and accurate sequence processing in NLP tasks.
+</span>
+
+<Image src={CoverImage} alt={"Cover"} placeholder="blur" />
+
+The Transformer model revolutionized natural language processing by enabling parallel processing of sequential data through self-attention mechanisms. Two critical components that ensure the model handles sequences correctly are the **padding mask** and the **look-ahead mask**. These masks address issues related to variable-length sequences and autoregressive sequence generation, respectively. Let's delve into how they work, complete with proper equations and examples.
+
+## **1. Padding Mask: Handling Variable-Length Sequences**
+
+### **Problem: Variable-Length Sequences and Padding Tokens**
+
+When processing batches of sentences, sequences often have varying lengths. To process these efficiently in parallel, we pad shorter sequences with a special `<PAD>` token to match the length of the longest sequence in the batch. However, including these padding tokens in computations can mislead the model, as it might assign importance to them.
+
+**Example**:
+
+Consider two English sentences:
+
+- **Sentence 1**: `"Hello"`
+- **Sentence 2**: `"How are you"`
+
+To batch these sentences, we pad the shorter one:
+
+- **Padded Sentences**:
+  - **Sentence 1**: `"Hello <PAD> <PAD>"`
+  - **Sentence 2**: `"How are you"`
+
+### **Solution: Applying the Padding Mask**
+
+The **padding mask** ensures that the model does not consider the `<PAD>` tokens during attention calculations.
+
+**Steps**:
+
+1. **Create the Padding Mask** $M_{\text{pad}}$:
+
+   For each position $j$ in the sequence:
+
+   $$
+   M_{\text{pad}, i, j} = \begin{cases}
+    0 & \text{if token } j \text{ is not } <\text{PAD}> \\
+    -\infty & \text{if token } j \text{ is } <\text{PAD}>
+    \end{cases}
+   $$
+
+2. **Apply the Padding Mask to the Scores**:
+
+   $$
+   \text{Scores}_{\text{masked}} = \text{Scores} + M_{\text{pad}}
+   $$
+
+   - Positions with $-\infty$ in $\text{Scores}_{\text{masked}}$ will have zero weights after the softmax.
+
+**Visualization**:
+
+For **Sentence 1** (`"Hello <PAD> <PAD>"`), the padding mask $M_{\text{pad}}$ would be:
+
+$$
+M_{\text{pad}} = \begin{bmatrix}
+0 & -\infty & -\infty \\
+0 & -\infty & -\infty \\
+0 & -\infty & -\infty \\
+\end{bmatrix}
+$$
+
+​
+
+- **Rows and Columns**: Correspond to the positions in the sequence.
+- **Masked Positions**: The `<PAD>` tokens at positions 2 and 3 are masked with $-\infty$. Attention weights for positions 2 and 3 will be zero after softmax. The attention mechanism will only consider the word `"Hello"` (position 1) and ignore the `<PAD>` tokens.
+
+For **Sentence 2** (`"How are you"`), which does not contain any `<PAD>` tokens, the padding mask $M_{\text{pad}}$ is:
+
+$$
+M_{\text{pad}} = \begin{bmatrix}
+0 & 0 & 0 \\
+0 & 0 & 0 \\
+0 & 0 & 0 \\
+\end{bmatrix}
+$$
+
+- All positions are valid tokens; no masking is needed. All words `"How"`, `"are"`, and `"you"` are considered in the attention computation.
+
+## **2. Look-Ahead Mask: Enforcing Autoregressive Property**
+
+### **Problem: Preventing Future Information Leakage**
+
+In tasks like translation, the decoder generates the target sequence one token at a time, using only previously generated tokens. During training, we have the entire target sequence, but we need to ensure the model doesn't "cheat" by looking at future tokens.
+
+**Example**:
+
+Translating the German sentence `"Wie geht es Ihnen"` to English:
+
+- Target English Sentence: `"How are you"`
+
+We want the model to predict:
+
+- **Step 1**: Given `""`, predict `"How"`
+- **Step 2**: Given `"How"`, predict `"are"`
+- **Step 3**: Given `"How are"`, predict `"you"`
+
+### **Solution: Applying the Look-Ahead Mask**
+
+The **look-ahead mask** ensures that each position in the decoder can only attend to itself and previous positions, not future ones.
+
+**Steps**:
+
+1. **Create the Look-Ahead Mask** $M_{\text{look}}$ :
+   - For sequence length $T$, the mask is defined as:
+     $$
+     M_{\text{look}, i, j} = \begin{cases}
+         0 & \text{if } j \leq i \\
+         -\infty & \text{if } j > i
+         \end{cases}
+     $$
+2. **Apply the Look-Ahead Mask to the Scores**:
+
+   $$
+   \text{Scores}_{\text{masked}} = \text{Scores} + M_{\text{look}}
+   $$
+
+3. **Modified Attention Scores**:
+   - Positions where $j>i$ receive $-\infty$ in $\text{Scores}_{\text{masked}}$
+   - After applying $softmax$, these positions will have zero attention weights.
+
+**Visualization**:
+
+For the target sentence `"How are you"`, the look-ahead mask $M_{\text{look}}$ is:
+
+$$
+M_{\text{look}} = \begin{bmatrix}
+0 & -\infty & -\infty \\
+0 & 0 & -\infty \\
+0 & 0 & 0 \\
+\end{bmatrix}
+$$
+
+​
+
+## **3. Final Attention Calculation with Masks**
+
+### **Combining the Padding Mask and Look-Ahead Mask**
+
+In practice, we often need to apply both masks simultaneously. The combined mask $M_{\text{total}}$ is:
+
+$$
+M_{\text{total}} = M_{\text{pad}} + M_{\text{look}}
+$$
+
+### **Applying the Combined Mask**
+
+1. **Compute the Original Attention Scores**:
+
+   $$
+   \text{Scores} = \frac{Q K^\top}{\sqrt{d_k}}
+   $$
+
+   - $Q$: Query matrix
+   - $K$: Key matrix
+   - $d_k$: Dimension of the key vectors
+
+2. **Apply the Combined Mask**:
+
+   $$
+   \text{Scores}_{\text{masked}} = \text{Scores} + M_{\text{total}}
+   $$
+
+3. **Explanation**:
+   - Any position corresponding to a `<PAD>` token or future token (where $j>i$) will have $-\infty$ in $\text{Scores}_{\text{masked}}$.
+   - After applying $softmax$, these positions will have zero attention weights.
+4. **Compute the Final Attention Weights**:
+
+   $$
+   \text{Weights}_{i,j} = \frac{\exp(\text{Scores}_{\text{masked}, i,j})}{\sum_{k} \exp(\text{Scores}_{\text{masked}, i,k})}
+   $$
+
+   - **Positions with** $-\infty$ **Scores**:
+     $$
+     \exp(-\infty) = 0
+     $$
+   - Positions with zero numerator will have zero attention weights, ensuring the model only attends to valid positions.
+
+## **4. Example with Equations**
+
+Let's walk through a concrete example using the German sentence `"Guten Morgen"` (Good Morning) and its English translation.
+
+### **Setup**
+
+- **Input (German)**: `"Guten Morgen"`
+- **Target (English)**: `"Good morning"`
+
+After padding (assuming max length 3):
+
+- **Padded Target**: `"Good morning <PAD>"`
+
+### **Step-by-Step Calculation**
+
+1. **Compute** $Q$**,** $K$**, and** $V$:
+   - Derived from the embeddings of `"Good"`, `"morning"`, and `<PAD>`.
+2. **Compute Attention Scores**:
+
+   $$
+   \text{Scores} = \frac{Q K^\top}{\sqrt{d_k}}
+   $$
+
+   - $\text{Scores}$ is a $3 \times 3$ matrix.
+
+3. **Create Padding Mask** $M_{\text{pad}}$ :
+
+   $$
+   M_{\text{pad}} = \begin{bmatrix}
+    0 & 0 & -\infty \\
+    0 & 0 & -\infty \\
+    0 & 0 & -\infty \\
+    \end{bmatrix}
+   $$
+
+4. **Create Look-Ahead Mask** $M_{\text{look}}$:
+
+   $$
+   M_{\text{look}} = \begin{bmatrix}
+    0 & -\infty & -\infty \\
+    0 & 0 & -\infty \\
+    0 & 0 & 0 \\
+    \end{bmatrix}
+   $$
+
+5. **Combine Masks**:
+
+   $$
+   M_{\text{total}} = M_{\text{pad}} + M_{\text{look}} = \begin{bmatrix}
+    0 & -\infty & -\infty \\
+    0 & 0 & -\infty \\
+    0 & 0 & -\infty \\
+    \end{bmatrix}
+   $$
+
+6. **Apply Combined Mask to Scores**:
+
+   $$
+   \text{Scores}_{\text{masked}} = \text{Scores} + M_{\text{total}}
+   $$
+
+   - Positions with $-\infty$ in $M_{\text{total}}$ will have $-\infty$ in $\text{Scores}_{\text{masked}}$.
+
+7. **Compute Attention Weights**:
+
+   $$
+   \text{Weights}_{i,j} = \frac{\exp(\text{Scores}_{\text{masked}, i,j})}{\sum_{k} \exp(\text{Scores}_{\text{masked}, i,k})}
+   $$
+
+   - Positions with $-\infty$ in $\text{Scores}_{\text{masked}}$ contribute zero to the numerator and are excluded from the denominator.
+
+## Implementation
+
+```python
+def create_padding_mask(seq):
+    # seq shape: [batch_size, seq_len]
+    mask = (seq == vocab["<PAD>"]).unsqueeze(1).unsqueeze(2)  # Shape: [batch_size, 1, 1, seq_len]
+    # Convert mask to float and flip values: 1 -> 0, 0 -> -inf
+    mask = mask.type(torch.float32)
+    mask = mask.masked_fill(mask == 0, 0.0)
+    mask = mask.masked_fill(mask == 1, float('-inf'))
+    return mask  # Shape: [batch_size, 1, 1, seq_len]
+
+def create_look_ahead_mask(size):
+    # size: seq_len
+    mask = torch.triu(torch.ones((size, size)), diagonal=1)
+    mask = mask.masked_fill(mask == 1, float('-inf'))
+    return mask  # Shape: [seq_len, seq_len]
+
+def combine_masks(padding_mask, look_ahead_mask):
+    # padding_mask shape: [batch_size, 1, 1, seq_len]
+    # look_ahead_mask shape: [seq_len, seq_len]
+    combined_mask = padding_mask + look_ahead_mask  # Broadcasting
+    return combined_mask  # Shape: [batch_size, 1, seq_len, seq_len]
+
+padding_mask = create_padding_mask(batch_tokens)
+look_ahead_mask = create_look_ahead_mask(max_len)
+combined_mask = combine_masks(padding_mask, look_ahead_mask)
+
+```
+
+## Conclusion
+
+The **padding mask** and **look-ahead mask** are fundamental mechanisms that enable the Transformer model to process sequences efficiently and correctly. The padding mask ensures that padding tokens, introduced to handle variable-length sequences, do not interfere with attention calculations, while the look-ahead mask enforces the autoregressive property, preventing future information leakage during sequence generation. By integrating these masks, the Transformer model can effectively manage both parallel processing of batches and sequential dependencies during decoding.
+
+## Next Steps
+
+- [Encoder - Decoder Attention in the Transformer](/blogs/encoder-decoder-attention-in-the-transformer)
+- [Sinusoidal Positional Encoding in the Transformer](/blogs/sinusoidal-positional-encoding-in-the-transformer)
