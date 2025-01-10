@@ -10,22 +10,22 @@ import classNames from "@/utils/classNames"
 
 const links = [
   {
-    value: <Home size={16} />,
+    icon: <Home size={16} />,
     text: "Home",
     href: "/",
   },
   {
-    value: <DoubleCheck size={16} />,
+    icon: <DoubleCheck size={16} />,
     text: "Work",
     href: "/work/",
   },
   {
-    value: <Newspaper size={16} />,
+    icon: <Newspaper size={16} />,
     text: "Blogs",
     href: "/blogs/",
   },
   {
-    value: <ImageIcon size={16} />,
+    icon: <ImageIcon size={16} />,
     text: "Photos",
     href: "/photos/",
   },
@@ -53,10 +53,10 @@ const Navbar: React.FC = () => {
             href={link.href}
             className={classNames(
               pathname === link.href ? "bg-neutral-800" : "",
-              "flex items-center gap-2 outline-none rounded-3xl px-2.5 py-1.5 md:px-3.5 md:py-2 transition-colors text-neutral-200 dark:text-neutral-400 hover:bg-neutral-800 focus:bg-neutral-800"
+              "flex items-center gap-2 outline-none rounded-3xl px-2.5 py-2 md:px-3.5 transition-colors text-neutral-200 dark:text-neutral-400 hover:bg-neutral-800 focus:bg-neutral-800"
             )}
           >
-            {link.value} {link.text}
+            {link.icon} {link.text}
           </Link>
         ))}
       </motion.div>
