@@ -3,16 +3,17 @@ import * as React from "react"
 import classNames from "@/utils/classNames"
 
 interface DotPatternProps {
-  width?: any
-  height?: any
-  x?: any
-  y?: any
-  cx?: any
-  cy?: any
-  cr?: any
+  width?: number
+  height?: number
+  x?: number
+  y?: number
+  cx?: number
+  cy?: number
+  cr?: number
   className?: string
   [key: string]: any
 }
+
 const DotPattern: React.FC<DotPatternProps> = ({
   width = 16,
   height = 16,
