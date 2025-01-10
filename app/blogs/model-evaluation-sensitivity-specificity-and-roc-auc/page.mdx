@@ -169,30 +169,30 @@ Hence, saying **“one model’s AUC is higher, so that model is better”** ess
 
 ```python
 def plot_roc_auc_curve(y_test, y_pred):
-		# Compute ROC curve and AUC
-		fpr, tpr, thresholds = roc_curve(y_test, y_pred)
-		roc_auc = auc(fpr, tpr)
+	# Compute ROC curve and AUC
+	fpr, tpr, thresholds = roc_curve(y_test, y_pred)
+	roc_auc = auc(fpr, tpr)
 
-		# Compute the optimal point (Youden's J statistic)
-		youden_index = np.argmax(tpr - fpr)
-		optimal_threshold = thresholds[youden_index]
-		optimal_point = (fpr[youden_index], tpr[youden_index])
+	# Compute the optimal point (Youden's J statistic)
+	youden_index = np.argmax(tpr - fpr)
+	optimal_threshold = thresholds[youden_index]
+	optimal_point = (fpr[youden_index], tpr[youden_index])
 
-		# Plot the ROC curve
-		plt.figure(figsize=(8, 6))
-		plt.plot(fpr, tpr, label=f'ROC curve (AUC = {roc_auc:.2f})', lw=2)
-		plt.scatter(*optimal_point, color='red', label=f'Optimal Point\n(FPR={optimal_point[0]:.2f}, TPR={optimal_point[1]:.2f})', zorder=5)
-		plt.annotate(f'Threshold = {optimal_threshold:.2f}',
-		             xy=optimal_point, xytext=(optimal_point[0] + 0.1, optimal_point[1] - 0.1),
-		             arrowprops=dict(facecolor='black', arrowstyle='->'),
-		             fontsize=10, color='red')
-		plt.plot([0, 1], [0, 1], 'k--', lw=1)
-		plt.xlabel('False Positive Rate')
-		plt.ylabel('True Positive Rate')
-		plt.title('ROC Curve')
-		plt.legend(loc='lower right')
-		plt.grid()
-		plt.show()
+	# Plot the ROC curve
+	plt.figure(figsize=(8, 6))
+	plt.plot(fpr, tpr, label=f'ROC curve (AUC = {roc_auc:.2f})', lw=2)
+	plt.scatter(*optimal_point, color='red', label=f'Optimal Point\n(FPR={optimal_point[0]:.2f}, TPR={optimal_point[1]:.2f})', zorder=5)
+	plt.annotate(f'Threshold = {optimal_threshold:.2f}',
+					xy=optimal_point, xytext=(optimal_point[0] + 0.1, optimal_point[1] - 0.1),
+					arrowprops=dict(facecolor='black', arrowstyle='->'),
+					fontsize=10, color='red')
+	plt.plot([0, 1], [0, 1], 'k--', lw=1)
+	plt.xlabel('False Positive Rate')
+	plt.ylabel('True Positive Rate')
+	plt.title('ROC Curve')
+	plt.legend(loc='lower right')
+	plt.grid()
+	plt.show()
 ```
 
 ## Conclusion

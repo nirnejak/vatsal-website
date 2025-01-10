@@ -45,6 +45,22 @@ const blogs = [
     slug: "normalization-in-deep-learning",
     title: "Normalization in Deep Learning",
   },
+  {
+    slug: "understanding-padding-and-look-ahead-mask-in-the-transformer-decoder",
+    title: "Padding and Look-Ahead Mask in the Transformer Decoder",
+  },
+  {
+    slug: "encoder-decoder-attention-in-the-transformer",
+    title: "Encoder - Decoder Attention in the Transformer",
+  },
+  {
+    slug: "sinusoidal-positional-encoding-in-the-transformer",
+    title: "Sinusoidal Positional Encoding in the Transformer",
+  },
+  {
+    slug: "a-comprehensive-overview-of-bert",
+    title: "A Comprehensive Overview of BERT",
+  },
 ]
 
 const BlogsPage: React.FC = async () => {
