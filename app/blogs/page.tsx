@@ -34,6 +34,10 @@ const blogs = [
     title: "Attention Mechanism in Encoder - Decoder Architecture",
   },
   {
+    slug: "understanding-the-transformer-architecture",
+    title: "Understanding the Transformer Architecture",
+  },
+  {
     slug: "self-attention",
     title: "Self-Attention: Queries, Keys, and Values in Action",
   },
