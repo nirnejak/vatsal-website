@@ -1,0 +1,181 @@
+import generateMetadata from "@/utils/seo"
+import Image from "next/image"
+
+import CoverImage from "./banner.jpg"
+import PostNormPreNormDiagram from "./Post_Norm_Pre_Norm_Diagram.png"
+import TransformerDecoderDiagram from "./Transformer_Decoder_Diagram.png"
+
+export const metadata = generateMetadata({
+  path: "/blogs/from-gpt-1-to-gpt-3-a-new-era-in-nlp/",
+  title: "From GPT-1 to GPT-3: A New Era in NLP",
+  description:
+    "Trace the GPT journey: how unsupervised pre-training, scaling model sizes, and few-shot prompting reshaped modern NLP.",
+  image: CoverImage.src,
+})
+
+# From GPT-1 to GPT-3: A New Era in NLP
+
+<span className="text-base leading-snug text-neutral-500">
+  Trace the GPT journey: how unsupervised pre-training, scaling model sizes, and
+  few-shot prompting reshaped modern NLP.
+</span>
+
+<Image src={CoverImage} alt={"Cover"} placeholder="blur" />
+
+In 2018, OpenAI introduced **GPT-1** (Generative Pre-Trained Transformer) in a paper titled “[_Improving Language Understanding by Generative Pre-Training_](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)” by Alec Radford, Karthik Narasimhan, Tim Salimans, and Ilya Sutskever. This work laid the foundation for a new paradigm in large-scale language models: **pre-train** first on a large corpus, and then **fine-tune** on specific tasks. While the original Transformer architecture (Vaswani et al., 2017) introduced a powerful sequence-to-sequence model, GPT-1 showed that focusing on a **decoder-only** model with generative pre-training could yield remarkable results across various downstream language tasks.
+
+## Historical Context
+
+Before GPT-1, language models were often trained from scratch for each new task or used word embeddings like Word2Vec or GloVe. GPT-1’s **generative pre-training** approach changed this dynamic by showing how a single large model could be adapted to multiple tasks by leveraging **unsupervised** data at scale.
+
+## Key Contributions
+
+- **Decoder-Only Transformer**: GPT-1 focuses on a left-to-right (auto-regressive, unidirectional) decoder stack in its self-attention, in contrast to the original Transformer’s full encoder-decoder design. Unlike a full Transformer decoder that can cross-attend to an encoder output, GPT-1 has **no encoder-decoder cross-attention** since it is designed for language modeling. Therefore, the “decoder” in GPT-1 is effectively just repeated blocks of masked multi-head self-attention + feed-forward sublayers.
+
+<Image
+  src={TransformerDecoderDiagram}
+  alt={"TransformerDecoderDiagram"}
+  placeholder="blur"
+/>
+
+- **Unsupervised Pre-Training**: Instead of training from scratch, GPT-1 learns a vast amount of linguistic and semantic information from raw text first.
+- **Fine-Tuning**: This pre-trained model is then adapted to a specific task by adding one or more task-specific layers and training on labeled data.
+
+## **Unsupervised Pre-Training**
+
+Formally, let a sequence of tokens be $\mathbf{w} = (w_1, w_2, \dots, w_n)$. GPT-1 models the probability distribution:
+
+$$
+p(\mathbf{w}) = \prod_{t=1}^{n} p\bigl(w_t \mid w_1, w_2, \dots, w_{t-1}\bigr)
+$$
+
+To compute $p(w_t \mid w_1, \dots, w_{t-1})$, GPT-1 uses **masked self-attention** that ensures the prediction for position $t$ only depends on positions $< t$.
+
+Suppose you prompt GPT-1 with: `“In a hole in the ground there lived a …”`
+
+The model processes each token sequentially:
+
+1. while processing first token “In” → attention is only on “In”
+2. while processing second token “a” → attention is on “In” and “a”
+3. while processing third token “hole” → attention is on “In”, “a”, and “hole”
+4. … and so on.
+
+At each step $t$, the model predicts $x_t$ by attending to all tokens $x_1, \ldots, x_{t-1}$ producing probabilities for the next token. This _auto-regressive decoding_ is the hallmark of GPT-style models.
+
+The training objective is to **maximize** the log-likelihood of the observed tokens:
+
+$$
+\mathcal{L}_{\text{LM}}(\theta) = \frac{1}{N} \sum_{i=1}^{N} \sum_{t=1}^{n_i} \log p_\theta\bigl(w_t^{(i)} \mid w_{<t}^{(i)}\bigr)
+$$
+
+where $\theta$ represents the model parameters, $i$ indexes over all training sequences in the corpus, and $N$ is the number of sequences (books, or partitions of books).
+
+**Key properties** during pre-training:
+
+1. **Unidirectional Masking**: Each token can only attend to tokens before it.
+2. **No Additional Supervision**: The model is just predicting the **next word** from unlabeled text.
+3. **Positional Embeddings**: The model adds positional information to each token embedding.
+
+### Training Specifics
+
+- **BookCorpus**: GPT-1 was famously trained on **BookCorpus**, a dataset of over 7,000 unpublished books (roughly 800 million tokens).
+- **Byte Pair Encoding (BPE)**: GPT-1 used a subword tokenization technique to handle a large vocabulary, capturing both whole words and word fragments.
+- **Model Size**: 12-layer Transformer decoder, 768-dimensional hidden states, 12 attention heads leading to **~110M parameters**.
+- **context window:** up to **512 tokens.**
+- **Optimization**: Adam optimizer with a warmup and learning rate decay.
+- **Training Duration**: The model was trained for several days on multiple GPUs.
+
+## Fine-Tuning Methodology
+
+Once GPT-1 is pre-trained on a massive text corpus, it’s **adapted to downstream tasks** by adding a small set of task-specific parameters (often a linear layer on top of the final hidden representation).
+
+Let $\mathbf{x} = (x_1, x_2, \dots, x_m)$ be the input tokens for a downstream task (e.g., movie to review to predict sentiment). The model encodes them into hidden states $\mathbf{h} = (h_1, \dots, h_m)$. For classification tasks with $K$ labels, one often takes the the final hidden state of the $h_m$ corresponding to the “$\langle\text{EOS}\rangle$” (end-of-sequence) token and then computes:
+
+$$
+p(y = k \mid \mathbf{x}) = \text{Softmax}\bigl(W \cdot h_m + b\bigr)
+$$
+
+where $W$ and $b$ are newly added fine-tuning parameters. The **fine-tuning loss** is typically the cross-entropy over the classification label $y$:
+
+$$
+\mathcal{L}_{\text{fine-tune}}(\theta, W, b) = -\log p_\theta(y \mid \mathbf{x})
+$$
+
+Other tasks such as **sequence labeling** or **NLI** adapt similarly, either by conditioning on the final hidden state or by adding minimal additional layers.
+
+## GPT-2: Scaling Up
+
+Building on the success of GPT-1, OpenAI released **GPT-2** in February 2019 with the paper “[_Language Models are Unsupervised Multitask Learners_](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf).” GPT-2 primarily demonstrated that **scaling up** the size of the model and training data can further boost performance on downstream tasks—often even in a **zero-shot** setting (where the model is not specifically fine-tuned on the task).
+
+### Key Advances in GPT-2
+
+1. **Larger Model Sizes**: GPT-2 was released in multiple variants, ranging from **117M** parameters up to **1.5B** parameters in its largest public version. At the time, this was a significant leap from GPT-1’s ~110M parameters. Also, increased context window size from 512 token to **1024 tokens**.
+2. **More Data**: Instead of just BookCorpus, GPT-2 was trained on **WebText**, a dataset of about 8 million web pages (roughly 40 GB of text). This broadened the domain diversity (news, blogs, Reddit posts (with karma > 3), etc.).
+3. **Zero-Shot and Few-Shot Capabilities**: GPT-2 showed surprisingly strong performance on tasks like text completion, reading comprehension, translation, and summarization _without_ explicit fine-tuning, simply by conditioning on the right prompts.
+4. **Improved Generation Quality**: Thanks to the larger model and more diverse training data, GPT-2 could produce coherent multi-paragraph text on a variety of topics, often indistinguishable from human-written text.
+
+### Model Architecture and Training Details
+
+- **Still Decoder-Only**: GPT-2 continued to use the decoder-only Transformer architecture with masked self-attention.
+  A lesser-known but important detail in the evolution from GPT‑1 to GPT‑2 is the **application of layer normalization** (LayerNorm). GPT‑1 employs a **Post-Norm** block design, whereas GPT‑2 adopts a **Pre-Norm** structure. This subtle change can significantly affect training stability and gradient flow.
+  {" "}
+  <Image
+    src={PostNormPreNormDiagram}
+    alt={"PostNormPreNormDiagram"}
+    placeholder="blur"
+  />
+  GPT‑2 also typically includes a final layer normalization (often denoted as
+  $\text{ln}_{f}$) **after** the last block in the entire Transformer stack.
+  However, per-block, GPT‑2 consistently applies **LayerNorm first** (Pre-Norm)
+  within each attention or feed-forward sub-block.
+- **Byte Pair Encoding (BPE)**: GPT-2 used a larger BPE vocabulary (up to 50K merges) to better handle diverse text.
+- **Parameter Variants**:
+  - 117M (small)
+  - 345M (medium)
+  - 762M (large)
+  - 1.5B (xl) – the largest public variant
+
+### Impact of GPT-2
+
+GPT-2’s release sparked broader public awareness of large language models’ capabilities—and the potential risks. Researchers began exploring **zero-shot** and **few-shot** prompting more deeply, realizing these large Transformer models could generalize to tasks they weren’t explicitly trained on. This phenomenon started a wave of even larger models.
+
+## GPT-3: A Quantum Leap in Scale
+
+In June 2020, OpenAI introduced **GPT-3** with the paper “[_Language Models are Few-Shot Learners_](https://arxiv.org/abs/2005.14165).” GPT-3 took the scaling hypothesis to new heights, introducing models up to **175B parameters**, massively outperforming previous language models on a variety of tasks through **in-context learning** (also known as **few-shot prompting**).
+
+### Key Innovations in GPT-3
+
+1. **Massive Scale**: With up to **175B** parameters in the largest version (dubbed GPT-3 175B), GPT-3 was over 100× larger than GPT-2’s biggest publicly-released model (1.5B parameters). Also, increased context window size from 1024 token to **2048 tokens**.
+2. **Few-Shot Prompting**: GPT-3 showed that one could prompt the model with just a handful of examples (a “few-shot” approach) and get impressive performance on tasks like machine translation, question answering, arithmetic, and even code generation—**without** fine-tuning or additional gradient updates.
+3. **Broad Task Coverage**: GPT-3 excelled at a wide range of tasks beyond typical NLP benchmarks, including writing coherent essays, answering trivia questions, and even performing certain logical and arithmetic tasks.
+4. **In-Context Learning**: Rather than updating the model weights, GPT-3 uses the context of the user’s input plus a few examples to “learn” how to perform a task in real-time. This approach essentially treats **the prompt itself** as the “programming” of the model.
+
+### Architecture and Training
+
+- **Same Decoder-Only Transformer Backbone**: GPT-3 maintained the same auto-regressive, left-to-right architecture.
+- **Training Data**: GPT-3 was trained on nearly 500 billion tokens, incorporating text from books, Wikipedia, the Common Crawl, and curated web sources. This massive data variety allows GPT-3 to encode knowledge from an extremely wide range of topics.
+- **Computational Resources**: Training a 175B-parameter model required an enormous amount of GPU compute, highlighting the importance of large-scale infrastructure.
+- **Tokenization**: GPT-3 continued to rely on Byte Pair Encoding (BPE), but with an even larger vocabulary and more sophisticated coverage across diverse text domains.
+
+### Few-Shot vs. Zero-Shot Performance
+
+One of GPT-3’s biggest revelations was its **flexibility**:
+
+- **Zero-Shot**: If you provide only an instruction (like “Translate this sentence to French”), GPT-3 can follow the instruction with no prior labeled examples.
+- **One-Shot / Few-Shot**: If you provide a few examples of input–output pairs, GPT-3 can learn the pattern immediately, often significantly improving accuracy compared to zero-shot attempts.
+
+This **in-context learning** approach has become a cornerstone of modern language model usage, reducing the need for large labeled datasets and fine-tuning.
+
+## Conclusion and Looking Ahead
+
+The **GPT** series—GPT-1, GPT-2, and GPT-3—ushered in a new era of large language models:
+
+1. **GPT-1** introduced **generative pre-training** using a **decoder-only** Transformer architecture (Post-Norm).
+2. **GPT-2** demonstrated that scaling up both model size and training data yields **surprisingly robust zero-shot** capabilities—and it switched to a **Pre-Norm** block structure for improved stability.
+3. **GPT-3** took scaling to an unprecedented level (175B parameters), showcasing **few-shot** (in-context) learning across a broad range of NLP tasks with no additional fine-tuning steps.
+
+These developments changed the paradigm for how we build and use NLP systems. Modern research continues to push the limits with even larger models (e.g., GPT-3.5, GPT-4, and beyond), more efficient training techniques, and ongoing exploration of the ethical considerations these powerful generative models raise.
+
+## Next Steps
+
+- [A Comprehensive Overview of BERT](/blogs/a-comprehensive-overview-of-bert)

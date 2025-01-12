@@ -65,6 +65,10 @@ const blogs = [
     slug: "a-comprehensive-overview-of-bert",
     title: "A Comprehensive Overview of BERT",
   },
+  {
+    slug: "from-gpt-1-to-gpt-3-a-new-era-in-nlp",
+    title: "From GPT-1 to GPT-3: A New Era in NLP",
+  },
 ]
 
 const BlogsPage: React.FC = async () => {
