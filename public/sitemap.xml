@@ -80,4 +80,9 @@
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
+  <url>
+    <loc>https://vatsal.website/blogs/from-gpt-1-to-gpt-3-a-new-era-in-nlp/</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
 </urlset>
