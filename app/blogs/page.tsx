@@ -101,7 +101,7 @@ const BlogsPage: React.FC = async () => {
                 initial={{ translateY: 10, opacity: 0 }}
                 animate={{ translateY: 0, opacity: 1 }}
                 transition={{
-                  delay: 0.2 + 0.1 * (index + 1),
+                  delay: 0.2 + 0.03 * (index + 1),
                   ...BASE_TRANSITION,
                 }}
               >
