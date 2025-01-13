@@ -18,20 +18,12 @@ export const metadata: Metadata = generateMetadata({
 
 const blogs = [
   {
-    slug: "a-lagrange-multiplier-approach-to-pca",
-    title: "A Lagrange Multiplier Approach to PCA",
+    slug: "from-gpt-1-to-gpt-3-a-new-era-in-nlp",
+    title: "From GPT-1 to GPT-3: A New Era in NLP",
   },
   {
-    slug: "model-evaluation-sensitivity-specificity-and-roc-auc",
-    title: "Model Evaluation: Sensitivity, Specificity, and ROC-AUC",
-  },
-  {
-    slug: "encoder-decoder-architecture",
-    title: "Seq2Seq Learning - An Encoder-Decoder Approach",
-  },
-  {
-    slug: "attention-mechanism",
-    title: "Attention Mechanism in Encoder - Decoder Architecture",
+    slug: "a-comprehensive-overview-of-bert",
+    title: "A Comprehensive Overview of BERT",
   },
   {
     slug: "understanding-the-transformer-architecture",
@@ -62,12 +54,20 @@ const blogs = [
     title: "Sinusoidal Positional Encoding in the Transformer",
   },
   {
-    slug: "a-comprehensive-overview-of-bert",
-    title: "A Comprehensive Overview of BERT",
+    slug: "encoder-decoder-architecture",
+    title: "Seq2Seq Learning - An Encoder-Decoder Approach",
   },
   {
-    slug: "from-gpt-1-to-gpt-3-a-new-era-in-nlp",
-    title: "From GPT-1 to GPT-3: A New Era in NLP",
+    slug: "attention-mechanism",
+    title: "Attention Mechanism in Encoder - Decoder Architecture",
+  },
+  {
+    slug: "model-evaluation-sensitivity-specificity-and-roc-auc",
+    title: "Model Evaluation: Sensitivity, Specificity, and ROC-AUC",
+  },
+  {
+    slug: "a-lagrange-multiplier-approach-to-pca",
+    title: "A Lagrange Multiplier Approach to PCA",
   },
 ]
 
