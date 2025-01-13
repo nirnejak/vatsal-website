@@ -4,6 +4,7 @@ import Image from "next/image"
 import CoverImage from "./banner.jpg"
 import PostNormPreNormDiagram from "./Post_Norm_Pre_Norm_Diagram.png"
 import TransformerDecoderDiagram from "./Transformer_Decoder_Diagram.png"
+import FinetuneDiagram from "./finetune.png"
 
 export const metadata = generateMetadata({
   path: "/blogs/from-gpt-1-to-gpt-3-a-new-era-in-nlp/",
@@ -103,6 +104,8 @@ $$
 
 Other tasks such as **sequence labeling** or **NLI** adapt similarly, either by conditioning on the final hidden state or by adding minimal additional layers.
 
+<Image src={FinetuneDiagram} alt={"FinetuneDiagram"} placeholder="blur" />
+
 ## GPT-2: Scaling Up
 
 Building on the success of GPT-1, OpenAI released **GPT-2** in February 2019 with the paper “[_Language Models are Unsupervised Multitask Learners_](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf).” GPT-2 primarily demonstrated that **scaling up** the size of the model and training data can further boost performance on downstream tasks—often even in a **zero-shot** setting (where the model is not specifically fine-tuned on the task).
@@ -178,4 +181,5 @@ These developments changed the paradigm for how we build and use NLP systems. Mo
 
 ## Next Steps
 
+- [Understanding the Transformer Architecture](/blogs/understanding-the-transformer-architecture)
 - [A Comprehensive Overview of BERT](/blogs/a-comprehensive-overview-of-bert)
