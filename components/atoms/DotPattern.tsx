@@ -11,7 +11,6 @@ interface DotPatternProps {
   cy?: number
   cr?: number
   className?: string
-  [key: string]: any
 }
 
 const DotPattern: React.FC<DotPatternProps> = ({

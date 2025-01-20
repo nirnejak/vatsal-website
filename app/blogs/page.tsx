@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { type Metadata } from "next"
+import type { Metadata } from "next"
 
 import { ArrowRight } from "akar-icons"
 import * as motion from "framer-motion/client"
@@ -71,7 +71,7 @@ const blogs = [
   },
 ]
 
-const BlogsPage: React.FC = async () => {
+const BlogsPage: React.FC = () => {
   return (
     <main className="flex min-h-screen items-center justify-center">
       {blogs.length === 0 ? (
