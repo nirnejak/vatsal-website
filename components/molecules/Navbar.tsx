@@ -2,7 +2,7 @@
 import * as React from "react"
 
 import { DoubleCheck, Home, Image as ImageIcon, Newspaper } from "akar-icons"
-import * as motion from "framer-motion/client"
+import * as motion from "motion/react-client"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 

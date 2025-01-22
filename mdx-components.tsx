@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import * as motion from "framer-motion/client"
+import * as motion from "motion/react-client"
 import type { MDXComponents } from "mdx/types"
 import Link from "next/link"
 import { codeToHtml } from "shiki"
@@ -72,7 +72,7 @@ const components: MDXComponents = {
     children,
     ...props
   }: React.ComponentPropsWithoutRef<"a">) => {
-    if (href?.startsWith("/")) {
+    if (href.startsWith("/")) {
       return (
         <Link
           href={href}
@@ -83,7 +83,7 @@ const components: MDXComponents = {
         </Link>
       )
     }
-    if (href?.startsWith("#")) {
+    if (href.startsWith("#")) {
       return (
         <a
           href={href}

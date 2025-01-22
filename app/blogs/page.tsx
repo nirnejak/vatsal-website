@@ -3,7 +3,7 @@ import * as React from "react"
 import type { Metadata } from "next"
 
 import { ArrowRight } from "akar-icons"
-import * as motion from "framer-motion/client"
+import * as motion from "motion/react-client"
 import Link from "next/link"
 
 import ComingSoon from "@/components/molecules/ComingSoon"
