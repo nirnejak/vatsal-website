@@ -1,0 +1,207 @@
+import Image from "next/image"
+import generateMetadata from "@/utils/seo"
+
+import CoverImage from "./banner.jpg"
+import ActOnly from "./act_only.png"
+import ReasonOnly from "./reason_only.png"
+import Bind from "./bind.png"
+import Chain from "./chain.png"
+import FinalOutput from "./final_output.png"
+import ReACT from "./react.png"
+import Graph from "./graph_image.png"
+
+export const metadata = generateMetadata({
+  path: "/blogs/the-react-agent-framework/",
+  title: "The ReACT Agent Framework",
+  description:
+    "From Reasoning to Action: Understanding ReACT agents and their impact on AI development and innovation.",
+  image: CoverImage.src,
+})
+
+# The ReACT Agent Framework
+
+<span className="text-base leading-snug text-neutral-500">
+  From Reasoning to Action: Understanding ReACT agents and their impact on AI
+  development and innovation.
+</span>
+
+<Image src={CoverImage} alt={"Cover"} placeholder="blur" />
+
+**ReACT** stands for **Reasoning and Acting**, a paradigm that integrates chain-of-thought reasoning with the ability to call external tools or services. Imagine a large language model that not only thinks through a problem step by step in its internal “chain-of-thought,” but also knows when to pause, consult a database, query an API, or perform another external action. The ReACT framework orchestrates that interplay: the LLM can generate a plan, take an action (like calling a tool), analyse the result, then continue reasoning.
+
+## Historical Background
+
+The ReACT approach builds on several lines of inquiry:
+
+- **Chain-of-thought prompting**: Researchers discovered that when LLMs “think out loud” by generating a sequence of reasoning steps (often hidden from the user in production), they can achieve more accurate or interpretable results.
+- **Tool-using language models**: Parallel work explored how LLMs could call external APIs, either through function calls, code generation, or structured instructions. This capability elevated chatbots from mere text-based responders to interactive agents capable of searching for facts or performing calculations.
+
+## Reasoning + Acting Paradigm
+
+1. **Reasoning**:
+
+   A ReACT-based LLM begins by analyzing the problem, generating a chain-of-thought. This is not just a final answer; rather, it’s an ongoing thought process. For example, if the agent is trying to solve “What is the population of France plus the population of Germany?” it might outline the steps to look up each population, add them, and confirm the result.
+
+   <Image src={ReasonOnly} alt={"ReasonOnly"} placeholder="blur" />
+
+2. **Acting**:
+
+   Once the model identifies a need for external data or an operation, it temporarily leaves its chain-of-thought to perform an action. This action is typically calling an API or querying a database. After receiving the response (e.g., population figures), the model reintegrates that new information into its reasoning sequence.
+
+   <Image src={ActOnly} alt={"ActOnly"} placeholder="blur" />
+
+Hence, the ReACT agent fluidly moves between internal problem-solving (reasoning) and external tool usage (acting).
+
+<Image src={ReACT} alt={"ReACT"} placeholder="blur" />
+
+## Interaction Mechanism
+
+Under the hood, a ReACT agent’s prompt structure often looks like this:
+
+```python
+User: What is the sum of the current population of France and Germany?
+
+Agent (Reasoning): I'll first need to look up the population of each country
+									 using an external tool.
+Agent (Action Request): #Tool: get_population
+						#Parameters:
+						countries: ["France", "Germany"]
+Agent (Observation): {
+						"France": 64756584,
+						"Germany": 83294633
+					}
+Agent (Reasoning): The population of France is approximately 67,800,000 and
+					the population of Germany is approximately 83,200,000. I need
+					to sum these two values. I will use the sum calculator tool to
+					ensure accuracy.
+*gent (Action Request): #Tool: sum_calculator
+						#Parameters:
+						values: [64756584, 83294633]
+Agent (Observation): 148051217
+Agent (Reasoning): The calculator tool reports the sum as 148,051,217. That
+									 should be the final answer to provide to the user.
+Agent (Final Answer): The total current population of France and Germany is
+											approximately 148 million.
+```
+
+## Implementation in LangGraph
+
+Now we will set up the tools required for our ReACT agent to solve the problem. Here's what each component does:
+
+1. **Tavily Search Integration**:
+
+   We integrate `TavilySearchResults` and `TavilySearchAPIWrapper` from `langchain_community`. These tools enable our ReACT agent to perform web searches and retrieve the most relevant results, limited to a maximum of 5 results per query. This is essential for fetching up-to-date population data dynamically.
+
+2. **Custom Addition Tool**:
+
+   We define a custom tool, `addition`, using LangChain's `@tool` decorator. This tool directly computes the sum of two integers and returns the result. It is labeled as `sum-calculator` and designed to perform a straightforward addition operation. This tool complements our ReACT agent by offloading simple arithmetic calculations, ensuring modularity and clarity in the workflow.
+
+```python
+from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_community.utilities.tavily_search import TavilySearchAPIWrapper
+
+search = TavilySearchAPIWrapper()
+tavily_tool = TavilySearchResults(api_wrapper=search, max_results=5)
+```
+
+```python
+from langchain.tools import tool
+
+@tool("sum-caculator",return_direct=True)
+def addition(a: int, b: int) -> int:
+    """Adds a and b.
+
+    Args:
+        a: first int
+        b: second int
+    """
+    return a + b
+```
+
+Now we will bind the tools to the language model (LLM) to enable their use during the reasoning process.The `bind_tools` method connects the previously defined tools (such as the `TavilySearchResults` and the `sum-calculator` tool) to the language model. This integration allows the LLM to access these tools dynamically during its execution. By binding the tools, we extend the capabilities of the LLM beyond generating text, enabling it to:
+
+- Perform web searches for real-time data retrieval.
+- Carry out arithmetic calculations using the custom addition tool.
+
+This step is crucial for empowering the ReACT agent to interact with external tools and execute specialized tasks effectively.
+
+```python
+tools = [addition, tavily_tool]
+llm_with_tools = llm.bind_tools(tools=tools)
+```
+
+<Image src={Bind} alt={"Bind"} placeholder="blur" />
+
+Now we will we define the ReACT agent's behaviour and interaction flow. The react agent chain combines the prompt with the tool-equipped LLM, enabling tool usage during execution.
+
+```python
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+
+system_prompt = """
+You are a helpful assistant.
+"""
+
+react_agent_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system",system_prompt),
+        MessagesPlaceholder(variable_name="messages"),
+    ]
+)
+
+react_agent_chain = react_agent_prompt | llm_with_tools
+```
+
+<Image src={Chain} alt={"Chain"} placeholder="blur" />
+
+Now we will define a **reasoner node** for the graph and construct the complete workflow graph. The `reasoner` function uses the ReACT agent chain to process the state and return updated messages. We utilize LangGraph's `StateGraph` to manage the workflow, adding nodes for reasoning and tool usage. Conditional edges direct the workflow based on tool usage, ensuring dynamic execution.
+
+```python
+def reasoner(state):
+    response = react_agent_chain.invoke(state)
+    return {"messages": [response]}
+```
+
+```python
+import operator
+from typing import Annotated, List
+from typing_extensions import TypedDict
+
+class AgentState(TypedDict):
+    messages: Annotated[List[str], operator.add]
+```
+
+```python
+from langgraph.graph import END, StateGraph, START
+from langgraph.prebuilt import tools_condition # this is the checker for the if you got a tool back
+from langgraph.prebuilt import ToolNode
+
+workflow = StateGraph(AgentState)
+
+# Add nodes
+workflow.add_node("reasoner", reasoner)
+workflow.add_node("tools", ToolNode(tools)) # for the tools
+
+# Add edges
+workflow.add_edge(START, "reasoner")
+workflow.add_conditional_edges(
+    "reasoner",
+    # If the last message from node reasoner is a tool call -> tools_condition routes to tools
+    # If the last message from node reasoner is a not a tool call -> tools_condition routes to END
+    tools_condition,
+)
+workflow.add_edge("tools", "reasoner")
+graph = workflow.compile()
+```
+
+Visualize the workflow graph to better understand how the reasoning and tool interaction processes are orchestrated.
+
+<Image src={Graph} alt={"Graph"} placeholder="blur" />
+
+The `graph.invoke` method processes the query through the defined nodes and tools, leveraging the ReACT agent for reasoning and tool interaction.
+
+<Image src={FinalOutput} alt={"FinalOutput"} placeholder="blur" />
+
+## Conclusion
+
+ReACT represents a significant step forward in the evolution of intelligent systems, enabling LLMs to reason transparently and act effectively. By combining these capabilities, it opens up new possibilities for automation, decision-making, and human-AI collaboration. As AI technology continues to evolve, frameworks like ReACT will play a crucial role in building systems that are not just smart but also actionable and trustworthy.

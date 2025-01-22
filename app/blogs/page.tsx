@@ -18,6 +18,10 @@ export const metadata: Metadata = generateMetadata({
 
 const blogs = [
   {
+    slug: "the-react-agent-framework",
+    title: "The ReACT Agent Framework",
+  },
+  {
     slug: "from-gpt-1-to-gpt-3-a-new-era-in-nlp",
     title: "From GPT-1 to GPT-3: A New Era in NLP",
   },
