@@ -1,11 +1,9 @@
 import * as React from "react"
 
-import * as motion from "motion/react-client"
 import type { MDXComponents } from "mdx/types"
-import Link from "next/link"
+import { Link } from "next-view-transitions"
 import { codeToHtml } from "shiki"
 
-import { BASE_TRANSITION } from "./utils/animation"
 import classNames from "./utils/classNames"
 
 interface Props {
@@ -15,10 +13,7 @@ interface Props {
 const BlogWrapper: React.FC<Props> = ({ children }) => {
   return (
     <main className="mx-auto w-full max-w-[580px] px-4 md:px-0">
-      <motion.article
-        initial={{ translateY: 10, opacity: 0 }}
-        animate={{ translateY: 0, opacity: 1 }}
-        transition={{ delay: 0.3, ...BASE_TRANSITION }}
+      <article
         className={classNames(
           "mb-24 prose prose-neutral dark:prose-invert prose:leading-snug prose:tracking-tight",
           "prose-p:opacity-85 dark:prose-p:opacity-80",
@@ -36,7 +31,7 @@ const BlogWrapper: React.FC<Props> = ({ children }) => {
         )}
       >
         {children}
-      </motion.article>
+      </article>
     </main>
   )
 }

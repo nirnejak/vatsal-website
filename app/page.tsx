@@ -3,9 +3,7 @@ import * as React from "react"
 import type { Metadata } from "next"
 
 import { LinkedinFill, Envelope, GithubFill, XFill } from "akar-icons"
-import * as motion from "motion/react-client"
 
-import { BASE_TRANSITION } from "@/utils/animation"
 import generateMetadata from "@/utils/seo"
 
 export const metadata: Metadata = generateMetadata({
@@ -43,31 +41,16 @@ const HomePage: React.FC = () => {
     <main className="flex min-h-screen items-center justify-center">
       <div className="mx-auto max-w-[580px] px-4 md:px-0">
         <h1>
-          <motion.span
-            initial={{ translateY: 10, opacity: 0 }}
-            animate={{ translateY: 0, opacity: 1 }}
-            transition={{ delay: 0, ...BASE_TRANSITION }}
-            className="flex text-4xl font-semibold leading-snug tracking-tight text-neutral-800 md:text-5xl md:leading-snug dark:text-neutral-300"
-          >
+          <span className="flex text-4xl font-semibold leading-snug tracking-tight text-neutral-800 md:text-5xl md:leading-snug dark:text-neutral-300">
             Hello, I{"'"}m
-          </motion.span>
-          <motion.span
-            initial={{ translateY: 10, opacity: 0 }}
-            animate={{ translateY: 0, opacity: 1 }}
-            transition={{ delay: 0.1, ...BASE_TRANSITION }}
-            className="mb-7 flex text-4xl font-semibold leading-snug tracking-tight text-neutral-800 md:text-5xl md:leading-snug dark:text-neutral-300"
-          >
+          </span>
+          <span className="mb-7 flex text-4xl font-semibold leading-snug tracking-tight text-neutral-800 md:text-5xl md:leading-snug dark:text-neutral-300">
             <span className="text-neutral-400 dark:text-neutral-600">
               Vatsal Dhameliya.
             </span>
-          </motion.span>
+          </span>
         </h1>
-        <motion.p
-          initial={{ translateY: 10, opacity: 0 }}
-          animate={{ translateY: 0, opacity: 1 }}
-          transition={{ delay: 0.2, ...BASE_TRANSITION }}
-          className="mb-20 text-sm text-neutral-600 md:text-base dark:text-neutral-500"
-        >
+        <p className="mb-20 text-sm text-neutral-600 md:text-base dark:text-neutral-500">
           I{"'"}m a{" "}
           <span className="font-semibold text-neutral-800 dark:text-neutral-300">
             Senior AI Scientist @
@@ -85,13 +68,8 @@ const HomePage: React.FC = () => {
           </span>
           , I specialize in Computer Vision, Large Language Models and
           Generative AI.
-        </motion.p>
-        <motion.div
-          initial={{ translateY: 10, opacity: 0 }}
-          animate={{ translateY: 0, opacity: 1 }}
-          transition={{ delay: 0.3, ...BASE_TRANSITION }}
-          className="grid grid-cols-2 gap-4 md:grid-cols-4"
-        >
+        </p>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {SOCIAL_LINKS.map((link, i) => (
             <a
               key={i}
@@ -103,7 +81,7 @@ const HomePage: React.FC = () => {
               <span className="text-sm">{link.label}</span>
             </a>
           ))}
-        </motion.div>
+        </div>
       </div>
     </main>
   )

@@ -1,14 +1,13 @@
 import * as React from "react"
 
 import type { Metadata } from "next"
+import { Link } from "next-view-transitions"
 
 import { ArrowRight } from "akar-icons"
-import * as motion from "motion/react-client"
-import Link from "next/link"
+
+import generateMetadata from "@/utils/seo"
 
 import ComingSoon from "@/components/molecules/ComingSoon"
-import { BASE_TRANSITION } from "@/utils/animation"
-import generateMetadata from "@/utils/seo"
 
 export const metadata: Metadata = generateMetadata({
   path: "/blogs/",
@@ -83,36 +82,18 @@ const BlogsPage: React.FC = () => {
       ) : (
         <div className="mx-auto w-full max-w-[580px] px-4 md:px-0">
           <h1>
-            <motion.span
-              initial={{ translateY: 10, opacity: 0 }}
-              animate={{ translateY: 0, opacity: 1 }}
-              transition={{ delay: 0, ...BASE_TRANSITION }}
-              className="flex text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300"
-            >
+            <span className="flex text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300">
               Blogs <br />
-            </motion.span>
-            <motion.span
-              initial={{ translateY: 10, opacity: 0 }}
-              animate={{ translateY: 0, opacity: 1 }}
-              transition={{ delay: 0.1, ...BASE_TRANSITION }}
-              className="mb-20 flex text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300"
-            >
+            </span>
+            <span className="mb-20 flex text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300">
               <span className="text-neutral-400 dark:text-neutral-600">
                 & Articles.
               </span>
-            </motion.span>
+            </span>
           </h1>
           <div className="space-y-2.5 text-neutral-800 dark:text-neutral-400">
             {blogs.map((blog, index) => (
-              <motion.div
-                key={index}
-                initial={{ translateY: 10, opacity: 0 }}
-                animate={{ translateY: 0, opacity: 1 }}
-                transition={{
-                  delay: 0.2 + 0.03 * (index + 1),
-                  ...BASE_TRANSITION,
-                }}
-              >
+              <div key={index}>
                 <Link
                   href={`/blogs/${blog.slug}`}
                   className="group flex items-center gap-2"
@@ -124,7 +105,7 @@ const BlogsPage: React.FC = () => {
                     className="transition-transform group-hover:translate-x-1"
                   />
                 </Link>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>

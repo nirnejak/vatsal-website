@@ -1,8 +1,8 @@
 import * as React from "react"
 
 import type { Viewport } from "next"
-
 import { Inter, JetBrains_Mono } from "next/font/google"
+import { ViewTransitions } from "next-view-transitions"
 
 import DotPattern from "@/components/atoms/DotPattern"
 import Navbar from "@/components/molecules/Navbar"
@@ -31,28 +31,30 @@ interface Props {
 
 const RootLayout: React.FC<Props> = ({ children }) => {
   return (
-    <html lang="en">
-      <head>
-        <script
-          defer
-          data-domain="vatsal.website"
-          src="https://plausible.io/js/script.js"
-        />
-      </head>
+    <ViewTransitions>
+      <html lang="en">
+        <head>
+          <script
+            defer
+            data-domain="vatsal.website"
+            src="https://plausible.io/js/script.js"
+          />
+        </head>
 
-      <body
-        className={classNames(
-          sansFont.variable,
-          monoFont.variable,
-          "overflow-x-hidden bg-neutral-50 dark:bg-neutral-900 font-sans"
-        )}
-      >
-        <Navbar />
-        {children}
+        <body
+          className={classNames(
+            sansFont.variable,
+            monoFont.variable,
+            "overflow-x-hidden bg-neutral-50 dark:bg-neutral-900 font-sans"
+          )}
+        >
+          <Navbar />
+          {children}
 
-        <DotPattern />
-      </body>
-    </html>
+          <DotPattern />
+        </body>
+      </html>
+    </ViewTransitions>
   )
 }
 
