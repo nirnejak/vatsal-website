@@ -40,14 +40,12 @@ const HomePage: React.FC = () => {
   return (
     <main className="flex min-h-screen items-center justify-center">
       <div className="mx-auto max-w-[580px] px-4 md:px-0">
-        <h1>
-          <span className="flex text-4xl font-semibold leading-snug tracking-tight text-neutral-800 md:text-5xl md:leading-snug dark:text-neutral-300">
+        <h1 className="text-4xl font-semibold leading-snug tracking-tight md:text-5xl">
+          <span className="flex text-neutral-800 dark:text-neutral-300">
             Hello, I{"'"}m
           </span>
-          <span className="mb-7 flex text-4xl font-semibold leading-snug tracking-tight text-neutral-800 md:text-5xl md:leading-snug dark:text-neutral-300">
-            <span className="text-neutral-400 dark:text-neutral-600">
-              Vatsal Dhameliya.
-            </span>
+          <span className="mb-7 flex  text-neutral-400 dark:text-neutral-600">
+            Vatsal Dhameliya.
           </span>
         </h1>
         <p className="mb-20 text-sm text-neutral-600 md:text-base dark:text-neutral-500">
