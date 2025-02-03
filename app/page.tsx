@@ -4,7 +4,7 @@ import type { Metadata } from "next"
 
 import { LinkedinFill, Envelope, GithubFill, XFill } from "akar-icons"
 
-import getMetadata from "@/utils/seo"
+import getMetadata from "@/utils/metadata"
 
 export const metadata: Metadata = getMetadata({
   path: "/",

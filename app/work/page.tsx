@@ -2,7 +2,7 @@ import * as React from "react"
 
 import type { Metadata } from "next"
 
-import getMetadata from "@/utils/seo"
+import getMetadata from "@/utils/metadata"
 
 export const metadata: Metadata = getMetadata({
   path: "/work/",

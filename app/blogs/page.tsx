@@ -5,7 +5,7 @@ import { Link } from "next-view-transitions"
 
 import { ArrowRight } from "akar-icons"
 
-import getMetadata from "@/utils/seo"
+import getMetadata from "@/utils/metadata"
 
 import ComingSoon from "@/components/molecules/ComingSoon"
 
