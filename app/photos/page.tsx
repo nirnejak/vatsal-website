@@ -16,14 +16,12 @@ const PhotosPage: React.FC = () => {
   return (
     <main className="flex min-h-screen items-center justify-center">
       <div className="mx-auto max-w-[980px] px-4 md:px-0">
-        <h1>
-          <span className="mt-24 flex text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300">
+        <h1 className="mb-20 mt-12 text-3xl font-semibold leading-snug tracking-tight md:mt-0">
+          <span className="flex text-neutral-800 dark:text-neutral-300">
             Moments
           </span>
-          <span className="mb-7 flex text-3xl font-semibold leading-snug text-neutral-800 dark:text-neutral-300">
-            <span className="text-neutral-400 dark:text-neutral-600">
-              & Pictures.
-            </span>
+          <span className="flex text-neutral-400 dark:text-neutral-600">
+            & Pictures.
           </span>
         </h1>
         <div className="mb-24 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
