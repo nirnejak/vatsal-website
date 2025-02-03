@@ -1,10 +1,10 @@
 import Image from "next/image"
-import generateMetadata from "@/utils/seo"
+import getMetadata from "@/utils/seo"
 
 import CoverImage from "./banner.jpg"
 import EncoderDecoderImage from "./sinusoidal_positional_encoding.png"
 
-export const metadata = generateMetadata({
+export const metadata = getMetadata({
   path: "/blogs/sinusoidal-positional-encoding-in-the-transformer/",
   title: "Sinusoidal Positional Encoding in the Transformer",
   description:

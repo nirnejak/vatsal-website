@@ -5,11 +5,11 @@ import { Link } from "next-view-transitions"
 
 import { ArrowRight } from "akar-icons"
 
-import generateMetadata from "@/utils/seo"
+import getMetadata from "@/utils/seo"
 
 import ComingSoon from "@/components/molecules/ComingSoon"
 
-export const metadata: Metadata = generateMetadata({
+export const metadata: Metadata = getMetadata({
   path: "/blogs/",
   title: "Blogs | Vatsal Dhameliya - AI Scientist",
   description: "Blogs and articles on AI and tech written by Vatsal Dhameliya",

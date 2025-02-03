@@ -1,10 +1,10 @@
 import Image from "next/image"
-import generateMetadata from "@/utils/seo"
+import getMetadata from "@/utils/seo"
 
 import CoverImage from "./banner.jpg"
 import EncoderDecoderDiagram from "./Encoder_Decoder_Diagram.png"
 
-export const metadata = generateMetadata({
+export const metadata = getMetadata({
   path: "/blogs/encoder-decoder-architecture/",
   title: "Seq2Seq Learning - An Encoder-Decoder Approach",
   description:

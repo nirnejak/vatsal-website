@@ -4,9 +4,9 @@ import type { Metadata } from "next"
 
 import { LinkedinFill, Envelope, GithubFill, XFill } from "akar-icons"
 
-import generateMetadata from "@/utils/seo"
+import getMetadata from "@/utils/seo"
 
-export const metadata: Metadata = generateMetadata({
+export const metadata: Metadata = getMetadata({
   path: "/",
   title: "Vatsal Dhameliya - AI Scientist",
   description:

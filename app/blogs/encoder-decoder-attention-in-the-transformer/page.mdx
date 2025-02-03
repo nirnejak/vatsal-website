@@ -1,10 +1,10 @@
 import Image from "next/image"
-import generateMetadata from "@/utils/seo"
+import getMetadata from "@/utils/seo"
 
 import CoverImage from "./banner.jpg"
 import EncoderDecoderAttentionImage from "./Encoder Decoder Attention Diagram.png"
 
-export const metadata = generateMetadata({
+export const metadata = getMetadata({
   path: "/blogs/encoder-decoder-attention-in-the-transformer/",
   title: "Encoder - Decoder Attention in the Transformer",
   description:

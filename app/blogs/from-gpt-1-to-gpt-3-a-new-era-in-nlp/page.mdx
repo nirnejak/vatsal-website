@@ -1,4 +1,4 @@
-import generateMetadata from "@/utils/seo"
+import getMetadata from "@/utils/seo"
 import Image from "next/image"
 
 import CoverImage from "./banner.jpg"
@@ -6,7 +6,7 @@ import PostNormPreNormDiagram from "./Post_Norm_Pre_Norm_Diagram.png"
 import TransformerDecoderDiagram from "./Transformer_Decoder_Diagram.png"
 import FinetuneDiagram from "./finetune.png"
 
-export const metadata = generateMetadata({
+export const metadata = getMetadata({
   path: "/blogs/from-gpt-1-to-gpt-3-a-new-era-in-nlp/",
   title: "From GPT-1 to GPT-3: A New Era in NLP",
   description:

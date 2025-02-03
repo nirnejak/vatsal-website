@@ -4,9 +4,9 @@ import type { Metadata } from "next"
 import Image from "next/image"
 
 import { photos } from "@/utils/photos"
-import generateMetadata from "@/utils/seo"
+import getMetadata from "@/utils/seo"
 
-export const metadata: Metadata = generateMetadata({
+export const metadata: Metadata = getMetadata({
   path: "/photos/",
   title: "Photos | Vatsal Dhameliya - AI Scientist",
   description: "Stunning pictures captured by Vatsal Dhameliya",

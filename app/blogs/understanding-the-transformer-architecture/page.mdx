@@ -1,4 +1,4 @@
-import generateMetadata from "@/utils/seo"
+import getMetadata from "@/utils/seo"
 import Image from "next/image"
 
 import CoverImage from "./banner.jpg"
@@ -7,7 +7,7 @@ import Attention from "./attention.png"
 import MultiHeadAttention from "./multi_head_attention.png"
 import WorkAttention from "./attention_work.png"
 
-export const metadata = generateMetadata({
+export const metadata = getMetadata({
   path: "/blogs/understanding-the-transformer-architecture/",
   title: "Understanding the Transformer Architecture",
   description:

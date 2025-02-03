@@ -1,5 +1,5 @@
 import Image from "next/image"
-import generateMetadata from "@/utils/seo"
+import getMetadata from "@/utils/seo"
 
 import CoverImage from "./banner.jpg"
 import ActOnly from "./act_only.png"
@@ -10,7 +10,7 @@ import FinalOutput from "./final_output.png"
 import ReACT from "./react.png"
 import Graph from "./graph_image.png"
 
-export const metadata = generateMetadata({
+export const metadata = getMetadata({
   path: "/blogs/the-react-agent-framework/",
   title: "The ReACT Agent Framework",
   description:

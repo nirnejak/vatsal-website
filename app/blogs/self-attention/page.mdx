@@ -1,11 +1,11 @@
-import generateMetadata from "@/utils/seo"
+import getMetadata from "@/utils/seo"
 import Image from "next/image"
 
 import CoverImage from "./banner.jpg"
 import SelfAttentionDiagram from "./self_attention_diagram.png"
 import MultiHeadAttentionDiagram from "./multi_head_attention_diagram.png"
 
-export const metadata = generateMetadata({
+export const metadata = getMetadata({
   path: "/blogs/self-attention/",
   title: "Self-Attention: Queries, Keys, and Values in Action",
   description:

@@ -3,9 +3,9 @@ import * as React from "react"
 import type { Metadata } from "next"
 import { Link } from "next-view-transitions"
 
-import generateMetadata from "@/utils/seo"
+import getMetadata from "@/utils/seo"
 
-export const metadata: Metadata = generateMetadata({
+export const metadata: Metadata = getMetadata({
   path: "/404/",
   title: "Not Found | Vatsal Dhameliya - AI Scientist",
   description: "Cannot find the page you're looking for",

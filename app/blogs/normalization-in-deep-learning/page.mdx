@@ -1,11 +1,11 @@
-import generateMetadata from "@/utils/seo"
+import getMetadata from "@/utils/seo"
 import Image from "next/image"
 
 import CoverImage from "./banner.jpg"
 import BatchNormDiagram from "./batch_norm.png"
 import LayerNormDiagram from "./layer_norm.png"
 
-export const metadata = generateMetadata({
+export const metadata = getMetadata({
   path: "/blogs/normalization-in-deep-learning/",
   title: "Normalization in Deep Learning",
   description:

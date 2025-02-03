@@ -2,9 +2,9 @@ import * as React from "react"
 
 import type { Metadata } from "next"
 
-import generateMetadata from "@/utils/seo"
+import getMetadata from "@/utils/seo"
 
-export const metadata: Metadata = generateMetadata({
+export const metadata: Metadata = getMetadata({
   path: "/work/",
   title: "Work | Vatsal Dhameliya - AI Scientist",
   description:

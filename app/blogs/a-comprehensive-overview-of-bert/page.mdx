@@ -1,4 +1,4 @@
-import generateMetadata from "@/utils/seo"
+import getMetadata from "@/utils/seo"
 import Image from "next/image"
 
 import CoverImage from "./banner.jpg"
@@ -7,7 +7,7 @@ import FineTuning from "./finetuning.png"
 import InputEmbedding from "./input_embedding.png"
 import PreTraining from "./pre_training.png"
 
-export const metadata = generateMetadata({
+export const metadata = getMetadata({
   path: "/blogs/a-comprehensive-overview-of-bert/",
   title: "A Comprehensive Overview of BERT",
   description:
