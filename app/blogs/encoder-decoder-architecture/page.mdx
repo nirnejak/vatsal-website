@@ -46,7 +46,7 @@ At each time step $t$, the Encoder receives the embedding $e(x_t)$ of the curren
 
 - **Second Hidden Layer:** The second equation represents the hidden state at the second layer, $h^{2}_t$, which takes as inputs the hidden state $h^{1}_{t}$ from the first layer and the previous hidden state $h^{2}_{t-1}$ from the second layer itself. This second layer further processes the output from the first layer, allowing the model to learn more complex patterns and dependencies by adding a higher level of abstraction.
   $$
-  h^{2}_t = \text{EncoderRNN}(h^{1}_{t}, h^{2}\_{t-1})
+  h^{2}_t = \text{EncoderRNN}(h^{1}_{t}, h^{2}_{t-1})
   $$
 
 This recurrent process continues until the end of the input sequence, capturing both word-level information $e(x_t)$ and contextual information through the hidden states. While RNN is used as a generic term here, the architecture could utilize more complex recurrent layers, such as LSTM (Long Short-Term Memory) or GRU (Gated Recurrent Unit), to handle long-range dependencies and prevent vanishing gradients.
