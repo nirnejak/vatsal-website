@@ -1,0 +1,146 @@
+import Image from "next/image"
+import getMetadata from "@/utils/metadata"
+
+import CoverImage from "./banner.jpg"
+
+export const metadata = getMetadata({
+  path: "/blogs/lora-low-rank-adaptation-for-efficient-fine-tuning/",
+  title: "LoRA: Low-Rank Adaptation for Efficient Fine-Tuning",
+  description:
+    "Learn how Low-Rank Adaptation (LoRA) enables efficient fine-tuning of large language models by reducing trainable parameters.",
+  image: CoverImage.src,
+})
+
+# LoRA: Low-Rank Adaptation for Efficient Fine-Tuning
+
+<span className="text-base leading-snug text-neutral-500">
+  Learn how Low-Rank Adaptation (LoRA) enables efficient fine-tuning of large
+  language models by reducing trainable parameters.
+</span>
+
+<Image src={CoverImage} alt={"LoRA Cover"} placeholder="blur" />
+
+## Introduction
+
+Over the past few years, large language models (LLMs) have demonstrated remarkable capabilities in various natural language processing tasks, such as machine translation, question answering, and text generation. These models continue to scale in size (billions and even trillions of parameters), providing increasingly better performance. However, this performance comes with substantial computational and memory requirements, especially when we want to fine-tune a large model for a specific downstream task or domain.
+
+**LoRA (Low-Rank Adaptation)** was introduced as a method to enable parameter-efficient fine-tuning of such large language models. By exploiting low-rank decompositions, LoRA drastically reduces the number of trainable parameters required while still allowing the model to adapt effectively to new tasks.
+
+## Challenges in Fine-Tuning Large Models
+
+### High Cost of Fine-Tuning Large Models
+
+Traditionally, to adapt a pre-trained large language model to a new task (e.g., sentiment classification), one would fine-tune all or most of the parameters of the model on a task-specific dataset. However, this approach has notable drawbacks:
+
+- **Memory**: Updating billions of parameters requires massive GPU/TPU memory.
+- **Compute**: Backpropagation through all parameters is computationally expensive.
+- **Storage**: Storing a copy of each specialized (fine-tuned) model for different tasks becomes infeasible.
+- **Catastrophic Forgetting**: Full fine-tuning may lead to the loss of pre-trained knowledge, making transfer learning less efficient.
+
+### Alternative Parameter-Efficient Methods (and Their Shortcomings)
+
+Several parameter-efficient methods have been proposed to combat these challenges. For example:
+
+- **Feature Extraction**: Freezing the pre-trained model and adding a small trainable head. This is efficient but limits adaptability.
+- **Adapter Layers**: Introduce small “adapter” layers between existing layers but keep the main model weights frozen. Effective but increases inference latency.
+- **Prefix Tuning / Prompt Tuning**: Add trainable “prefix” tokens or prompts to condition the model on specific tasks.
+
+While these methods reduce the need to retrain all model parameters, they can still exhibit significant overhead in terms of added complexity or limited expressiveness in certain scenarios.
+
+### Low-Rank Adaptation: The LoRA Approach
+
+LoRA offers a simpler yet powerful idea: **any weight update in a large neural network can be approximated by a low-rank matrix factorization.** Instead of learning an entire matrix of updates for a layer’s weights, LoRA learns two smaller matrices whose product approximates the full update. This reduces the total number of trainable parameters and requires much less GPU memory during fine-tuning.
+
+## Intuition and High-Level View
+
+Consider a single linear layer (e.g., a fully connected or dense layer) in a transformer or other deep architectures. The layer’s weight matrix is $W \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$.
+
+When fine-tuning in the standard way, we would compute some update $\Delta W$ and set the new weights to $W + \Delta W$. However, $\Delta W$ could be as large as $W$ itself. If $d_{\text{out}} \times d_{\text{in}}$ is enormous (as is common in LLMs), updating and storing these large $\Delta W$ matrices for all layers is memory- and compute-intensive.
+
+LoRA’s key insight is that $\Delta W$ **can be assumed to be low-rank**. That is, instead of learning a full matrix $\Delta W$, we learn:
+
+$$
+\Delta W = B A
+$$
+
+where $A \in \mathbb{R}^{r \times d_{\text{in}}}$ and $B \in \mathbb{R}^{d_{\text{out}} \times r}$. The rank $r$ is typically much smaller than either $d_{\text{out}}$ or $d_{\text{in}}$, so the total number of parameters in $A$ and $B$ is far less than in $\Delta W$.
+
+Hence, during fine-tuning, we only train these low-rank matrices $A$ and $B$ (with rank $r$), while **freezing** the original weights WWW. This drastically **reduces the number of trainable parameters** and, correspondingly, the fine-tuning computational requirements.
+
+## Going Deeper
+
+Let’s break down the various components and steps of LoRA. We’ll focus on a single linear layer for clarity, but this method is applied to multiple layers throughout the network.
+
+### Original Layer and the Low-Rank Decomposition
+
+- **Original weight matrix**: $W \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$
+- **LoRA decomposition**: $\Delta W = B A$
+  - $B \in \mathbb{R}^{d_{\text{out}} \times r}$
+  - $A \in \mathbb{R}^{r \times d_{\text{in}}}$
+
+Here, $r$ is a hyperparameter chosen such that $r \ll d_{\text{in}}$ and $r \ll d_{\text{out}}$. Typically, $r$ might be set to something quite small (e.g., 1, 2, 4, or 8) relative to the dimensions of the layer.
+
+The resulting weight for the layer during fine-tuning becomes:
+
+$$
+W' = W + \Delta W = W + B A.
+$$
+
+### Forward Pass
+
+During the forward pass of the neural network:
+
+1. **Freeze** $W$: The pre-trained matrix W is not updated; it remains fixed as learned from the original large-scale training.
+2. **Add the LoRA adaptation**: We compute the product $B A \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$. Then, the effective weight is $W + B A$.
+3. **Apply to Input**: For an input vector (or batch) $x \in \mathbb{R}^{d_{\text{in}}}$, the layer’s output is:
+   $$
+   y = (W + B A)x = Wx + B (A x)
+   $$
+   Because $A x \in \mathbb{R}^{r}$ is a much smaller multiplication (since $A$ compresses the dimension down to $r$), the additional computation cost is minimal.
+4. Compute the model’s output $\hat{y}$.
+
+### **Compute loss**:
+
+- $\mathcal{L}(\hat{y}, y)$ (e.g., cross-entropy).
+
+### Backward Pass (Gradient Computation)
+
+During backpropagation:
+
+1. **Gradients w.r.t.** $W$ **are zero** (since W is frozen).
+   $$
+   \frac{\partial \mathcal{L}}{\partial W} = 0
+   $$
+2. **Gradients flow through** $B$ **and** $A$: The only parameters that get updated are $B$ and $A$.
+   - Compute $\frac{\partial \mathcal{L}}{\partial A}$ and $\frac{\partial \mathcal{L}}{\partial B}$.
+   - Update LoRA parameters
+     $$
+     A \leftarrow A - \eta \frac{\partial \mathcal{L}}{\partial A}, \quad
+     B \leftarrow B - \eta \frac{\partial \mathcal{L}}{\partial B}
+     $$
+     (where $\eta$ is the learning rate)
+
+Therefore, memory usage is significantly reduced. We do not need to store large gradients or optimizers for $W$. Instead, we only store and update the smaller gradients for $A$ and $B$.
+
+### Parameter Saving
+
+LoRA makes it possible to save just the two matrices $A$ and $B$ (and related optimizer states) instead of the entire model. When deployed, you can combine $\Delta W = B A$ with $W$ on-the-fly (or keep them separate, depending on the framework). This results in very compact “adapters” that can be swapped in to adapt a single large pre-trained model to various tasks.
+
+## Advantages and Limitations
+
+### Advantages
+
+1. **Parameter-Efficient**: Only the low-rank matrices $A$ and $B$ need training and storage.
+2. **Memory Savings**: Freezing the original weights reduces GPU memory usage.
+3. **Modular Adaptations**: You can maintain multiple sets of $A$ and $B$ (one per task or domain) for a single large base model.
+4. **Simplicity**: The approach is straightforward to implement on top of existing deep learning frameworks.
+
+### Limitations
+
+1. **Rank Selection**: Choosing an appropriate rank $r$ can be task-specific. If $r$ is too low, the model might underfit; if too high, you lose efficiency benefits.
+2. **Assumption of Low-Rank Updates**: In certain highly specialized tasks, the weight update might not be accurately approximated by low-rank factors, leading to suboptimal performance compared to full fine-tuning.
+3. **Potential Overhead**: Although smaller than full fine-tuning, LoRA still introduces some overhead. For extremely large models with many layers, the sums can accumulate if not well-managed.
+
+## Conclusion
+
+LoRA (Low-Rank Adaptation) is a powerful technique designed to tackle the challenge of **efficiently adapting large language models** to new tasks. By factoring weight updates into low-rank matrices, LoRA requires **significantly fewer trainable parameters**, reducing the memory footprint and computational overhead associated with full fine-tuning. This makes it a compelling option for scenarios where resources are limited or when multiple domain/task adaptations of a single large model need to be maintained.

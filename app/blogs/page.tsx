@@ -21,6 +21,10 @@ const blogs = [
     title: "The ReACT Agent Framework",
   },
   {
+    slug: "lora-low-rank-adaptation-for-efficient-fine-tuning",
+    title: "LoRA: Low-Rank Adaptation for Efficient Fine-Tuning",
+  },
+  {
     slug: "t5-the-text-to-text-transfer-transformer",
     title: "T5: The Text-to-Text Transfer Transformer",
   },
