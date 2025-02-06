@@ -21,6 +21,10 @@ const blogs = [
     title: "The ReACT Agent Framework",
   },
   {
+    slug: "t5-the-text-to-text-transfer-transformer",
+    title: "T5: The Text-to-Text Transfer Transformer",
+  },
+  {
     slug: "from-gpt-1-to-gpt-3-a-new-era-in-nlp",
     title: "From GPT-1 to GPT-3: A New Era in NLP",
   },
@@ -57,12 +61,12 @@ const blogs = [
     title: "Sinusoidal Positional Encoding in the Transformer",
   },
   {
-    slug: "encoder-decoder-architecture",
-    title: "Seq2Seq Learning - An Encoder-Decoder Approach",
-  },
-  {
     slug: "attention-mechanism",
     title: "Attention Mechanism in Encoder - Decoder Architecture",
+  },
+  {
+    slug: "encoder-decoder-architecture",
+    title: "Seq2Seq Learning - An Encoder-Decoder Approach",
   },
   {
     slug: "model-evaluation-sensitivity-specificity-and-roc-auc",
