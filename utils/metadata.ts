@@ -43,7 +43,10 @@ const getMetadata = ({
 
     applicationName: config.applicationName,
     creator: config.creator,
-    authors: [{ name: "Jitendra Nirnejak", url: "https://nirnejak.com/" }],
+    authors: [
+      { name: "Vatsal Dhameliya", url: "https://nirnejak.com/" },
+      { name: "Jitendra Nirnejak", url: "https://vatsal.website/" },
+    ],
     robots:
       "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
     keywords: config.keywords,
