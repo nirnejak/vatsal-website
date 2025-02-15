@@ -84,7 +84,7 @@ const blogs = [
 
 const BlogsPage: React.FC = () => {
   return (
-    <main className="flex min-h-screen items-center justify-center">
+    <main className="flex min-h-dvh items-center justify-center">
       {blogs.length === 0 ? (
         <ComingSoon />
       ) : (
