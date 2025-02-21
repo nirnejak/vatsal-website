@@ -17,7 +17,7 @@ const SOCIAL_LINKS = [
   {
     icon: <LinkedinFill size={15} />,
     label: "LinkedIn",
-    href: "https://www.linkedin.com/in/vatsal-patel-70420b112/",
+    href: "https://www.linkedin.com/in/vatsal-dhameliya-70420b112/",
   },
   {
     icon: <XFill size={15} />,
