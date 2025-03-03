@@ -17,6 +17,14 @@ export const metadata: Metadata = getMetadata({
 
 const blogs = [
   {
+    slug: "evaluation-metrics-for-synthetic-qa-datasets-in-rag-evaluation",
+    title: "Evaluation Metrics for Synthetic QA Datasets in RAG Evaluation",
+  },
+  {
+    slug: "rag-enhancing-language-models-with-external-knowledge",
+    title: "RAG: Enhancing Language Models with External knowledge",
+  },
+  {
     slug: "the-react-agent-framework",
     title: "The ReACT Agent Framework",
   },

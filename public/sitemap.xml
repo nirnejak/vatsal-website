@@ -100,4 +100,14 @@
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://vatsal.website/blogs/rag-enhancing-language-models-with-external-knowledge/</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://vatsal.website/blogs/evaluation-metrics-for-synthetic-qa-datasets-in-rag-evaluation/</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
