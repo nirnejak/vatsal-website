@@ -1,0 +1,370 @@
+import Image from "next/image"
+import getMetadata from "@/utils/metadata"
+
+import CoverImage from "./banner.jpg"
+import DataGen from "./data_gen.png"
+import Groundness from "./groundness.png"
+
+export const metadata = getMetadata({
+  path: "/blogs/evaluation-metrics-for-synthetic-qa-datasets-in-rag-evaluation/",
+  title: "Evaluation Metrics for Synthetic QA Datasets in RAG Evaluation",
+  description:
+    "Learn how Principal Component Analysis uses Lagrange multipliers to maximize data variance.",
+  image: CoverImage.src,
+})
+
+# Evaluation Metrics for Synthetic QA Datasets in RAG Evaluation
+
+<span className="text-base leading-snug text-neutral-500">
+  Learn how Principal Component Analysis uses Lagrange multipliers to maximize
+  data variance.
+</span>
+
+<Image src={CoverImage} alt={"PCA Cover"} placeholder="blur" />
+
+## Introduction
+
+In modern Natural Language Processing (NLP) applications, **Retrieval-Augmented Generation (RAG)** pipelines are becoming increasingly popular. RAG systems combine a **retriever**—which selects relevant documents or snippets from a large corpus—with a **generator**—which uses those retrieved passages to produce final answers. One challenge in developing and refining such pipelines is having a robust dataset for evaluation: a collection of question-answer (QA) pairs and associated contexts that truly test the system’s capabilities.
+
+However, creating evaluation datasets by hand can be time-consuming and expensive. An attractive alternative is to **synthetically generate** these QA pairs using large language models (LLMs). While synthetic generation can significantly reduce the effort, it also poses a critical question: **how do we ensure the generated QA pairs are of high quality and suitable for evaluating RAG systems?**
+
+## Why Synthetic QA Generation?
+
+When building a Retrieval-Augmented Generation (RAG) pipeline, two key components define its effectiveness:
+
+1. **Retriever** – responsible for pulling relevant documents from a large knowledge base.
+2. **Generator (or Reader)** – processes the retrieved documents and produces final answers.
+
+To ensure robustness and accuracy, we need a high-quality test set that captures a diverse range of questions reflecting real-world information needs. However, manually curating such a dataset is often impractical due to time constraints and the cost of expert annotation. This is where synthetic QA generation comes in, leveraging powerful language models to automatically create question-answer pairs.
+
+### Addressing Data Scarcity and Cost
+
+In many scenarios, especially niche domains, there may not be enough manually curated QA pairs to train or evaluate a RAG pipeline effectively. Collecting and annotating large datasets is expensive and labor-intensive. Synthetic generation allows for scalable data creation, reducing reliance on manual labeling while ensuring a sufficient volume of QA pairs for robust testing.
+
+### Domain-Specific Coverage
+
+When a RAG system operates in specialized domains such as **healthcare, finance, or machine learning**, it requires domain-relevant QA pairs that reflect the types of queries users are likely to make. By generating synthetic questions from your own corpus, you can tailor QA pairs to focus on the precise topics that matter in your domain, improving the model’s ability to retrieve and generate accurate responses.
+
+### Better Evaluation of Retrieval and Generation
+
+A well-functioning RAG system depends not just on retrieval quality but also on how effectively the generator leverages retrieved context to produce correct answers. Synthetic QA pairs can be structured to test retrieval robustness across different types of factual queries, helping identify gaps in knowledge coverage and weaknesses in the pipeline.
+
+### Challenges of Synthetic QA Generation
+
+Despite its benefits, synthetic QA generation introduces potential flaws that must be systematically evaluated:
+
+- Some generated questions may be **unanswerable** given the retrieved context.
+- Others may be **too trivial** or **irrelevant**, reducing their usefulness for real-world evaluation.
+- Some questions might rely on **hidden assumptions** about the document, making them unclear or misleading when interpreted independently.
+
+To avoid these pitfalls, careful filtering and validation of synthetic QA pairs are essential. A low-quality test set can misrepresent system performance and lead to false conclusions about the effectiveness of the RAG pipeline.
+
+## Generating the Dataset
+
+### Document Preprocessing
+
+Before generating questions, you typically want to:
+
+1. **Clean the text** (Remove unwanted symbols, fix spacing, etc.).
+2. **Split into smaller segments** so that each segment contains a discrete piece of information. For instance, if your segments are too large, the LLM might generate questions spanning multiple unrelated topics. If they are too small, it might skip important context.
+
+```python
+from langchain_community.document_loaders import WebBaseLoader
+loader = WebBaseLoader("https://en.wikipedia.org/wiki/Google")
+web_data = loader.load()
+
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+text_splitter = RecursiveCharacterTextSplitter(
+    chunk_size=600,
+    chunk_overlap=60,
+    length_function=len
+)
+documents = text_splitter.split_documents(web_data)
+```
+
+### Synthetic QA Generation
+
+Once documents are chunked, you feed each chunk to an LLM with a specific **prompt** instructing it to generate factoid QA pairs. Here’s the general algorithm:
+
+1. **Sampling Chunks**: A subset of document chunks is randomly selected to generate diverse QA pairs.
+2. **Generating Questions and Answers**:
+   - Each sampled chunk is passed to the **question generation chain**, which is an LLM-based pipeline designed to produce factoid questions and precise answers.
+   - The model is prompted to create a well-formed question that can be answered solely based on the given context.
+3. **Storing Results**: The generated QA pairs are collected and stored for further processing.
+
+**Example**:
+
+- **Input Context**: "Python is a popular programming language created by Guido van Rossum in 1991..."
+- **Generated Question**: "Who created Python?"
+- **Generated Answer**: "Guido van Rossum"
+
+Below is the code in LangChain for synthetic QA generation:
+
+```python
+from pydantic import BaseModel, Field
+from langchain.output_parsers import PydanticOutputParser
+import random
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+
+class QuestionAnswerOutput(BaseModel):
+    factoid_question: str = Field(description="your factoid question")
+    answer: str = Field(description="your answer to the factoid question")
+
+question_generation_prompt_template = """
+Your task is to write a factoid question and an answer given a context.
+Your factoid question should be answerable with a specific, concise piece of factual information from the context.
+Your factoid question should be formulated in the same style as questions users could ask in a search engine.
+This means that your factoid question MUST NOT mention something like "according to the passage" or "context".
+
+Provide your answer as follows:
+{format_instructions}
+
+Now here is the context.
+Context: {context}\n
+"""
+
+question_answer_output_parser = PydanticOutputParser(pydantic_object=QuestionAnswerOutput)
+
+question_generation_prompt = ChatPromptTemplate.from_template(question_generation_prompt_template).partial(
+        format_instructions=question_answer_output_parser.get_format_instructions()
+    )
+
+llm = ChatOpenAI(model="gpt-4o")
+
+question_generation_chain = question_generation_prompt | llm | question_answer_output_parser
+
+N_GENERATIONS = 10  # Number of QA pairs to generate
+
+question_answer_list = []
+for sampled_context in tqdm(random.sample(documents, N_GENERATIONS)):
+    question_answer_dict = {
+        "context": sampled_context.page_content
+    }
+
+    # Generate factoid question and answer using the LLM chain
+    response = question_generation_chain.invoke({"context": sampled_context})
+
+    # Store the generated question-answer pair
+    question_answer_dict["factoid_question"] = response.factoid_question
+    question_answer_dict["answer"] = response.answer
+    question_answer_list.append(question_answer_dict)
+```
+
+<Image src={DataGen} alt={"Data Generation"} placeholder="blur" />
+
+## Critique Components
+
+Despite the usefulness of automatically generated QA pairs, not all of them will be perfect. Some might be unanswerable given the context, irrelevant to your domain, or otherwise confusing. To handle these issues, you use **critique agents** to rate each question along multiple criteria:
+
+1. **Groundedness**
+2. **Relevance**
+3. **Stand-alone Clarity**
+
+Each critique agent reads the question—and sometimes also the associated context—and provides a rating on a 1 to 5 scale, along with a rationale for its rating.
+
+### Groundedness
+
+**Definition:**
+
+Groundedness measures how well a generated question is directly and unambiguously answerable from the provided context alone. A grounded question:
+
+- Does not require external information not present in the snippet.
+- Can be answered precisely with the snippet (no guesswork or general knowledge needed beyond what the context snippet provides).
+
+**Why It Matters:**
+
+For RAG evaluation, we want to test the system’s ability to retrieve relevant text and correctly extract or generate the answer. If a question can’t be answered from the snippet provided, it’s **not grounded** and thus not suitable for testing this retrieval-based approach.
+
+**Example:**
+
+- **Context (excerpt):** “The Hugging Face Hub is a platform that allows users to share machine learning models.”
+- **Question:** “What platform allows users to share machine learning models?”
+- **Evaluation:** The question is clearly answerable from the context: “The Hugging Face Hub.” This would likely receive a **5**.
+
+**Counter example:**
+
+- **Context (excerpt):** “PyTorch Lightning is a framework to organize PyTorch code.”
+- **Question:** “When was PyTorch Lightning founded, and who invented it?”
+- **Evaluation:** The snippet doesn’t mention any founding date or inventor. This question is **unanswerable**, so it gets a **1**.
+
+Below is the code in LangChain for groundedness evaluation:
+
+```python
+from pydantic import BaseModel, Field, conint
+from langchain.output_parsers import PydanticOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+import pandas as pd
+
+# Define a Pydantic model to structure the output of the LLM response
+class GroundednessOutput(BaseModel):
+    evaluation: str = Field(description="your rationale for the rating, as a text")
+    rating: conint(ge=1, le=5) = Field(description="your rating, as a number between 1 and 5")
+
+
+# Define a prompt template for evaluating question-groundedness based on a given context
+question_groundedness_critique_prompt_template = """
+You will be given a context and a question.
+Your task is to provide a 'rating' scoring how well one can answer the given question unambiguously with the given context.
+Give your answer on a scale of 1 to 5 and a score rubric representing a evaluation criteria are given below.
+1. The context provides **no** information to answer the question.
+2. The question is **barely** answerable, or mostly relies on guesswork.
+3. Some partial answer can be derived, but **ambiguous** or incomplete.
+4. Mostly answerable from the context, but with **minor ambiguities**.
+5. **Completely** and **unambiguously** answerable from the context.
+
+Provide your answer as follows:
+{format_instructions}
+
+You MUST provide values for 'Evaluation:' and 'rating:' in your answer.
+
+Now here are the question and context.
+
+Question: {question}\n
+Context: {context}\n
+"""
+
+# Define a parser to structure the output from the language model based on the Pydantic model
+groundedness_critique_output_parser = PydanticOutputParser(pydantic_object=GroundednessOutput)
+
+question_groundedness_critique_prompt = ChatPromptTemplate.from_template(
+    question_groundedness_critique_prompt_template).partial(
+        format_instructions=groundedness_critique_output_parser.get_format_instructions()
+    )
+
+
+llm = ChatOpenAI(model="gpt-4o")
+
+# Create a processing chain that takes the prompt, runs it through the LLM, and parses the output
+question_groundedness_critique_chain = question_groundedness_critique_prompt | llm | groundedness_critique_output_parser
+
+groundedness_critique_output = []
+# Iterate through the dataset to evaluate groundedness for each sample
+for sample in eval_dataset.iterrows():
+    sample_id = sample[1].sample_id
+    context = sample[1].context
+    question = sample[1].factoid_question
+    # Invoke the processing chain with the question and context
+    response = question_groundedness_critique_chain.invoke({"context":context,"question":question})
+    groundedness_critique_output.append([sample_id, response.evaluation, response.rating])
+groundedness_critique_df = pd.DataFrame(groundedness_critique_output)
+groundedness_critique_df.columns = ['sample_id','groundedness_evaluation','groundedness_rating']
+```
+
+<Image src={Groundness} alt={"groundness"} placeholder="blur" />
+
+### Relevance
+
+**Definition:**
+
+Relevance gauges how useful or valuable a question is to the target audience—Let’s assume here target audience is, **machine learning developers** building NLP applications with the Hugging Face ecosystem (or a similar environment).
+
+**Why It Matters:**
+
+Even if a question is grounded (i.e., answerable from the snippet), it might be so trivial or niche that it doesn’t reflect real developer needs. For example, “What color is the heading text in the site’s CSS?” might be too tangential for an ML audience.
+
+**Example:**
+
+- **Question:** “How do you load a transformer model from the Hugging Face Hub?”
+- **Evaluation:** This is **very** relevant to ML developers who use Hugging Face. Likely a **5** rating.
+
+**Counter example:**
+
+- **Question:** “Which part of the text is bolded in the third paragraph of the documentation?”
+- **Evaluation:** This question, while possibly answerable, does not significantly help an ML developer with typical tasks. It would receive a low rating, such as **1** or **2**.
+
+Below is the prompt for relevance evaluation:
+
+```python
+question_relevance_critique_prompt = """
+You will be given a question.
+Your task is to provide a 'rating' representing how useful this question can be to machine learning developers building NLP applications with the Hugging Face ecosystem.
+Give your answer on a scale of 1 to 5 and a score rubric representing a evaluation criteria are given below.
+1. **Not** relevant at all to machine learning or NLP developers.
+2. Very **marginal** connection to developer interest.
+3. Possibly relevant, but not strongly aligned with practical ML tasks.
+4. **Quite** relevant to typical ML or NLP concerns.
+5. **Extremely** relevant; an important question for typical tasks or knowledge in this space.
+
+Provide your answer as follows:
+{format_instructions}
+
+You MUST provide values for 'evaluation' and 'rating' in your answer.
+
+Now here is the question.
+
+Question: {question}
+"""
+```
+
+### Stand-alone Clarity
+
+**Definition:**
+
+This criterion checks whether the question is understandable **on its own**, without relying on an unspecified “article,” “context,” or “document.”
+
+A **stand-alone** question:
+
+- Can be understood by someone with domain knowledge (and potentially with internet access) **without** referencing statements like “in this blog post” or “in the context above.”
+- Doesn’t require you to have read the entire snippet to parse the question’s meaning.
+
+**Why It Matters:**
+
+A question that references “the context” or “the guide” is not self-sufficient for real-world usage, because we typically store questions independently in an evaluation set. We want the question to be meaningful to a person or system that simply sees:
+
+“Question: **_some question_**”
+
+“Answer: **_some answer_**.”
+
+**Example:**
+
+- **Question:** “What is the main functionality of Gradio?”
+- **Evaluation:** Even though “Gradio” is a specialized tool, a developer with knowledge of ML tools (or simple internet access) can interpret this question. It does not reference a specific context snippet. This is likely **5** (fully stand-alone).
+
+**Counter example:**
+
+- **Question:** “According to the passage, which function is imported at the beginning?”
+- **Evaluation:** The question is incomplete outside that specific “passage.” It references something only found in the immediate text. This is **not** stand-alone and may receive a **1** or **2**.
+
+Below is the prompt for standalone clarity evaluation:
+
+```python
+question_standalone_critique_prompt = """
+You will be given a question.
+Your task is to provide a 'rating' representing how context-independent this question is.
+Give your answer on a scale of 1 to 5 and a score rubric representing a evaluation criteria are given below.
+1. The question **fully** depends on external referencing to be understood (e.g., “What function is used in the figure above?”) or refers
+to a particular setting, like 'in the context' or 'in the document'
+2. The question is **mostly** about the specific snippet or blog without general sense.
+3. The question is somewhat decipherable, but references local context.
+4. The question is almost stand-alone, with **minor** references to a local context.
+5. The question is **completely** self-contained and interpretable on its own. The questions can contain obscure technical nouns or
+acronyms like Gradio, Hugging Face. it must simply be clear to an operator with access to documentation what the question is about
+
+Provide your answer as follows:
+{format_instructions}
+
+You MUST provide values for 'evaluation' and 'rating' in your answer.
+
+Now here is the question.
+
+Question: {question}
+"""
+```
+
+### Filtering Logic
+
+After obtaining the three scores (groundedness, relevance, and stand-alone clarity), you can decide on thresholds. For example:
+
+- **Groundedness** ≥ 4
+- **Relevance** ≥ 3
+- **Stand-alone** ≥ 4
+
+Any QA pair failing to meet **any** of these thresholds would be discarded. Only those that score well across all criteria are included in the final dataset.
+
+Now our synthetic evaluation dataset is complete! We can evaluate different RAG systems on this evaluation dataset.
+
+## Conclusion
+
+In a Retrieval-Augmented Generation setup, producing synthetic QA pairs can accelerate dataset creation but necessitates robust filtering. Critique agents help automate this filtering by scoring each QA pair on groundedness, relevance, and stand-alone clarity. By applying appropriate thresholds on these scores, you ensure that only high-quality, contextually accurate, and well-formed QA pairs make their way into your training or evaluation dataset.
