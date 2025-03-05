@@ -110,4 +110,9 @@
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://vatsal.website/blogs/annoy-and-efficient-approximate-nearest-neighbor-algorithm/</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

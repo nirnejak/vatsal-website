@@ -25,6 +25,10 @@ const blogs = [
     title: "RAG: Enhancing Language Models with External knowledge",
   },
   {
+    slug: "annoy-and-efficient-approximate-nearest-neighbor-algorithm",
+    title: "Annoy and Approximate Nearest Neighbor Algorithm",
+  },
+  {
     slug: "the-react-agent-framework",
     title: "The ReACT Agent Framework",
   },
