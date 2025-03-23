@@ -7,7 +7,7 @@ interface MetadataArgs {
   image?: string
 }
 
-const config = {
+export const config = {
   baseUrl: "https://vatsal.website", // Don't include slash at the end
   applicationName: "Vatsal Dhameliya",
   creator: "Vatsal Dhameliya",

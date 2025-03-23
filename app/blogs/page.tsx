@@ -7,15 +7,13 @@ import { ArrowRight } from "akar-icons"
 
 import getMetadata from "@/utils/metadata"
 
-import ComingSoon from "@/components/molecules/ComingSoon"
-
 export const metadata: Metadata = getMetadata({
   path: "/blogs/",
   title: "Blogs | Vatsal Dhameliya - AI Scientist",
   description: "Blogs and articles on AI and tech written by Vatsal Dhameliya",
 })
 
-const blogs = [
+export const blogs = [
   {
     slug: "evaluation-metrics-for-synthetic-qa-datasets-in-rag-evaluation",
     title: "Evaluation Metrics for Synthetic QA Datasets in RAG Evaluation",
