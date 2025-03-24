@@ -1,12 +1,12 @@
 import { MetadataRoute } from "next"
 
-import { blogs } from "@/app/blogs/page"
+import { allBlogs } from "@/app/blogs/data"
 import { config } from "@/utils/metadata"
 
 const { baseUrl } = config
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const blogPosts = blogs.map((post) => ({
+  const blogPosts = allBlogs.map((post) => ({
     url: `${baseUrl}/blogs/${post.slug}/`,
     lastModified: new Date(),
     changeFrequency: "monthly" as const,
