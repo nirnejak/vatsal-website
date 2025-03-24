@@ -26,7 +26,7 @@ const BlogsPage: React.FC = () => {
           & Articles.
         </span>
       </h1>
-      <div className="space-y-2.5 text-neutral-800 dark:text-neutral-400 mb-24">
+      <div className="mb-24 space-y-2.5 text-neutral-800 dark:text-neutral-400">
         {allBlogs.map((blog, index) => (
           <div key={index}>
             <Link
