@@ -2,6 +2,10 @@ import Image from "next/image"
 import getMetadata from "@/utils/metadata"
 
 import CoverImage from "./banner.jpg"
+import lora from "./LoRA.png"
+import tmi from "./tm_identify.png"
+import tmemb from "./tm_embedding.png"
+import tmqv from "./tm_qv.png"
 
 export const metadata = getMetadata({
   path: "/blogs/lora-low-rank-adaptation-for-efficient-fine-tuning/",
@@ -75,8 +79,11 @@ Let’s break down the various components and steps of LoRA. We’ll focus on a 
 
 - **Original weight matrix**: $W \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$
 - **LoRA decomposition**: $\Delta W = B A$
+
   - $B \in \mathbb{R}^{d_{\text{out}} \times r}$
   - $A \in \mathbb{R}^{r \times d_{\text{in}}}$
+
+  <Image src={lora} alt={"LoRA"} placeholder="blur" />
 
 Here, $r$ is a hyperparameter chosen such that $r \ll d_{\text{in}}$ and $r \ll d_{\text{out}}$. Typically, $r$ might be set to something quite small (e.g., 1, 2, 4, or 8) relative to the dimensions of the layer.
 
@@ -122,9 +129,225 @@ During backpropagation:
 
 Therefore, memory usage is significantly reduced. We do not need to store large gradients or optimizers for $W$. Instead, we only store and update the smaller gradients for $A$ and $B$.
 
-### Parameter Saving
+## Balancing Adaptation and Stability in LoRA
+
+When we incorporate LoRA into a model, the full update can be scaled using a factor $\alpha$:
+
+$$
+\Delta W = \frac{\alpha}{r} B A
+$$
+
+### **Impact of Alpha ($\alpha$)**
+
+- **If $\alpha$ is too large**
+
+  LoRA modules may overpower the original pre-trained weights, leading to potential **overfitting** or **instability**.
+
+- **If $\alpha$ is too small**
+
+  The adaptation may be **too weak**, making it difficult to learn new tasks effectively.
+
+- **Common practice**
+
+  Values like **8 or 16** are often chosen for **moderate adaptation**.  
+  The optimal $\alpha$ may depend on $$r$$, the model size, and the complexity of the fine-tuning task.
+
+### **Striking the Right Balance: The Effect of** $\frac{1}{r}$
+
+- **Ensuring Rank-Invariant Updates**
+
+  The trainable matrices **A** and **B** have dimensions that scale with $r$. Without normalization, increasing **r** would naturally result in **larger** updates. Dividing by $r$ ensures that the **overall magnitude of the update (**$\Delta W$**) remains consistent**, regardless of the chosen rank.
+
+- **Preventing Training Instability**
+
+  If we scale the update by $\alpha$ without dividing by $r$, increasing $r$ would cause $\Delta W$ to become arbitrarily large, potentially leading to unstable training dynamics and poor convergence.
+
+- **Balancing Adaptation and Stability**
+
+  LoRA aims to introduce **efficient fine-tuning** without disrupting the pre-trained model’s existing knowledge. The $\alpha / r$ scaling ensures that updates are **large enough** to learn new patterns but **not so large** that they overshadow or destabilize the original model.
+
+## Where to Inject LoRA ?
+
+The `target_modules` parameter (specific to Hugging Face’s PEFT library) is used to **specify which modules inside the neural network should be modified by LoRA.**
+
+In transformer-based architectures like GPT, BERT, or T5, certain submodules (like the query, key, value, or dense layers) are responsible for most of the computation and learning capacity. Applying LoRA to **only these parts** allows efficient adaptation while keeping the rest of the model untouched.
+
+<table>
+  <thead>
+    <tr>
+      <th>Model Type</th>
+      <th>Common target_modules values</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GPT-style</td>
+      <td>`["q_proj", "v_proj"]`</td>
+    </tr>
+    <tr>
+      <td>BERT-style</td>
+      <td>`["query", "value"]`</td>
+    </tr>
+    <tr>
+      <td>LLaMA</td>
+      <td>`["q_proj", "k_proj", "v_proj", "o_proj"]`</td>
+    </tr>
+  </tbody>
+</table>
+
+While LoRA is most commonly applied to **attention** and **feed-forward** layers, it can also be applied to **embedding layers.** This is particularly useful when:
+
+- Introducing **domain-specific terms** (e.g., medical, legal, financial vocabularies).
+- Adapting to **multilingual datasets** where token semantics may differ subtly.
+- The **pre-trained embeddings are misaligned** with the task-specific distribution.
+
+### Inspecting the Model to Identify Target Modules
+
+A quick way to see which modules could be good candidates for LoRA is to print out the model architecture. Below is a short snippet using **BERT** for sequence classification. You can inspect the module names (e.g., `query`, `value`, etc.) to decide which parts you want to train via LoRA:
+
+```python
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+
+model_name = "bert-base-uncased"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
+
+# Enable gradient checkpointing and disable caching
+# (optional but common for LoRA training to save memory)
+model.gradient_checkpointing_enable()
+model.config.use_cache = False
+
+# Print the full model to inspect its submodules
+print(model)
+```
+
+This output lets you pinpoint which submodules (e.g., `BertSelfAttention.query`, `BertSelfAttention.value`, or even embeddings like `word_embeddings`) you might include in your `target_modules` list.
+
+<Image src={tmi} alt={"LoRA"} placeholder="blur" />
+
+For a few standard and well-known architectures, target modules are already defined in the [PEFT library implementation of LoRA](https://github.com/huggingface/peft/blob/2ee02af9d445cda0410c43a6e72160df59ad971c/src/peft/utils/constants.py#L85).
+
+### Applying LoRA and Verifying Changes
+
+Once you know the names of the modules you want to adapt, you can apply LoRA using the PEFT library. Below is an example configuration that applies LoRA to **word embedding, query, and value** layers in the BERT model:
+
+```python
+from peft import get_peft_model, LoraConfig, TaskType
+
+lora_config = LoraConfig(
+    r=8,                          # Low-rank dimension
+    lora_alpha=32,                # Scaling factor
+    target_modules=["word_embeddings", "query", "value"],
+    lora_dropout=0.1,
+    bias="none",
+    task_type=TaskType.SEQ_CLS
+)
+
+model = get_peft_model(model, lora_config)
+
+# Print the model again to see how LoRA modules are added
+print(model)
+```
+
+When you print the model after applying `get_peft_model`, you’ll see additional LoRA-related layers attached to the original modules you specified. These added layers represent the **low-rank adapters** that enable you to fine-tune only a small fraction of your network parameters.
+
+<Image src={tmemb} alt={"LoRA"} placeholder="blur" />
+
+<Image src={tmqv} alt={"LoRA"} placeholder="blur" />
+
+**`lora_magnitude_vector`** comes from an optional feature to train a magnitude or scaling vector for LoRA. In many configurations it remains unused (hence an empty `ModuleDict`). It’s simply there to support certain LoRA variants.
+
+When applying LoRA using `get_peft_model`, you need to specify the **task type** so that PEFT knows:
+
+- Where to inject LoRA adapters (e.g., which modules),
+- How to prepare the model for that task (e.g., classification vs. generation).
+
+Supported `task_type` values (as of PEFT v0.9+):
+
+<table>
+  <thead>
+    <tr>
+      <th>Task Type</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>`TaskType.CAUSAL_LM`</td>
+      <td>Causal Language Modeling (e.g., GPT-2)</td>
+    </tr>
+    <tr>
+      <td>`TaskType.SEQ_2_SEQ_LM`</td>
+      <td>Sequence-to-Sequence Language Modeling (e.g., T5, BART)</td>
+    </tr>
+    <tr>
+      <td>`TaskType.SEQ_CLS`</td>
+      <td>Sequence Classification (e.g., BERT, RoBERTa for sentiment)</td>
+    </tr>
+    <tr>
+      <td>`TaskType.TOKEN_CLS`</td>
+      <td>Token Classification (e.g., NER tasks)</td>
+    </tr>
+    <tr>
+      <td>`TaskType.MULTIPLE_CHOICE`</td>
+      <td>Multiple Choice QA tasks (e.g., SWAG, RACE)</td>
+    </tr>
+    <tr>
+      <td>`TaskType.SPEECH_SEQ_2_SEQ`</td>
+      <td>Speech to text models (e.g., Whisper)</td>
+    </tr>
+    <tr>
+      <td>`TaskType.IMAGE_CLASSIFICATION`</td>
+      <td>Vision models (e.g., ViT for image classification)</td>
+    </tr>
+    <tr>
+      <td>`TaskType.QUESTION_ANSWERING`</td>
+      <td>Extractive QA (e.g., SQuAD with BERT)</td>
+    </tr>
+    <tr>
+      <td>`TaskType.TRANSLATION`</td>
+      <td>Text translation tasks</td>
+    </tr>
+    <tr>
+      <td>`TaskType.OTHER`</td>
+      <td>For custom or unknown task types — lets you handle it manually</td>
+    </tr>
+  </tbody>
+</table>
+
+## Parameter Saving
 
 LoRA makes it possible to save just the two matrices $A$ and $B$ (and related optimizer states) instead of the entire model. When deployed, you can combine $\Delta W = B A$ with $W$ on-the-fly (or keep them separate, depending on the framework). This results in very compact “adapters” that can be swapped in to adapt a single large pre-trained model to various tasks.
+
+```python
+# After fine-tuning, save LoRA parameters only
+model.save_pretrained("./lora_adapter")
+
+# Loading LoRA Parameters into the original model later
+from transformers import AutoModelForSequenceClassification
+from peft import PeftModel
+
+model_name = "bert-base-uncased"
+base_model = AutoModelForSequenceClassification.from_pretrained(model_name)
+model_with_lora = PeftModel.from_pretrained(base_model, "./lora_adapter")
+
+# The model now has the LoRA adapters loaded and is ready for inference or further fine-tuning.
+```
+
+If you need to rapidly switch between multiple tasks, it can be useful to keep LoRA adapters separate and inject them at inference. However, if you only need to serve one specialized model, a one-time merge can drastically streamline your production code.
+
+```python
+# Merge LoRA adapters into the base model's weights
+merged_model = model_with_lora.merge_and_unload()
+
+# Save the combined model
+merged_model.save_pretrained("./merged_model")
+
+# Load the merged model directly later
+combined_model = AutoModelForSequenceClassification.from_pretrained("./merged_model")
+```
+
+This method provides additional efficiency during deployment by eliminating the adapter overhead completely.
 
 ## Advantages and Limitations
 
