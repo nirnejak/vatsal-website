@@ -6,7 +6,7 @@ import rehypeKatex from "rehype-katex"
 import remarkMath from "remark-math"
 
 const nextConfig: NextConfig = {
-  trailingSlash: true,
+  // trailingSlash: true,
   reactStrictMode: true,
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
 }
