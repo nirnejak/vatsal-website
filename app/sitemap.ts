@@ -8,7 +8,7 @@ const { baseUrl } = config
 export const dynamic = "force-dynamic"
 
 export const headers = {
-  "Content-Type": "application/xml",
+  "Content-Type": "text/xml",
 }
 
 export default function sitemap(): MetadataRoute.Sitemap {

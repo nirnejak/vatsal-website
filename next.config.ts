@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/sitemap.xml",
-        headers: [{ key: "Content-Type", value: "application/xml" }],
+        headers: [{ key: "Content-Type", value: "text/xml" }],
       },
     ]
   },
