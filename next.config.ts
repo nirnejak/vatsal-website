@@ -9,15 +9,6 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   reactStrictMode: true,
   pageExtensions: ["js", "jsx", "md", "mdx", "ts", "tsx"],
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async headers() {
-    return [
-      {
-        source: "/sitemap.xml",
-        headers: [{ key: "Content-Type", value: "text/xml" }],
-      },
-    ]
-  },
 }
 
 const withMDX = createMDX({

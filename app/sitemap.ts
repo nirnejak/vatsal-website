@@ -7,10 +7,6 @@ const { baseUrl } = config
 
 export const dynamic = "force-dynamic"
 
-export const headers = {
-  "Content-Type": "text/xml",
-}
-
 export default function sitemap(): MetadataRoute.Sitemap {
   const blogPosts = allBlogs.map((post) => ({
     url: `${baseUrl}/blogs/${post.slug}/`,
