@@ -30,7 +30,7 @@ const BlogsPage: React.FC = () => {
         {allBlogs.map((blog, index) => (
           <div key={index}>
             <Link
-              href={`/blogs/${blog.slug}`}
+              href={`/blogs/${blog.slug}/`}
               className="group flex items-center gap-2"
             >
               <p className="font-medium">{blog.title}</p>
