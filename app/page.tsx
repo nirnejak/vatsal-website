@@ -54,7 +54,7 @@ const HomePage: React.FC = () => {
             Senior AI Scientist @
           </span>{" "}
           <span className="font-semibold text-neutral-800 dark:text-neutral-300">
-            Jupiter Money
+            JPMorgan Chase & Co.
           </span>
           . With a degree in{" "}
           <span className="font-semibold text-neutral-800 dark:text-neutral-300">

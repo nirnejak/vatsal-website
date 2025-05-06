@@ -25,9 +25,14 @@ const WorkPage: React.FC = () => {
         </h1>
         <div className="space-y-2.5 text-neutral-800 dark:text-neutral-400">
           <div className="flex items-center gap-2">
+            <p className="font-medium">JPMorgan Chase & Co.</p>
+            <div className="flex-1 border-t border-dashed border-neutral-300 dark:border-neutral-800" />
+            <p>2025 - Now</p>
+          </div>
+          <div className="flex items-center gap-2">
             <p className="font-medium">Jupiter Money</p>
             <div className="flex-1 border-t border-dashed border-neutral-300 dark:border-neutral-800" />
-            <p>2022 - Now</p>
+            <p>2022 - 2025</p>
           </div>
           <div className="flex items-center gap-2">
             <p className="font-medium">ZS Associates</p>
