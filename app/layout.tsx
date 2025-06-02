@@ -32,7 +32,10 @@ interface Props {
 const RootLayout: React.FC<Props> = ({ children }) => {
   return (
     <ViewTransitions>
-      <html lang="en">
+      <html
+        lang="en"
+        className={classNames(sansFont.variable, monoFont.variable)}
+      >
         <head>
           <script
             defer
@@ -41,13 +44,7 @@ const RootLayout: React.FC<Props> = ({ children }) => {
           />
         </head>
 
-        <body
-          className={classNames(
-            sansFont.variable,
-            monoFont.variable,
-            "overflow-x-hidden bg-neutral-50 dark:bg-neutral-900 font-sans"
-          )}
-        >
+        <body className="overflow-x-hidden bg-neutral-50 dark:bg-neutral-900 font-sans">
           <Navbar />
           {children}
 

@@ -1,6 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@plugin "@tailwindcss/typography";
+
+* {
+  @apply antialiased;
+  text-rendering: geometricPrecision;
+}
 
 ::-moz-selection {
   @apply bg-neutral-600 text-white;
@@ -12,8 +17,9 @@
   -webkit-text-fill-color: white;
 }
 
-* {
-  -webkit-font-smoothing: antialiased;
+@theme {
+  --font-sans: var(--sans-font);
+  --font-mono: var(--mono-font);
 }
 
 article > img:first-of-type {
