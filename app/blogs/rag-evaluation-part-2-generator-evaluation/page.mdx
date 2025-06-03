@@ -1,0 +1,624 @@
+import Image from "next/image"
+import getMetadata from "@/utils/metadata"
+
+import CoverImage from "./banner.png"
+
+export const metadata = getMetadata({
+  path: "/blogs/rag-evaluation-part-2-generator-evaluation/",
+  title: "RAG Evaluation Part 2: Generator Evaluation",
+  description:
+    "Learn to measure the generator's quality in RAG workflows using faithfulness, relevancy, and noise metrics.",
+  image: CoverImage.src,
+})
+
+# RAG Evaluation Part 2: Generator Evaluation
+
+<span className="text-base leading-snug text-neutral-500">
+  Learn to measure the generator's quality in RAG workflows using faithfulness,
+  relevancy, and noise metrics.
+</span>
+
+<Image src={CoverImage} alt={"RAG Evaluation"} placeholder="blur" />
+
+Retrieval-Augmented Generation (RAG) combines information retrieval with generative models to produce accurate, factually-grounded answers. While retrieval quality ensures relevant context is surfaced, it is equally critical to evaluate the **generator component**—how effectively the model uses retrieved context to produce accurate, faithful, and relevant answers.
+
+## **Why is Generator Evaluation Needed?**
+
+Evaluating generator in RAG is crucial because it directly impacts user trust and practical utility:
+
+- **Faithfulness**: Does the generated answer correctly reflect information present in the retrieved context?
+- **Answer Relevance**: Does the response adequately address the user's query?
+- **Noise Sensitivity**: How robust is the generation process to irrelevant or misleading retrieved contexts?
+
+Poor evaluation in these dimensions leads to inaccurate, misleading responses, causing mistrust and poor user experience.
+
+## Key Components of Generator Evaluation
+
+### Faithfulness
+
+Faithfulness measures how accurately the generated response reflects information available in the retrieved contexts.It verifies **alignment** between the generated text and retrieved information, avoiding hallucinations.
+
+A response is considered **faithful** if all its claims can be supported by the retrieved context.
+
+$$
+\text{Faithfulness} = \frac{\text{Number of supported claims}}{\text{Total number of claims in response}}
+$$
+
+### Example
+
+Consider the following **response** by generator:
+
+> Einstein developed the theory of relativity in 1905 while working at the Swiss patent office in Bern.
+
+This answer can be broken into four distinct factual **claims**:
+
+<table>
+  <thead>
+    <tr>
+      <th>Claim ID</th>
+      <th>Claim</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">C1</td>
+      <td>Einstein developed the theory of relativity</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C2</td>
+      <td>He developed it in 1905</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C3</td>
+      <td>He was working at the Swiss patent office</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C4</td>
+      <td>The office was in Bern</td>
+    </tr>
+  </tbody>
+</table>
+
+Assume the retriever returned the following **contexts**:
+
+<table>
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Retrieved Context</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">1</td>
+      <td>
+        "Einstein published the theory of relativity in a groundbreaking 1905
+        paper."
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">2</td>
+      <td>
+        "During the early 1900s, Einstein worked at a government office
+        evaluating patents."
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">3</td>
+      <td>
+        "Einstein later moved to Berlin to join the Prussian Academy of
+        Sciences."
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">4</td>
+      <td>
+        "He studied physics in Zurich before becoming one of the most
+        influential scientists."
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+Now we match each claim against the retrieved contexts:
+
+<table>
+  <thead>
+    <tr>
+      <th>Claim</th>
+      <th>Supporting Chunk(s)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">C1: Einstein developed the theory of relativity</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C2: He developed it in 1905</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C3: He was working at the Swiss patent office</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C4: The office was in Bern</td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+
+In this scenario, 3 out of 4 claims are supported by retrieved contexts, yielding:
+
+$$
+\text{Faithfulness} = \frac{3}{4} = 0.75
+$$
+
+**Then what is the difference between Faithfulness and Context Recall?**
+
+In short, the only difference is that **Faithfulness** is calculated for the generated response, while in **Context Recall**, a gold reference answer is available and we are checking the quality of the retrieved context.
+
+**Context Recall** checks for coverage: _Are all factual claims required to answer the question present somewhere in the retrieved chunks?_ On the other hand, **Faithfulness** checks for groundedness: _Are all factual claims in the generated answer supported—or at least not contradicted—by the retrieved chunks?_
+
+You can use the same prompt that we used in the Context Recall section ([part 1 of this blog series](/blogs/rag-evaluation-part-1-retriever-evaluation)) for both claim extraction and claim-to-context attribution.
+
+## **Response Relevancy**
+
+Response relevancy measures whether the generated response actually addresses the user's query, independent of factual correctness. It evaluates semantic alignment between the question intent and the generated response.
+
+### Algorithm
+
+1. **Generate _N_ questions from the answer**
+
+   The first step is to reverse-engineer the answer to create a set of questions that could be answered by the response itself. These artificial questions are meant to reflect the topics and details covered in the generated answer. Typically, an LLM is used to produce these questions.
+
+   **Sample prompt to generate artificial questions:**
+
+   ```python
+   You are a question generation expert. Given a response, generate
+   {{ N }} artificial questions that can be answered directly by this response.
+   Response: {{ response }}
+   Return the questions as a list of string.
+   ```
+
+2. **Embed**
+   - $E_q$ – embedding of the original user question.
+   - $E_{g_i}$ – embedding of each generated question $g_i$.
+3. **Cosine similarity**
+
+   $$
+   s_i = \cos\!\bigl(E_q,\;E_{g_i}\bigr)
+   $$
+
+4. **Average**
+
+   $$
+    \text{Response Relevancy} = \frac{1}{N}\sum_{i=1}^{N} s_i
+   $$
+
+   The score is usually in $[0,1]$ but can range $[-1,1]$.
+
+   ### Example
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">User question</td>
+      <td>“When did Apollo 11 land on the Moon?”</td>
+    </tr>
+    <tr>
+      <td class="font-bold">Answer</td>
+      <td>“Apollo 11 landed on 20 July 1969.”</td>
+    </tr>
+    <tr>
+      <td class="font-bold">Generated questions</td>
+      <td>
+        1. “On what date did Apollo 11 land?”
+        <br />
+        2. “When did the Apollo 11 lunar landing occur?”
+        <br />
+        3. “What was the landing date of Apollo 11?”
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">Cosine sims</td>
+      <td>0.93, 0.91, 0.88</td>
+    </tr>
+    <tr>
+      <td class="font-bold">Score</td>
+      <td>$(0.93+0.91+0.88)/3 = 0.906$</td>
+    </tr>
+  </tbody>
+</table>
+
+Because the answer is perfectly on-topic, the metric returns a **high** relevancy score (≈ 0.91).
+
+But consider a scenario where model’s response is a generic “I don’t know,” it might still appear **topic-aligned** because the model’s question-generation step often simply **echoes the user’s question back**—almost word-for-word because there’s no additional information for the LLM to work with, the only real **hint of context** is the user’s original question, the model essentially **repeats or rephrases** it.
+
+In this situation, the cosine similarity between the user’s original question and the newly generated questions can be **very high (close to 1)**.
+
+This artificially **boosts the relevancy score**, making it seem like the answer is excellent—even though, in reality, the response doesn’t provide any useful information. So, while the metric’s algorithm sees perfect alignment in the wording, it’s actually being **tricked by the repetition** rather than reflecting true, helpful content.
+
+### Example
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">User question</td>
+      <td>
+        “Who wrote <em>War and Peace</em>?”
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">Answer</td>
+      <td>“I don’t know.”</td>
+    </tr>
+    <tr>
+      <td class="font-bold">Generated questions</td>
+      <td>
+        1. “Who is the author of <em>War and Peace</em>?”
+        <br />
+        2. “Which writer wrote <em>War and Peace</em>?”
+        <br />
+        3. “Who wrote the novel <em>War and Peace</em>?”
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">Cosines</td>
+      <td>0.96, 0.95, 0.97</td>
+    </tr>
+    <tr>
+      <td class="font-bold">score</td>
+      <td>$0.96$ (near-perfect!)</td>
+    </tr>
+  </tbody>
+</table>
+
+**Take-away:** Matching topics alone isn’t enough to tell whether the response truly answers the question or if it’s simply a polite way of avoiding it.
+
+### Enhanced Algorithm
+
+1.  **Generate _N_ questions from the answer**
+
+    we reverse-engineer the answer to create a set of questions that could be answered by the response itself. These artificial questions should reflect the topics and details present in the response.
+
+    Additionally, we introduce a **non-committal flag**:
+
+    - If the generated response is a generic fallback (e.g., “I don’t know,” “No idea,” “I’m not sure”), we skip or modify the scoring step to **avoid falsely boosting** the relevance metric.
+    - This ensures that when the response contains no useful information, it **doesn’t artificially inflate** the relevancy score.
+
+    **Enhanced sample prompt to generate artificial questions:**
+
+    ````python
+    You are a question generation expert. Given an **answer**, create a
+    question that the answer would directly respond to.Also, identify if the
+    answer is vague or evasive.
+
+    **Task**
+    1. Read the provided **Answer**.
+    2. Generate up to {{ N }} clear questions that the answer would directly
+    address.
+    3. For each question, decide if the answer is non-committal.
+
+    **Non-committal definition**
+    Label as 1 if the answer is vague, hedging, or expresses uncertainty
+    (e.g. “I’m not sure…”, “I don’t know”, “It depends”).
+    Otherwise label as 0.
+
+    **Output**
+    Return a JSON list of objects. Each object must have:
+    - `question`: The generated question
+    - `noncommittal`: 1 or 0
+
+    Example output for 2 questions:
+    ```json
+    [
+      {"question": "Where was Albert Einstein born?", "noncommittal": 0},
+      {"question": "What was his major scientific contribution?", "noncommittal": 0}
+    ]
+
+    ````
+
+2.  **Embed**
+    - $E_q$ – embedding of the original user question.
+    - $E_{g_i}$ – embedding of each generated question $g_i$.
+3.  **Cosine similarity**
+    $$
+    s_i = \cos\!\bigl(E_q,\;E_{g_i}\bigr)
+    $$
+4.  **If any** generated item has `noncommittal = 1`, set
+    $$
+    m = 0;\quad\text{else } m = 1
+    $$
+5.  **Final score**
+    $$
+    \text{Response Relevancy} = m \times \frac{1}{N}\sum_{i=1}^{N}s_i
+    $$
+
+### Examples
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">User question</td>
+      <td>“What is the length of the Nile River?”</td>
+    </tr>
+    <tr>
+      <td class="font-bold">Answer</td>
+      <td>
+        “The Nile is <strong>about 6,650 km</strong> long, though I’d need to
+        verify the exact figure.”
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">Generated questions & flags</td>
+      <td>
+        1. “Approximately how many kilometres long is the Nile?” – 0<br />
+        2. “What is the Nile’s total length?” – 0<br />
+        3. “Exactly how long is the Nile River?” – 1
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">Cosines</td>
+      <td>0.92, 0.90, 0.89 → mean = 0.903</td>
+    </tr>
+    <tr>
+      <td class="font-bold">Gate</td>
+      <td>at least one flag = 1 → $m = 0$</td>
+    </tr>
+    <tr>
+      <td class="font-bold">Final score</td>
+      <td>$0.903 \times 0 = 0$</td>
+    </tr>
+  </tbody>
+</table>
+
+Even though the average cosine is high, the **single hedge** zeros the score—accurately signalling an answer that still leaves the user uncertain.
+
+<table>
+  <thead>
+    <tr>
+      <th>Component</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">User question</td>
+      <td>“Who discovered penicillin?”</td>
+    </tr>
+    <tr>
+      <td class="font-bold">Answer</td>
+      <td>“Alexander Fleming discovered penicillin in 1928.”</td>
+    </tr>
+    <tr>
+      <td class="font-bold">Generated questions & flags</td>
+      <td>
+        1. “Which scientist discovered penicillin?” – 0<br />
+        2. “Who first discovered penicillin in 1928?” – 0<br />
+        3. “Who is credited with the discovery of penicillin?” – 0
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">Cosines</td>
+      <td>0.93, 0.91, 0.92 → mean = 0.92</td>
+    </tr>
+    <tr>
+      <td class="font-bold">Gate</td>
+      <td>no flags = 1 → $m = 1$</td>
+    </tr>
+    <tr>
+      <td class="font-bold">Final score</td>
+      <td>$0.92 \times 1 = 0.92$</td>
+    </tr>
+  </tbody>
+</table>
+
+Because every generated question judges the answer as fully committed (no hedging), the gate lets the average cosine flow through unchanged, yielding a high relevancy score.
+
+## **Noise Sensitivity**
+
+Noise sensitivity evaluates how robust the generated response is when irrelevant or misleading contexts are retrieved. Ideally, even with some noisy contexts, a robust generative model selectively focuses on relevant information and maintains accuracy and faithfulness.
+
+This metric ranges from **0** (perfect accuracy, no hallucinations) to **1** (every claim is an error), revealing how prone a system is to introducing errors, or “noise,” in real-world retrieval-augmented generation (RAG) workflows.
+
+A **lower noise sensitivity** indicates that the system rarely adds spurious details. Conversely, a **higher score** suggests that the system often includes **hallucinated claims** not grounded in the actual answer, even if they seem plausible.
+
+$$
+\text{Noise Sensitivity} = \frac{\text{Number of incorrect claims}}{\text{Total number of claims in response}}
+$$
+
+### **Example**
+
+**User question**
+
+> When was the Eiffel Tower built, and what is it known for?
+
+**Ground truth**
+
+> The Eiffel Tower was built between 1887 and 1889 for the 1889 Exposition Universelle in Paris. It is known for its architectural innovation and as a symbol of France.
+
+**Relevant retrieved contexts**
+
+<table>
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Retrieved Context</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">1</td>
+      <td>
+        "Construction of the Eiffel Tower began in 1887 and was completed in
+        1889 for the Exposition Universelle in Paris."
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">2</td>
+      <td>
+        "The Eiffel Tower is an iconic symbol of France and a marvel of
+        architectural innovation."
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">3</td>
+      <td>
+        "The Eiffel Tower stands 330 meters tall and attracts millions of
+        tourists annually."
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+**Irrelevant retrieved context**
+
+<table>
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Retrieved Context</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">4</td>
+      <td>
+        "The Louvre Museum in Paris is home to the famous painting, the Mona
+        Lisa, and numerous other art treasures."
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+**Generated answer**
+
+> The Eiffel Tower was constructed between 1887 and 1889 for the 1889 Exposition Universelle in Paris. It is renowned for its architectural innovation and is one of the most visited monuments in the world. Interestingly, it was designed by Gustave Eiffel.
+
+**Extract claims from the generated response**
+
+The generated answer contains **four factual claims**:
+
+<table>
+  <thead>
+    <tr>
+      <th>Claim ID</th>
+      <th>Claim</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">C1</td>
+      <td>
+        The Eiffel Tower was constructed between 1887 and 1889 for the 1889
+        Exposition Universelle in Paris.
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">C2</td>
+      <td>It is renowned for its architectural innovation.</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C3</td>
+      <td>It is one of the most visited monuments in the world.</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C4</td>
+      <td>It was designed by Gustave Eiffel.</td>
+    </tr>
+  </tbody>
+</table>
+
+You can use the same prompt that we used in the Context Recall section ([part 1 of this blog series](/blogs/rag-evaluation-part-1-retriever-evaluation)) for claim extraction.
+
+**Determine if each claim is supported by the ground truth**
+
+<table>
+  <thead>
+    <tr>
+      <th>Claim</th>
+      <th>Is Supported by Ground Truth?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">C1</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C2</td>
+      <td>Yes</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C3</td>
+      <td>No (not mentioned in ground truth)</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C4</td>
+      <td>No (not mentioned in ground truth)</td>
+    </tr>
+  </tbody>
+</table>
+
+Total incorrect claims: **2**
+
+Total claims: **4**
+
+sample prompt to check weather the given claim is supported by the ground truth or not:
+
+```python
+"""
+ You are an unbiased fact-checker assistant.
+
+Inputs:
+- question: {{ question }}
+- reference: {{ reference }}
+- claims: {{ claims }}
+
+Your Task:
+You are provided with reference gold truth answer and claim. You need to check
+if given claim is supported by referenc answer or not.For each claim, produce a
+JSON object on a single line:
+{
+  "claim": "<claim text>",
+  "is_correct": <true|false>     # Is it supported by the reference?
+}
+
+Rules:
+- Only use the reference (ground truth) to check claims.
+- Do NOT add any external knowledge.
+- Output must be strict JSON lines (one per claim), with no extra text.
+"""
+```
+
+**Compute Noise Sensitivity**
+
+$$
+\text{Noise Sensitivity} = \frac{2}{4} = 0.5
+$$
+
+This result means that half of the generated claims may be hallucinated—they do not appear in the reference answer.
+
+## **Conclusion**
+
+Evaluating the generator in Retrieval-Augmented Generation (RAG) is as crucial as assessing retrieval quality itself. Metrics like **Faithfulness**, **Response Relevancy**, and **Noise Sensitivity** help ensure that generated answers are not only accurate and grounded but also truly helpful to the user. By systematically verifying if responses are supported by retrieved contexts and if they directly address the question while minimizing hallucinations, we can build more trustworthy and reliable RAG systems.

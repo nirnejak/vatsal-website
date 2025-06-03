@@ -1,5 +1,13 @@
 export const allBlogs = [
   {
+    slug: "rag-evaluation-part-2-generator-evaluation",
+    title: "RAG Evaluation Part 2: Generator Evaluation",
+  },
+  {
+    slug: "rag-evaluation-part-1-retriever-evaluation",
+    title: "RAG Evaluation Part 1: Retriever Evaluation",
+  },
+  {
     slug: "evaluation-metrics-for-synthetic-qa-datasets-in-rag-evaluation",
     title: "Evaluation Metrics for Synthetic QA Datasets in RAG Evaluation",
   },

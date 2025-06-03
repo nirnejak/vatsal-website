@@ -1,0 +1,531 @@
+import Image from "next/image"
+import getMetadata from "@/utils/metadata"
+
+import CoverImage from "./banner.png"
+
+export const metadata = getMetadata({
+  path: "/blogs/rag-evaluation-part-1-retriever-evaluation/",
+  title: "RAG Evaluation Part 1: Retriever Evaluation",
+  description:
+    "A practical guide to measuring retrieval quality in RAG systems, with step-by-step examples of Context Precision and Recall calculations.",
+  image: CoverImage.src,
+})
+
+# RAG Evaluation Part 1: Retriever Evaluation
+
+<span className="text-base leading-snug text-neutral-500">
+  A practical guide to measuring retrieval quality in RAG systems, with
+  step-by-step examples of Context Precision and Recall calculations.
+</span>
+
+<Image src={CoverImage} alt={"RAG Evaluation"} placeholder="blur" />
+
+Retrieval-Augmented Generation (RAG) pipelines rely heavily on the retriever to surface useful context that enables the generator (LLM) to produce grounded, factually accurate responses. Evaluating the retriever independently allows teams to:
+
+- **Diagnose bottlenecks** in the retrieval vs. generation pipeline.
+- **Measure coverage**: Are we surfacing enough context to answer the question?
+- **Prioritize recall vs. precision**: Depending on task needs, different tuning is possible.
+
+In this blog, we explore advanced evaluation techniques for RAG retrievers, focusing on two key metrics—**Context Precision** and **Context Recall**—and demonstrate both traditional and LLM-powered methods to accurately quantify retrieval quality.
+
+## Context Precision
+
+**Precision@K**
+
+This is a classic metric used in information retrieval:
+
+$$
+\text{Precision@K} = \frac{\text{Number of relevant chunks in top-}K}{K}
+$$
+
+This tells us **how many of the top-K retrieved documents are relevant**. However, it **doesn’t differentiate** whether relevant documents appear early or late within the top K. For example, a relevant document at position 1 is treated the same as one at position 5.
+
+**Context Precision@K**
+
+RAG systems benefit from placing **relevant context early in the ranked list**. Context Precision\@K captures this intuition:
+
+$$
+\text{Context Precision@K} = \frac{\sum_{k=1}^{K} \left( \text{Precision@k} \cdot v_k \right)}{\sum_{k=1}^{K} v_k}
+$$
+
+Where:
+
+- $v_k \in \{0,1\}$ indicates if the _k-th_ retrieved chunk is relevant
+- $\text{Precision@k} = \frac{\text{Number of relevant chunks in top-k}}{k}$
+- The denominator sums the number of relevant chunks in top-K
+
+This formula **weights early relevance more heavily**, rewarding systems that not only retrieve the right context but prioritize it correctly.
+
+### **Example 1: High-Quality Retrieval**
+
+<table>
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Context</th>
+      <th>Relevant $v_k$</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">1</td>
+      <td>"Einstein was..."</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td class="font-bold">2</td>
+      <td>"Einstein born..."</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td class="font-bold">3</td>
+      <td>"Physics history..."</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td class="font-bold">4</td>
+      <td>"Relativity theory..."</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td class="font-bold">5</td>
+      <td>"Tesla was..."</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+
+$$
+v = [1, 1, 0, 1, 0]
+$$
+
+$$
+\begin{align*}
+\text{Precision@1} &= 1.0 \\
+\text{Precision@2} &= 1.0 \\
+\text{Precision@3} &= \frac{2}{3} \approx 0.67 \\
+\text{Precision@4} &= \frac{3}{4} = 0.75 \\
+\text{Precision@5} &= \frac{3}{5} = 0.6 \\
+\end{align*}
+$$
+
+$$
+\text{Numerator} = 1.0 \cdot 1 + 1.0 \cdot 1 + 0.67 \cdot 0 + 0.75 \cdot 1 + 0.6 \cdot 0 = 2.75
+$$
+
+$$
+\text{Denominator} = \sum v_k = 3
+$$
+
+$$
+\Rightarrow \text{Context Precision@5} = \frac{2.75}{3} \approx 0.917
+$$
+
+### **Example 2: Poor Retrieval**
+
+<table>
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Context</th>
+      <th>Relevant $v_k$</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">1</td>
+      <td>"Tesla..."</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td class="font-bold">2</td>
+      <td>"Physics..."</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <td class="font-bold">3</td>
+      <td>"Einstein was..."</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td class="font-bold">4</td>
+      <td>"Einstein born..."</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td class="font-bold">5</td>
+      <td>"Relativity..."</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+
+$$
+v = [0, 0, 1, 1, 1]
+$$
+
+$$
+\begin{align*}
+\text{Precision@3} &= \frac{1}{3} \approx 0.33 \\
+\text{Precision@4} &= \frac{2}{4} = 0.5 \\
+\text{Precision@5} &= \frac{3}{5} = 0.6 \\
+\end{align*}
+$$
+
+$$
+\text{Numerator} = 0 + 0 + 0.33 \cdot 1 + 0.5 \cdot 1 + 0.6 \cdot 1 = 1.43
+$$
+
+$$
+\text{Denominator} = \sum v_k = 3
+$$
+
+$$
+\Rightarrow \text{Context Precision@5} = \frac{1.43}{3} \approx 0.477
+$$
+
+Good. Now we know how to calculate **Context Precision@K**, but _how to determine relevance_ — that’s still an interesting question to think about.
+
+There are two main approaches to do this:
+
+1. **Non-LLM based relevance calculation**
+2. **LLM-based relevance calculation**
+
+### **1. Non-LLM based relevance calculation**
+
+In practical deployments, LLM-based relevance judgments can be expensive or slow. A non-LLM alternative is to use string similarity functions to simulate human-labeled relevance.
+
+**Inputs**
+
+- **R = [r₁, r₂, ..., rₖ]**: Retrieved chunks (ranked)
+- **C = [c₁, c₂, ..., cₘ]**: Reference gold chunks
+- **sim(r, c)**: Similarity function (e.g., Levenshtein, cosine, Jaccard)
+- **τ (tau)**: Relevance threshold
+
+**Algorithm**
+
+1. For each retrieved chunk $r_i \in R$, compute:
+   $$
+   \text{score}(r_i) = \max_{c \in C} \text{sim}(r_i, c)
+   $$
+2. If $\text{score}(r_i) \geq \tau$ , then label as relevant:
+   $$
+   v_i = 1
+   $$
+   Else:
+   $$
+   v_i = 0
+   $$
+   This generates a binary vector $v = [v_1, v_2, ..., v_k]$, which can then be plugged into the Context Precision@K formula.
+
+### **2. LLM-based relevance calculation**
+
+While traditional methods use string similarity to assess relevance, they often miss deeper semantic connections. To overcome this, we can use a Large Language Model (LLM) to evaluate whether a retrieved passage is truly helpful in answering the question—based not just on word overlap, but on meaning.
+
+This method involves passing the **retrieved chunk** and the **reference gold chunk** into a structured prompt and letting the LLM act as a semantic judge.
+
+Here’s a sample prompt :
+
+```python
+retrival_relevance_prompt = """
+You are a semantic relevance evaluator. Your task is to assess whether retrieved passage (context) is helpful in answering a user's question.
+
+Respond with 1 if the passage includes important facts, concepts, or clues that
+directly or indirectly support a correct answer.
+Respond with 0 if the passage is unrelated, off-topic, or does not meaningfully
+contribute to answering the question.
+
+Return only the digit 1 or 0. Do not explain your answer.
+
+Question:
+{{question}}
+
+Context:
+{{retrieved_chunk}}
+
+Answer:
+{{response_or_reference}}
+
+Is the passage relevant to the question to derive given answer? (1 = Yes, 0 = No)
+"""
+```
+
+This approach offers more flexibility and depth than rigid rule-based checks, and works particularly well in cases where language is paraphrased, or when retrieved content is conceptually relevant but lexically different.
+
+If you look at the **ragas implementation**, the LLM-based relevance check is further subdivided into two approaches depending on the availability of the ground-truth answer:
+
+1. **LLMContextPrecisionWithReference**
+
+This method assumes access to a _gold answer_ (also called a `reference`). It uses the reference answer as the **target anchor** while evaluating each retrieved chunk for relevance.
+
+2. **LLMContextPrecisionWithoutReference**
+
+This variant is designed for real-world applications where a reference answer may not be available. Instead, it uses the model’s **own generated response** (`response`) as the evaluation anchor.
+
+<table>
+  <thead>
+    <tr>
+      <th>Metric</th>
+      <th>Reference Source</th>
+      <th>LLM Prompt</th>
+      <th>When to Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">LLMContextPrecisionWithReference</td>
+      <td>reference (gold answer)</td>
+      <td>
+        “Was this chunk helpful for arriving at{" "}
+        <strong>the correct answer</strong>?”
+      </td>
+      <td>
+        Offline test-sets where you already know the right answer for every
+        question.
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">LLMContextPrecisionWithoutReference</td>
+      <td>response (model answer)</td>
+      <td>
+        “Was this chunk helpful for arriving at{" "}
+        <strong>the answer the model actually produced</strong>?”
+      </td>
+      <td>
+        Production / live traffic where you don’t have a curated answer but
+        still want a quick signal about retrieval quality.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+## **Context Recall**
+
+RAG systems deal not just with retrieval but with retrieving **chunks that support the reference answer**. This gives rise to a more nuanced metric: **Context Recall**, which works at the level of answer **claims** or **reference contexts**.
+
+There are two primary variants of Context Recall:
+
+1. **LLM-based Context Recall**
+2. **Non-LLM-based Context Recall**
+
+Each variant addresses specific evaluation scenarios based on available resources, such as labeled data or reliance on semantic understanding.
+
+### **1. LLM-based Context Recall**
+
+The **LLM-based approach** removes the need for manual annotation of reference chunks. Instead, it leverages the semantic reasoning capabilities of Large Language Models (LLMs) to determine whether the **reference (or gold-standard) answer** is adequately supported by the retrieved contexts.
+
+**How it works**
+
+- Begin by breaking the reference answer into **atomic factual claims**—these are the smallest units of verifiable information within an answer.
+- For each extracted claim, we verify:
+  - _Is there at least one retrieved chunk of context that directly or indirectly supports this claim?_
+- If at least one relevant chunk exists, the claim is considered **covered** or **supported**.
+  $$
+  \text{Context Recall} = \frac{\text{Number of claims in the reference supported by the retrieved context}}{\text{Total number of claims in the reference}}
+  $$
+  This metric captures the idea of **semantic completeness**, evaluating whether the retrieved contexts collectively cover all essential claims necessary to reconstruct a complete and accurate answer.
+
+### Example
+
+Consider the following **reference answer**:
+
+> "Einstein developed the theory of relativity in 1905 while working at the Swiss patent office in Bern."
+
+This answer can be broken into four distinct factual **claims**:
+
+<table>
+  <thead>
+    <tr>
+      <th>Claim ID</th>
+      <th>Claim</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">C1</td>
+      <td>Einstein developed the theory of relativity</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C2</td>
+      <td>He developed it in 1905</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C3</td>
+      <td>He was working at the Swiss patent office</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C4</td>
+      <td>The office was in Bern</td>
+    </tr>
+  </tbody>
+</table>
+
+Assume the retriever returned the following **contexts**:
+
+<table>
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Retrieved Context</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">1</td>
+      <td>
+        “Einstein published the theory of relativity in a groundbreaking 1905
+        paper.”
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">2</td>
+      <td>
+        “During the early 1900s, Einstein worked at a government office
+        evaluating patents.”
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">3</td>
+      <td>
+        “Einstein later moved to Berlin to join the Prussian Academy of
+        Sciences.”
+      </td>
+    </tr>
+    <tr>
+      <td class="font-bold">4</td>
+      <td>
+        “He studied physics in Zurich before becoming one of the most
+        influential scientists.”
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+Now we match each claim against the retrieved contexts:
+
+<table>
+  <thead>
+    <tr>
+      <th>Claim</th>
+      <th>Supporting Chunk(s)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="font-bold">C1: Einstein developed the theory of relativity</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C2: He developed it in 1905</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C3: He was working at the Swiss patent office</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td class="font-bold">C4: The office was in Bern</td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+
+In this scenario, 3 out of 4 claims are supported by retrieved contexts, yielding:
+
+$$
+\text{Context Recall} = \frac{3}{4} = 0.75
+$$
+
+This result indicates substantial semantic completeness, though not perfect coverage. Notably, the claim regarding the specific location "Bern" was not supported by any retrieved chunk, highlighting a retrieval gap that can be addressed for improved accuracy.
+
+Now the question is how to extract claim and how to decide whether the claim is supported by extracted context.
+
+Prompt for extracting claims from the reference answer:
+
+```python
+claim_extraction_prompt = """
+You are an information analyst. Your task is to extract the smallest possible factual claims from a given answer.
+
+Each claim must:
+- Be a self-contained statement
+- Represent a fact that can be verified or falsified independently
+- Avoid combining multiple ideas into a single sentence
+
+Answer:
+{{ reference }}
+
+Return the claims as a numbered list, one claim per line.
+Do **not** include any explanations, formatting, or extra text.
+"""
+```
+
+This step converts complex answers into verifiable units, setting a clear basis for semantic evaluation.
+
+**Prompt for attributing claims to retrieved contexts:**
+
+```python
+claim_context_attribution_prompt = """
+You are a factual evaluator. Given a claim and a list of retrieved contexts,
+decide whether the claim is directly or indirectly supported by any of the contexts.
+
+Claim:
+{{claim}}
+
+Retrieved Contexts:
+{{retrieved_chunks}}
+
+Does any context support the claim? (1 = Yes, 0 = No)
+"""
+```
+
+With these prompts, the LLM efficiently and consistently evaluates the semantic alignment between claims and contexts, automating and scaling the process.
+
+### 2. Non-LLM based Context Recall
+
+In scenarios where manually annotated reference chunks (gold contexts) are available, a simpler yet stricter approach can be employed. This variant, **Non-LLM-based Context Recall**, directly matches retrieved contexts against known relevant reference contexts using similarity measures.
+
+### Inputs
+
+- **C = [c₁, c₂, …, cₘ]** Reference (gold) chunks ( $m$ chunks)
+- **R = [r₁, r₂, …, rₖ]** Retrieved chunks (ranked)
+- **sim(c, r)** Similarity function (e.g. Levenshtein ratio, ROUGE-L, Jaccard)
+- **τ (tau)** Match threshold in **[0, 1]**
+
+### Algorithm
+
+1. **Match each reference chunk**
+
+   For every reference chunk $c_j \in C$ compute its best match among the retrieved chunks:
+
+   $$
+   \text{max\_sim}(c_j)=\max_{r \in R}\,\text{sim}(c_j,\,r)
+   $$
+
+2. **Decide “recalled” or “missed”**
+
+   $$
+   u_j \;=\;
+   \begin{cases}
+   1 & \text{if } \text{max\_sim}(c_j) \;\ge\; \tau \quad (\text{hit})\\[4pt]
+   0 & \text{otherwise} \quad\quad\quad\;\;\;\;(\text{miss})
+   \end{cases}
+   $$
+
+   The vector $u = [u_1, u_2, …, u_m]$ marks which gold chunks were recovered.
+
+3. **Aggregate**
+   $$
+   \text{Recall} \;=\; \frac{\text{TP}}{\text{TP}+ \text{FN}}
+   \;=\; \frac{\displaystyle\sum_{j=1}^{m} u_j}{m}
+   $$
+   This approach is **harder and more precise** but less flexible, as it relies on exact or near-exact matches rather than semantic interpretations.
+
+This metric is particularly useful for benchmarking systems against standard datasets, where reference contexts have been rigorously annotated.
+
+## Conclusion
+
+Evaluating the retrieval component independently in RAG systems offers invaluable insights, enabling developers and researchers to pinpoint specific strengths and weaknesses. Understanding what's working (and what's not) empowers you to tune your retrieval strategies effectively. The better your retriever, the smarter and more reliable your AI answers become. By employing metrics such as **Context Precision@K** and **Context Recall**, people can gain a nuanced understanding of retrieval quality from both classical information retrieval and semantic perspectives. Keep measuring, keep tweaking, and your RAG system will deliver consistently solid results.
+
+### Next Steps
+
+[RAG Evaluation Part 2: Generator Evaluation](/blogs/rag-evaluation-part-2-generator-evaluation)

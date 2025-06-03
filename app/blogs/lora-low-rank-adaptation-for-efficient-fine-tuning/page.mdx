@@ -69,7 +69,7 @@ $$
 
 where $A \in \mathbb{R}^{r \times d_{\text{in}}}$ and $B \in \mathbb{R}^{d_{\text{out}} \times r}$. The rank $r$ is typically much smaller than either $d_{\text{out}}$ or $d_{\text{in}}$, so the total number of parameters in $A$ and $B$ is far less than in $\Delta W$.
 
-Hence, during fine-tuning, we only train these low-rank matrices $A$ and $B$ (with rank $r$), while **freezing** the original weights WWW. This drastically **reduces the number of trainable parameters** and, correspondingly, the fine-tuning computational requirements.
+Hence, during fine-tuning, we only train these low-rank matrices $A$ and $B$ (with rank $r$), while **freezing** the original weights $W$. This drastically **reduces the number of trainable parameters** and, correspondingly, the fine-tuning computational requirements.
 
 ## Going Deeper
 
