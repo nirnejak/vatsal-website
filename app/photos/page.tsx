@@ -14,20 +14,49 @@ export const metadata: Metadata = getMetadata({
 
 const PhotosPage: React.FC = () => {
   return (
-    <main className="mx-auto max-w-[980px] px-4 md:px-0">
-      <h1 className="mb-8 mt-16 text-3xl font-semibold leading-snug tracking-tight md:mb-12">
-        <span className="flex text-neutral-800 dark:text-neutral-300">
+    <main
+      className="
+        mx-auto max-w-[980px] px-4
+        md:px-0
+      "
+    >
+      <h1
+        className="
+          mt-16 mb-8 text-3xl/snug font-semibold tracking-tight
+          md:mb-12
+        "
+      >
+        <span
+          className="
+            flex text-neutral-800
+            dark:text-neutral-300
+          "
+        >
           Moments
         </span>
-        <span className="flex text-neutral-400 dark:text-neutral-600">
+        <span
+          className="
+            flex text-neutral-400
+            dark:text-neutral-600
+          "
+        >
           & Pictures.
         </span>
       </h1>
-      <div className="mb-24 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
+      <div
+        className="
+          mb-24 grid grid-cols-2 gap-3
+          md:grid-cols-3 md:gap-5
+          lg:grid-cols-4
+        "
+      >
         {photos.map((photo, index) => (
           <div
             key={index}
-            className="rounded-3xl bg-white p-2.5 shadow-lg dark:bg-neutral-100/10"
+            className="
+              rounded-3xl bg-white p-2.5 shadow-lg
+              dark:bg-neutral-100/10
+            "
           >
             <Image
               src={photo}

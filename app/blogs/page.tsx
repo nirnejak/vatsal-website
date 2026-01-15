@@ -17,16 +17,41 @@ export const metadata: Metadata = getMetadata({
 
 const BlogsPage: React.FC = () => {
   return (
-    <main className="mx-auto w-full max-w-[580px] px-4 md:px-0">
-      <h1 className="mb-8 mt-12 text-3xl font-semibold leading-snug tracking-tight md:mb-12">
-        <span className="flex text-neutral-800 dark:text-neutral-300">
+    <main
+      className="
+        mx-auto w-full max-w-[580px] px-4
+        md:px-0
+      "
+    >
+      <h1
+        className="
+          mt-12 mb-8 text-3xl/snug font-semibold tracking-tight
+          md:mb-12
+        "
+      >
+        <span
+          className="
+            flex text-neutral-800
+            dark:text-neutral-300
+          "
+        >
           Blogs <br />
         </span>
-        <span className="flex text-neutral-400 dark:text-neutral-600">
+        <span
+          className="
+            flex text-neutral-400
+            dark:text-neutral-600
+          "
+        >
           & Articles.
         </span>
       </h1>
-      <div className="mb-24 space-y-2.5 text-neutral-800 dark:text-neutral-400">
+      <div
+        className="
+          mb-24 space-y-2.5 text-neutral-800
+          dark:text-neutral-400
+        "
+      >
         {allBlogs.map((blog, index) => (
           <div key={index}>
             <Link
@@ -34,10 +59,18 @@ const BlogsPage: React.FC = () => {
               className="group flex items-center gap-2"
             >
               <p className="font-medium">{blog.title}</p>
-              <div className="flex-1 border-t border-dashed border-neutral-300 dark:border-neutral-800" />
+              <div
+                className="
+                  flex-1 border-t border-dashed border-neutral-300
+                  dark:border-neutral-800
+                "
+              />
               <ArrowRight
                 size={15}
-                className="transition-transform group-hover:translate-x-1"
+                className="
+                  transition-transform
+                  group-hover:translate-x-1
+                "
               />
             </Link>
           </div>

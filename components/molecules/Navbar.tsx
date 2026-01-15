@@ -34,7 +34,13 @@ const Navbar: React.FC = () => {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-2 left-1/2 z-999 -translate-x-1/2 rounded-3xl border-neutral-800 bg-neutral-900 shadow-lg md:bottom-5">
+    <nav
+      className="
+        fixed bottom-2 left-1/2 z-999 -translate-x-1/2 rounded-3xl
+        border-neutral-800 bg-neutral-900 shadow-lg
+        md:bottom-5
+      "
+    >
       <div className="flex items-center justify-center">
         {links.map((link) => (
           <Link
