@@ -1,9 +1,9 @@
 {
   "recommendations": [
-    "biomejs.biome",
     "jock.svg",
-    "bradlc.vscode-tailwindcss",
+    "biomejs.biome",
     "csstools.postcss",
+    "bradlc.vscode-tailwindcss",
     "streetsidesoftware.code-spell-checker",
     "unifiedjs.vscode-mdx"
   ]
