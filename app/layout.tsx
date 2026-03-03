@@ -1,8 +1,7 @@
-import * as React from "react"
-
 import type { Viewport } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import { ViewTransitions } from "next-view-transitions"
+import type * as React from "react"
 
 import DotPattern from "@/components/atoms/DotPattern"
 import Navbar from "@/components/molecules/Navbar"
@@ -44,12 +43,7 @@ const RootLayout: React.FC<Props> = ({ children }) => {
           />
         </head>
 
-        <body
-          className="
-            overflow-x-hidden bg-neutral-50 font-sans
-            dark:bg-neutral-900
-          "
-        >
+        <body className="overflow-x-hidden bg-neutral-50 font-sans dark:bg-neutral-900">
           <Navbar />
           {children}
 

@@ -30,7 +30,7 @@ const DotPattern: React.FC<DotPatternProps> = ({
     <svg
       aria-hidden="true"
       className={classNames(
-        "pointer-events-none h-full w-full fill-neutral-400/20 dark:fill-neutral-400/10 z-[-1] fixed inset-0",
+        "pointer-events-none fixed inset-0 z-[-1] h-full w-full fill-neutral-400/20 dark:fill-neutral-400/10",
         className
       )}
       {...props}
