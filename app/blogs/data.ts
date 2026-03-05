@@ -1,5 +1,9 @@
 export const allBlogs = [
   {
+    slug: "reinforcement-learning-multi-armed-bandits",
+    title: "Reinforcement Learning: Multi Armed Bandits",
+  },
+  {
     slug: "rag-evaluation-part-2-generator-evaluation",
     title: "RAG Evaluation Part 2: Generator Evaluation",
   },
