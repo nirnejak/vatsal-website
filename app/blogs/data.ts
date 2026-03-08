@@ -1,5 +1,9 @@
 export const allBlogs = [
   {
+    slug: "reinforcement-learning-markov-decision-process",
+    title: "Reinforcement Learning: Markov Decision Process",
+  },
+  {
     slug: "reinforcement-learning-multi-armed-bandits",
     title: "Reinforcement Learning: Multi Armed Bandits",
   },

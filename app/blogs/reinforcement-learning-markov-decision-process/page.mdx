@@ -1,0 +1,212 @@
+import Image from "next/image"
+import getMetadata from "@/utils/metadata"
+
+import CoverImage from "./MDP.png"
+import Policy from "./mdp_Policy.png"
+import MDPState from "./mdp_state.png"
+
+export const metadata = getMetadata({
+  path: "/blogs/reinforcement-learning-markov-decision-process/",
+  title: "Reinforcement Learning: Markov Decision Process",
+  description:
+    "Beginner-friendly guide to Markov Decision Processes through a drone story, navigates a stochastic grid with rewards.",
+  image: CoverImage.src,
+})
+
+# Reinforcement Learning: Markov Decision Process
+
+<span className="text-base leading-snug text-neutral-500">
+  Beginner-friendly guide to Markov Decision Processes through a drone story, navigates a stochastic grid with rewards.
+</span>
+
+<Image src={CoverImage} alt={"MAB Cover"} placeholder="blur" />
+
+Imagine a busy futuristic city seen from above, a grid of rooftops, roads, and no-fly zones. Our little delivery drone starts its day at the bottom-left corner of this city grid. It carries a small package that must be delivered to a customer waiting on a rooftop at the top-right corner.
+
+The drone can move in four directions: up, down, left, and right just like Pac-Man moving through his maze. However, not every move is safe.
+
+Some blocks are covered by tall buildings or restricted airspaces. The drone cannot pass through restricted airspaces. attempting to do so would trigger a no-fly alert, resulting in a large negative reward (-1). Also if drone attempts to enter into block with tall building, it will bounce back to the same block.
+
+Every regular, open block (white square) that the drone flies over costs a small amount of battery power, say -0.04 units per move. The longer it flies, the more energy it drains hence random wandering is inefficient and expensive.
+
+Finally, when the drone reaches the delivery point, represented by a green box on the rooftop, it successfully delivers the package and earns a positive reward (+1).
+
+Each decision, whether to go up, down, left, or right will affects not only the next position but also how much reward or penalty we accumulate. The drone must learn a **policy** that balances **speed (efficiency)** and **safety (risk avoidance)**
+
+To make our drone’s world easier to describe mathematically, let’s assign numbers to each block (state) in the grid. We’ll start numbering from the top-left corner (state 0) and move row by row toward the bottom-right corner (state 15).
+
+<Image src={MDPState} alt={"MAB Cover"} placeholder="blur" />
+
+### Transition Model
+
+The **transition model** defines how our drone moves between states when it takes a specific action. It tells us the probability of ending up in a next state $s'$, given that we are currently in state $s$ and take an action $a$.
+
+Mathematically, it is expressed as:
+
+$$
+P(s' \mid s, a)
+$$
+
+This means:
+
+> Given that we are currently in state $s$ and we take action $a$, what is the probability that we will end up in state $s'$?
+> 
+
+All possible transitions can be summarized in a table or a matrix, often called the **state transition probability table**.
+
+If we assume our drone’s world is **deterministic**, then every move behaves exactly as intended, meaning that if the drone chooses to go *UP*, it will always move one block up (unless blocked by a building or wall).
+
+For example, if the drone is currently at state $s = 9$ and chooses the action $a = \text{UP}$, it will move deterministically to state $s' = 5$.
+
+We can express this as:
+
+$$
+P(s' = 5 \mid s = 9, a = \text{UP}) = 1
+$$
+
+and for all other possible next states $s' \neq 5$:
+
+$$
+P(s' \mid s = 9, a = \text{UP}) = 0
+$$
+
+But our drone doesn’t live in a **perfect deterministic world**. In the real city skies, wind gusts, air turbulence, and GPS drift can slightly alter its direction. Even when the drone *intends* to go straight up, there’s a chance it might drift sideways instead.
+
+To capture this uncertainty, we define a **stochastic transition model**. Now, the probability of actually moving in the intended direction is 0.8. There is a 0.1 probability of drifting 90° left, and another 0.1 probability of drifting 90° right to the intended direction.
+
+For example, if the drone is currently in state $s = 9$ and takes action $a = \text{UP}$:
+
+- It moves to $s' = 5$ with probability 0.8
+- Moves to $s' = 8$ (left drift) with probability 0.1
+- Moves to $s' = 10$ (right drift) with probability 0.1 but since $s = 10$ corresponds to a building (no-fly zone), the drone cannot move there and remains in its current position $s = 9$ instead.
+
+Hence:
+
+$$
+P(s' = 5 | s = 9, a = \text{UP}) = 0.8
+$$
+
+$$
+P(s' = 8 | s = 9, a = \text{UP}) = 0.1
+$$
+
+$$
+P(s' = 9 | s = 9, a = \text{UP}) = 0.1
+$$
+
+### **Policy**
+
+Now that we understand how the drone transitions between states, let’s talk about the **policy,** the set of rules that determines *what action the drone should take in each state.*
+
+In reinforcement learning, a **policy** defines the agent’s (drone’s) behaviour. It is usually represented by the Greek letter $\pi$, and it is a **mapping from states to actions**:
+
+$$
+\pi : S \rightarrow A
+$$
+
+This means, for every state $s$, the policy tells us which action $a$ to take:
+
+$$
+a = \pi(s)
+$$
+
+The diagram below shows an example of a **random policy,** where every state has been assigned a random action (UP, DOWN, LEFT, or RIGHT), regardless of rewards or obstacles.
+
+<Image src={Policy} alt={"MAB Cover"} placeholder="blur" />
+
+For example, if:
+
+$$
+s = 2 \quad \text{and} \quad \pi(2) = \text{LEFT}
+$$
+
+then whenever our drone is in state 2, it will always choose to move left. Whether it can actually move left or not, depends on the **transition model** and the environment (for instance, it might hit a wall or building or may enter into restricted area), but the *intention* always remains the same.
+
+When we actually simulate this policy, the drone’s behaviour becomes erratic and inefficient.
+
+For instance, starting from the bottom-left corner (state 12):
+
+1. The policy says to move **RIGHT**, so it goes to **state 13**.
+2. At **state 13**, the policy says **UP**, so it moves to **state 9**.
+3. At **state 9**, it’s instructed to go **UP** again, leading to **state 5**.
+4. Then at **state 5**, the policy says **RIGHT**, taking it to **state 6**.
+5. Then at **state 6**, the policy says **RIGHT**, taking it to **state 7**.
+6. Then at **state 7**, the policy says **LEFT**, taking it to **state 6** and it will keep rolling between state 6 and state 7.
+
+As we continue, the drone might oscillate between nearby states, getting trapped near obstacles or looping endlessly without ever reaching the goal (state 3).
+
+Even though the policy always dictates a specific move, **the transition model’s stochastic nature** means that sometimes, due to wind drift:
+
+- The drone might move in the wrong direction (left/right drift).
+- It could accidentally move into an open neighbouring state and escape a temporary loop.
+
+This is why a **stochastic world** prevents permanent deadlocks but the resulting paths are still highly inefficient.
+
+### How to Find an Optimal Policy
+
+Now that we’ve seen how a random policy behaves (often poorly!), the natural next question is:
+
+> How can we find a better policy? ideally, the best possible one?
+> 
+
+In our gridworld, we have a finite number of states and a finite number of possible actions per state. For every open state, we can choose one of four actions UP, DOWN, LEFT, or RIGHT. Let’s say there are 12 non-terminal, non-obstacle states where actions can be assigned freely.
+
+That means there are:
+
+$$
+4^{12} = 16{,}777{,}261
+$$
+
+possible policies in total.
+
+Each of these policies will yield a different expected total reward if executed repeatedly over many episodes. Among all these, one (or sometimes more, if there are ties) will produce the highest expected reward.
+
+This “best possible” policy is called the optimal policy, denoted as:
+
+$$
+\pi^*
+$$
+
+To find the optimal policy, one naïve way is to try all $4^{12}$ policies and find the best one. Obviously this is not practical at all. In practice, we have two methods: ***policy iteration*** and ***value iteration***. 
+
+But before we dive deep into it and we end this blog let’s define few terms and assumptions formally:
+
+**Agent**
+
+The **agent** in an MDP represents the decision-making component operating within the modeled world. In this scenario, the delivery drone acts as the agent. At every moment, it occupies a particular state on the grid and must select an action that determines its next position. The agent observes the environment as it is, processes the information available, and chooses the action that aligns with its objective of reaching the delivery point while minimizing penalties. Although the environment defines the rules, dynamics, and constraints, the agent is the one responsible for interpreting this structure and acting within it. Its behaviour guided by a policy is what drives the evolution of the entire system.
+
+**Environment**
+
+Everything outside the drone is the **environment**. The buildings, wind gusts, rooftop goal, battery drain, and no-fly zones all belong to it. The environment responds to the agent’s actions. When the drone moves up, the environment determines whether it actually goes up, drifts sideways, hits a wall, or reaches the goal. In reinforcement learning, the environment defines the rules of motion and the reward mechanism. The agent acts; the environment reacts. Together, they create an ongoing interaction loop.
+
+**State**
+
+At any moment, the drone needs a description of “where it is” in the world. That description is called the ***state***. In our grid example, the state could simply be the numbered block the drone occupies, such as state 9. More generally, a state is a snapshot of all relevant information needed to make a decision. If knowing the current grid position is enough to decide optimally, then that position fully represents the state. The state is the agent’s window into the environment.
+
+**Action**
+
+In an MDP, an **action** represents the choice the agent makes while in a particular state. For our drone, actions correspond to the movement directions it can attempt UP, DOWN, LEFT, or RIGHT. Each of these actions expresses the drone’s intention to move in a certain way, even though the actual result may depend on the environment’s dynamics. From any non-terminal state, the drone selects one action based on its policy, and this choice influences where it may end up next. The action itself does not guarantee a particular outcome; rather, it triggers the transition process that determines the drone’s subsequent state and associated reward.
+
+**Reward**
+
+A **reward** is the immediate feedback the agent receives after taking an action and arriving in a new state. In our drone scenario, each square on the grid is associated with a particular reward value that reflects the desirability of entering that cell. Moving onto a normal rooftop incurs a small negative reward representing battery usage, reaching a restricted airspace results in a significant penalty, and successfully arriving at the delivery rooftop yields a positive reward. The reward acts as a signal that guides the drone’s learning process and encourage it to seek beneficial outcomes while avoiding harmful or costly regions of the environment.
+
+**Stochastic**
+
+A **stochastic** environment is one in which the outcome of an action is not perfectly predictable. Even if the agent chooses the same action in the same state multiple times, it may not always reach the same next state. In our drone’s world, this uncertainty comes from wind and turbulence: the drone may intend to move upward, but occasionally it drifts sideways despite its best effort. This randomness means that actions lead to a distribution of possible outcomes rather than a single guaranteed result. The agent must therefore learn to make decisions that perform well on average, rather than relying on perfectly controlled movement.
+
+**Fully observable**
+
+A **fully observable** environment is one in which the agent always has complete and accurate information about its current state. In our drone world, this means the drone knows exactly which grid cell it occupies, where the obstacles and restricted zones are located, and what the goal position is. Nothing is hidden or uncertain about the structure of the environment. Because the agent has full visibility, it can base each decision on precise knowledge of the situation, allowing it to evaluate actions without ambiguity or guesswork.
+
+**Sequential**
+
+A decision-making problem is **sequential** when each action the agent takes influences not only the immediate outcome but also the future situations it may encounter. For our drone, choosing a direction in the first step determines which states will be reachable in the next step, and so on. If the drone moves upward from a certain location, it may open the path to reach one region of the grid while making another region inaccessible in the near future. Thus, every choice shapes the landscape of possibilities that follow, and the agent must think beyond the immediate reward to consider the long-term consequences of its movements.
+
+**Markovian**
+
+A **Markovian** environment is one in which the future depends only on the agent’s current state and action, not on the sequence of events that preceded it. For our drone, this means that once we know its present location and the move it chooses, we have all the information required to determine the probabilities of the next state. How the drone arrived at its current position, whether by drifting, backtracking, or following a long path does not influence what happens next. The environment behaves as if it has no memory of the past, responding solely to the situation at the current moment.
+
+**Markov Decision Process**
+
+When an agent faces a sequence of decisions in a world that is fully observable, influenced by randomness, and governed by Markovian dynamics, we describe the problem as a **Markov Decision Process (MDP)**. Such a process is defined by a collection of states, beginning with some initial state $s_0$, the set of permissible actions in each state, a transition probability function $P(s' \mid s, a)$ that specifies how the environment evolves, and a reward function $R(s)$ that assigns the immediate payoff for entering a state. These elements together define the decision-making landscape the agent must navigate.
