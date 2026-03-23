@@ -1,5 +1,9 @@
 export const allBlogs = [
   {
+    slug: "reinforcement-learning-value-iteration",
+    title: "Reinforcement Learning: Value Iteration",
+  },
+  {
     slug: "reinforcement-learning-policy-iteration",
     title: "Reinforcement Learning: Policy Iteration",
   },
