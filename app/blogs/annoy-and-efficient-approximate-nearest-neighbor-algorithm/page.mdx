@@ -33,11 +33,11 @@ The _k_-Nearest Neighbors (kNN) algorithm is conceptually straightforward:
 2. A new query point $x$ arrives.
 3. To classify or retrieve the _k_ nearest points to $x$, you measure distances from $x$ to every point in the dataset and pick the closest _k_.
 
-While the logic is simple, the **time complexity** is the key limitation. If there are nnn points in the training set, you have to compute $n$ distances. This leads to a complexity on the order of $O(n)$ for each query. For very large $n$, this quickly becomes impractical.
+While the logic is simple, the **time complexity** is the key limitation. If there are $n$ points in the training set, you have to compute $n$ distances. This leads to a complexity on the order of $O(n)$ for each query. For very large $n$, this quickly becomes impractical.
 
 ## Moving from Exact to Approximate
 
-Real-world applications often involve millions—even hundreds of millions—of data points. An exact nearest neighbor search for each query point can become a bottleneck. Approximate Nearest Neighbors (ANN) aims to **reduce** the time complexity by allowing **slight inaccuracy** in the results. In exchange, the retrieval is typically much faster and still _good enough_ for many tasks, such as:
+Real-world applications often involve millions and even hundreds of millions of data points. An exact nearest neighbor search for each query point can become a bottleneck. Approximate Nearest Neighbors (ANN) aims to **reduce** the time complexity by allowing **slight inaccuracy** in the results. In exchange, the retrieval is typically much faster and still _good enough_ for many tasks, such as:
 
 - **Recommendation systems** (e.g., quickly finding similar users or products)
 - **Natural Language Processing** (e.g., retrieving similar word embeddings)
