@@ -1,5 +1,9 @@
 export const allBlogs = [
   {
+    slug: "reinforcement-learning-model-based-adp-learner",
+    title: "Reinforcement Learning: Model Based ADP Learner",
+  },
+  {
     slug: "reinforcement-learning-value-iteration",
     title: "Reinforcement Learning: Value Iteration",
   },
