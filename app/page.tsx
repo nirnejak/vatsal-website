@@ -73,6 +73,7 @@ const HomePage: React.FC = () => {
               href={link.href}
               className="flex items-center justify-center gap-2.5 rounded-md bg-neutral-200 px-3.5 py-2 text-neutral-700 text-xs outline-none transition-all hover:bg-neutral-300 focus:bg-neutral-300 active:scale-95 md:px-5 md:py-2.5 md:text-base dark:bg-neutral-800 dark:text-neutral-400 dark:focus:bg-neutral-700 dark:focus:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-neutral-300"
               target="_blank"
+              rel="noopener"
             >
               {link.icon}
               <span className="text-sm">{link.label}</span>
