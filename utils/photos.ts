@@ -1,10 +1,11 @@
 import Photo24 from "assets/photos/FullSizeRender.jpg"
 import Photo1 from "assets/photos/IMG_0620.jpeg"
 import Photo2 from "assets/photos/IMG_0630.jpeg"
+import Photo23 from "assets/photos/IMG_1062.jpg"
 import Photo3 from "assets/photos/IMG_1691.jpeg"
 import Photo4 from "assets/photos/IMG_2563.jpeg"
-import Photo5 from "assets/photos/IMG_2571.jpeg"
 import Photo6 from "assets/photos/IMG_2579.jpeg"
+import Photo5 from "assets/photos/IMG_2855.jpg"
 import Photo25 from "assets/photos/IMG_4915.jpg"
 import Photo26 from "assets/photos/IMG_4970.jpg"
 import Photo27 from "assets/photos/IMG_5107.jpg"
@@ -28,7 +29,6 @@ import Photo19 from "assets/photos/IMG_8434.jpeg"
 import Photo20 from "assets/photos/IMG_8490.jpeg"
 import Photo21 from "assets/photos/IMG_8513.jpeg"
 import Photo22 from "assets/photos/IMG_8633.jpeg"
-import Photo23 from "assets/photos/IMG_8798.jpeg"
 
 export const photos = [
   Photo26,
