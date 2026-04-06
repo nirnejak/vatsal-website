@@ -1,0 +1,441 @@
+import Image from "next/image"
+import getMetadata from "@/utils/metadata"
+
+import CoverImage from "./cover.png"
+
+export const metadata = getMetadata({
+  path: "/blogs/reinforcement-learning-model-free-monte-carlo-learner/",
+  title: "Reinforcement Learning: Model-free Monte Carlo Learner",
+  description:
+    "Explore how Monte Carlo methods let a drone learn Q-values without any model.",
+  image: CoverImage.src,
+})
+
+# Reinforcement Learning: Model-free Monte Carlo Learner
+
+<span className="text-base leading-snug text-neutral-500">
+  Explore how Monte Carlo methods let a drone learn Q-values without any model.
+</span>
+
+<Image src={CoverImage} alt={"MAB Cover"} placeholder="blur" />
+
+Up until now, whether we were running Policy Iteration, Value Iteration, or even model-based ADP, our drone always looked at the **value of states** to make decisions.
+
+Under policy $\pi$, the value of state $s$ satisfies:
+
+$$
+V_\pi(s) = r(s) + \gamma \sum_{s'} p(s' \mid s,a = \pi(s))\, V_\pi(s')
+$$
+
+For the optimal policy:
+
+$$
+V^*(s) = r(s) + \gamma \max_a \left[ \sum_{s'} p(s' \mid s,a)\, V^*(s') \right]
+$$
+
+Since both formulas require knowing $p(s' \mid s,a)$, they depend on having a **model** of the environment. To avoid this requirement, we can instead assign values to **state–action pairs**.
+
+In the model-based setting, we look at the state value $v(s)$ and evaluate different actions by examining the successor states they tend to reach.
+
+For example, from state 9 in Grid City:
+
+- action **UP** might usually lead to state 5,
+- action **RIGHT** might often drift into the building at state 10.
+
+If we know the utilities of states 5 and 10, we can compare the actions. This requires knowing all successor states *and* the distribution over them.  But in a **model-free** setting, we do not know where each action leads, nor with what probability because we don’t have access to transitoin model. So instead of valuing states, we value the *action taken in the state*:
+
+$$
+Q(s,a) = \text{expected return starting from state } s \text{ and taking action } a.
+$$
+
+Suppose the drone is in state 13. It has two possible actions:
+
+- **RIGHT** → often moves toward 14, eventually reaching the goal
+- **UP** → tends to drift back into state 9, forming inefficient loops
+
+If the drone estimates:
+
+$$
+Q(13, \text{UP}) = -0.12, \qquad
+Q(13, \text{RIGHT}) = +0.47,
+$$
+
+then even without knowing any transition probabilities, the better action is clearly **RIGHT**.
+
+This shift from valuing states to valuing state–action pairs is the key idea behind model-free Monte Carlo learning.
+
+## Estimating Q-values using the Monte Carlo approach
+
+Each time the drone flies through Grid City,  the only information the agent truly observes is the sequence:
+
+$$
+[s_1, a_1, r_1, s_2, a_2, r_2, s_3, a_3, r_3, \ldots]
+$$
+
+Every episode of Grid City gives us exactly one such trajectory. Suppose an episode lasts $n$ steps. Then we observe:
+
+- a sequence of states:
+    
+    $$
+    [s_{t=1}, s_{t=2}, \ldots, s_{t=n}]
+    $$
+    
+- a sequence of actions:
+    
+    $$
+    [a_{t=1}, a_{t=2}, \ldots, a_{t=n}]
+    $$
+    
+- a sequence of rewards:
+    
+    $$
+    [r_{t=1}, r_{t=2}, \ldots, r_{t=n}]
+    $$
+    
+
+From this, we also obtain a sequence of **state-action pairs**:
+
+$$
+[(s_1,a_1), (s_2,a_2), (s_3,a_3), \ldots, (s_n,a_n)]
+$$
+
+For each state-action pair, we can evaluate its **outcome** by summing all the rewards *after* that pair occurs. For example:
+
+$$
+G(s_{t=1}, a_{t=1}) = r_{t=1} + r_{t=2} + \cdots + r_{t=n}
+$$
+
+Similarly,
+
+$$
+G(s_{t=2}, a_{t=2}) = r_{t=2} + r_{t=3} + \cdots + r_{t=n}
+$$
+
+More generally, for the pair $(s_i, a_i)$:
+
+$$
+G(s_i, a_i) = r_{t=i} + r_{t=i+1} + \cdots + r_{t=n}
+= \sum_{t=i}^{n} r_t
+$$
+
+This $G(s_i,a_i)$ is the **sample return** for that state-action pair in this episode. If we play many episodes, we will encounter the same pair $(s,a)$ multiple times. Each occurrence gives one sample return:
+
+$$
+R(s,a) = 
+\big[
+G(s,a)_{\text{1st time}},\ 
+G(s,a)_{\text{2nd time}},\ 
+G(s,a)_{\text{3rd time}},\ 
+\ldots
+\big]
+$$
+
+By the Monte Carlo principle, the expected return is simply the **average** of these samples:
+
+$$
+Q(s,a) = \text{average}\big(R(s,a)\big)
+$$
+
+Thus, without knowing $p(s'|s,a)$ or building a transition model, we can estimate Q-values **directly from experience**.
+
+### First visit vs every visit
+
+Once the drone starts estimating Q-values by averaging returns, another question naturally arises:
+
+> “If I visit the same state–action pair multiple times in a single flight, which of those visits should I learn from?”
+> 
+
+Imagine a long, windy episode:
+
+```python
+State 13, Action RIGHT → later return = +0.52
+State 13, Action RIGHT → later return = +0.41
+State 13, Action RIGHT → later return = +0.47
+```
+
+All three happened in **one** episode. Should the drone treat all three returns equally?
+
+Monte Carlo learning gives us two choices:
+
+### **First-visit MC**
+
+In **first-visit Monte Carlo**, we only consider the *first* time a particular pair $(s,a)$ appears in an episode. Any later occurrences of the same pair are ignored for that episode.
+
+Suppose in a single episode we observe:
+
+$$
+[\ldots,\ s_1, a_3,\ r_5,\ s_2, a_2,\ r_6,\ \ldots,\ s_1, a_3,\ r_7,\ s_4, a_5,\ r_8,\ \ldots,\ r_n]
+$$
+
+The pair $(s_1, a_3)$ appears twice. Under first-visit MC, we take only the **first** occurrence and compute:
+
+$$
+G(s_1,a_3) = r_5 + r_6 + \cdots +r_7 + \cdots + r_n
+$$
+
+This value is appended once to the list $R(s_1, a_3)$.
+
+### **Every-visit MC**
+
+In **every-visit Monte Carlo**, we use *all* occurrences of the pair within the episode. Each occurrence contributes its own return sample.
+
+Using the same episode, we would add:
+
+$$
+G(s_1,a_3) = r_5 + r_6 + \cdots + r_7 + \cdots + r_n
+$$
+
+$$
+G(s_1,a_3) = r_7 + r_8 + \cdots + r_n
+$$
+
+Both values are appended to the list $R(s_1,a_3)$.
+
+### **Which one is better?**
+
+Both converge to the correct Q-values as long as the drone keeps exploring.
+
+- **First-Visit MC** → more conservative, lower variance
+- **Every-Visit MC** → uses more data per episode, faster but noisier
+
+In practice, both work well. Both approaches converge to the same expectation:
+
+$$
+Q(s,a) = \mathbb{E}[G(s,a)]
+$$
+
+And for our Grid City drone, the difference is subtle. it just needs to choose whether to learn a little cautiously or a little aggressively. In below algorithm we are considering first-visit MC.
+
+$\textbf{Algorithm: Model-free MC learner percept} \\[6pt]
+\textbf{input: }
+\begin{cases}
+\text{previous state } s \\
+\text{previous action } a \\
+\text{reward } r \\
+\text{current state } s'
+\end{cases}
+\\[10pt]
+\textbf{persistent: }
+\begin{cases}
+G(s,a)\ \text{estimate of state--action returns, initially zero} \\
+\text{visited}(s,a)\ \text{initially false}
+\end{cases}
+\\[14pt]
+1.\hspace{0.5cm} \textbf{if } \text{visited}(s,a) = \text{false then} \\[4pt]
+2.\hspace{1.2cm} \text{visited}(s,a) \leftarrow \text{true} \\[10pt]
+3.\hspace{0.5cm} \textbf{for each } \hat{s} \in S\ \textbf{do} \\[4pt]
+4.\hspace{1.2cm} \textbf{for each } \hat{a} \in A\ \textbf{do} \\[4pt]
+5.\hspace{1.8cm} \textbf{if } \text{visited}(\hat{s},\hat{a}) = \text{true then} \\[4pt]
+6.\hspace{2.6cm} G(\hat{s},\hat{a}) \leftarrow G(\hat{s},\hat{a}) + r$
+
+In actuate function, we apply the same geometric decay as in model-based ADP learner to control the transition from exploration to exploitation.
+
+$\textbf{Algorithm: Model-free MC learner Actuate (Exploration--Exploitation)} \\[10pt]
+\textbf{Input: } \text{state } s \\[6pt]
+\textbf{Persistent: }
+\begin{cases}
+\pi(s) \text{ (current policy, initially random)} \\
+\varepsilon \text{ (exploration probability, initially } 1.0)
+\end{cases}\\[12pt]
+1.\hspace{0.5cm} \beta \leftarrow \text{random number in }[0,1] \\[6pt]
+2.\hspace{0.5cm} \textbf{if } \beta < \varepsilon \ \textbf{then} \\[6pt]
+3.\hspace{1.2cm} a \leftarrow \text{random action from } A \\[6pt]
+4.\hspace{0.5cm} \textbf{else} \\[6pt]
+5.\hspace{1.2cm} a \leftarrow \pi(s) \\[6pt]
+6.\hspace{0.5cm} \text{return } a$
+
+## Updating the Policy After Each Episode
+
+Monte Carlo learning is episodic. That means the drone must complete an entire journey through Grid City before it updates anything. After the drone finishes an episode, it gathers a *return* $G(s,a)$ for each state-action pair that was visited.
+
+Now the question becomes:
+
+> How do we merge this new return into the existing estimate $Q(s,a)$?
+> 
+
+The simplest and most statistically grounded method is to treat Q as the **sample average** of all observed returns:
+
+$$
+Q(s,a) = \frac{1}{N(s,a)} \sum_{i=1}^{N(s,a)} G^{(i)}(s,a)
+$$
+
+But computing this directly means storing *all* past returns. We don’t want that.
+
+So we use the **incremental mean update**, which avoids storing any history (We already derived this equation in multi-armed bandits blog):
+
+$$
+Q_{new}(s,a)
+= Q_{old}(s,a)
++ \frac{1}{N(s,a)}\Big(G(s,a) - Q_{old}(s,a)\Big)
+$$
+
+$\textbf{Algorithm: Model-free MC learner policy update} \\[6pt]
+\textbf{persistent: }
+\begin{cases}
+\pi(s)\ \text{current policy} \\
+G(s,a)\ \text{cumulative returns collected this episode} \\
+Q(s,a)\ \text{current Q-value estimates} \\
+\text{visited}(s,a)\ \text{boolean indicating first-visit} \\
+N(s,a)\ \text{count of visits to each pair} \\
+\varepsilon\ \text{exploration probability} \\
+\xi\ \text{decay factor for } \varepsilon
+\end{cases}
+\\[12pt]
+1.\hspace{0.5cm} \textbf{for each } \hat{s} \in S\ \textbf{do} \\[4pt]
+2.\hspace{1.2cm} \textbf{for each } \hat{a} \in A\ \textbf{do} \\[4pt]
+3.\hspace{1.8cm} \textbf{if } \text{visited}(\hat{s},\hat{a}) = \text{true then} \\[4pt]
+4.\hspace{2.6cm} N(\hat{s},\hat{a}) \leftarrow N(\hat{s},\hat{a}) + 1 \\[8pt]
+5.\hspace{2.6cm}
+Q(\hat{s},\hat{a})
+\leftarrow
+Q(\hat{s},\hat{a})
++
+\frac{1}{N(\hat{s},\hat{a})}
+\big( \,
+G(\hat{s},\hat{a}) - Q(\hat{s},\hat{a}) 
+\,\big) \\[10pt]
+6.\hspace{0.5cm}
+\pi(\hat{s}) \leftarrow \arg\max_{a} Q(\hat{s},a)
+\\[12pt]
+7.\hspace{0.5cm} \textbf{for each } \hat{s}\in S,\ \hat{a}\in A\ \textbf{do} \\[4pt]
+8.\hspace{1.2cm} G(\hat{s},\hat{a}) \leftarrow 0 \\[4pt]
+9.\hspace{1.2cm} \text{visited}(\hat{s},\hat{a}) \leftarrow \text{false} \\[10pt]
+10.\hspace{0.5cm} \varepsilon \leftarrow \xi\, \varepsilon$
+
+Here in above algorithm term $\pi(\hat{s}) \leftarrow \arg\max_{a} Q(\hat{s},a)$ is not very clear. will dicuss this in next section.
+
+## Connecting Q-values Back to State Values
+
+Now that we’ve shifted focus from valuing states to valuing **state–action pairs**, a natural question appears:
+
+> What if we want the utility of a state again? Can we reconstruct it using Q-values alone?
+> 
+
+Surprisingly, yes and it’s beautifully simple. 
+
+Imagine the drone is standing in state $s$. If it could choose *any* action, which one gives the greatest long-term return?
+
+Exactly the action with the largest Q-value. So the optimal value of state $s$ is simply:
+
+$$
+V^*(s) = \max_a Q^*(s,a)
+$$
+
+This equation says, the utility value of being in $s$ is equal to the value of taking the **best possible action** from $s$. No transition probabilities. No model. Just the best Q-value.
+
+Recall the value-iteration optimality equation:
+
+$$
+V^*(s) = r(s) + \gamma \max_a \left[ \sum_{s'} p(s'|s,a)\,V^*(s') \right]
+$$
+
+Here the reward $r(s)$ and discount factor $\gamma$ are constants. they don’t depend on $a$. Hence we can push the max outside:
+
+$$
+V^*(s)
+= \max_a \Big[ r(s) + \gamma \sum_{s'} p(s'|s,a)\,V^*(s') \Big] = \max_a Q^*(s,a)
+$$
+
+Hence optimal Q-value:
+
+$$
+Q^*(s,a) = r(s) + \gamma \sum_{s'} p(s'|s,a)\,V^*(s').
+$$
+
+Which is well aligned with the definition of the optimal Q value. This establishes the bridge between Q-values and state values. And once we know this, the optimal policy falls naturally out of the logic:
+
+$$
+\pi^*(s) = \arg\max_a Q(s,a)
+$$
+
+So that mysterious line in the policy update step:
+
+$$
+\pi(s) \leftarrow \arg\max_a Q(s,a)
+$$
+
+…is just the drone choosing the action with the highest long-term payoff.
+
+From value iteration we know that the optimal policy selects the action that yields the highest expected return:
+
+$$
+\pi^*(s)
+= \arg\max_a \left[ \sum_{s'} p(s' \mid s,a) V^*(s') \right]
+$$
+
+ but because $r(s)$ and $\gamma$ are constant values which do not affect the function argmax, we can also write above equation like
+
+$$
+\pi^*(s)
+= \arg\max_a \left[ r(s) + \gamma \sum_{s'} p(s'|s,a)\,V^*(s') \right] = \arg\max_a Q(s,a)
+$$
+
+## Combining Everything Together
+
+To train our learner, we use the following pseudo code to repeatedly play the game for *N* times, where *N* can be an arbitrarily large number. Each game of these *N* games can also be called an *episode* or an *epoch*. 
+
+$\textbf{Algorithm: Training MC learner for N episodes} \\[6pt]
+\textbf{input: }
+\begin{cases}
+\text{MDP black box} \\
+\text{MC learner} \\
+N\ \text{training episodes} \\
+s_0\ \text{starting state} \\
+S_{end}\ \text{set of terminal states}
+\end{cases}
+\\[12pt]
+1.\hspace{0.5cm} \text{initialize } R \text{ with zeros} \\[4pt]
+2.\hspace{0.5cm} \text{initialize } \text{ifwin with false} \\[10pt]
+3.\hspace{0.5cm} \textbf{for } i \leftarrow 1 \text{ to } N\ \textbf{do} \\[4pt]
+4.\hspace{1.2cm} s \leftarrow s_0 \\[10pt]
+5.\hspace{1.2cm} \textbf{while } s \notin S_{end}\ \textbf{do} \\[4pt]
+6.\hspace{2cm} a \leftarrow \text{MC learner actuate}(s) \\[4pt]
+7.\hspace{2cm} r,\ s' \leftarrow \text{MDP black box}(s,a) \\[4pt]
+8.\hspace{2cm} R(i) \leftarrow R(i) + r \\[4pt]
+9.\hspace{2cm} \text{MC learner percept}(s,a,r,s') \\[4pt]
+10.\hspace{2cm} s \leftarrow s'  \\[10pt]
+11.\hspace{1.2cm} \textbf{if } s \in S_{winning\_end}\ \textbf{then} \\[4pt]
+12.\hspace{2cm} \text{ifwin}(i) \leftarrow \text{true} \\[10pt]
+13.\hspace{1.2cm} \text{MC learner policy update} \\[10pt]
+14.\hspace{0.5cm} \textbf{return } R,\ \text{ifwin}$
+
+## On-Policy Monte Carlo and Why We Need Something More
+
+So far, our drone has been learning the way a child learns to ride a bike - by wobbling around, crashing a bit, and slowly improving based on its own experience. Everything we have discussed in this blog so far belongs to the family of **on-policy Monte Carlo methods**.
+
+Why “on-policy”? Because the drone **uses the same policy to generate experience and to improve itself**. Look back at our *actuate* function:
+
+- the drone chooses actions using the **ε-greedy version of its current policy**,
+- then completes an entire episode following that policy,
+- then uses the returns from that episode to **update the same policy**.
+- then again drone chooses actions using the **ε-greedy version of its updated policy**
+
+So the workflow is:
+
+$$
+
+\text{use } \pi \text{ to act}
+\;\rightarrow\; \text{evaluate \& improve } \pi
+\;\rightarrow\; \text{use } \pi \text{ to act}
+\;\rightarrow\; \cdots
+
+$$
+
+Although on-policy MC is simple and elegant. It requires executing the current (often poor and exploratory) policy to gather data. In the early stages, $\pi$ is terrible.  On-policy learning makes perfect sense in theory. But in practice? It’s a bit scary. For a physical drone, this means lots of early crashes & bumping into buildings, wastes battery drifting around, and repeatedly spirals between states but because $\varepsilon$-greedy forces exploration, it must continue doing so even when human intuition/facts tells us those actions are awful.
+
+On-policy MC insists:
+
+> You must try bad moves yourself in order to learn they are bad.
+> 
+
+That’s costly. This motivates a key question:
+
+> Can we learn a good policy without letting the drone fly poorly in the early stages?
+> 
+
+Or even:
+
+> Can we learn from flights that were generated by someone else, a human pilot, another drone, or a dataset?
+> 
+
+This leads us to the natural next topic **off-policy learning**: how to learn from someone else’s experience.
