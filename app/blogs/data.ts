@@ -1,5 +1,13 @@
 export const allBlogs = [
   {
+    slug: "reinforcement-learning-off-policy-monte-carlo",
+    title: "Reinforcement Learning: Off Policy Monte Carlo",
+  },
+  {
+    slug: "reinforcement-learning-model-free-monte-carlo-learner",
+    title: "Reinforcement Learning: Model-free Monte Carlo Learner",
+  },
+  {
     slug: "reinforcement-learning-model-based-adp-learner",
     title: "Reinforcement Learning: Model Based ADP Learner",
   },
