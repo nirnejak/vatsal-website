@@ -1,5 +1,13 @@
 export const allBlogs = [
   {
+    slug: "reinforcement-learning-q-learning",
+    title: "Reinforcement Learning: Q Learning",
+  },
+  {
+    slug: "reinforcement-learning-sarsa",
+    title: "Reinforcement Learning: SARSA",
+  },
+  {
     slug: "reinforcement-learning-off-policy-monte-carlo",
     title: "Reinforcement Learning: Off Policy Monte Carlo",
   },
