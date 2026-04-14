@@ -1,0 +1,271 @@
+import Image from "next/image"
+
+import CoverImage from "./cover.png"
+
+# Reinforcement Learning: Model Based ADP Learner
+
+<span className="text-base leading-snug text-neutral-500">
+  From raw experience to learned MDP models: an introduction to model-based ADP.
+</span>
+
+<Image src={CoverImage} alt={"MAB Cover"} placeholder="blur" />
+
+In **Policy Iteration** and **Value Iteration**, life was easy. Our drone had the full rulebook of Grid City:
+
+- It knew the **reward function,** which rooftops cost battery, which gave penalties, which gave +1.
+- It knew the **transition model,** how often the wind drifted it left or right.
+- It even knew which squares were restricted airspaces or tall buildings.
+
+It could sit in a warm simulation lab, crunch equations, and compute the perfect policy without ever leaving home.
+
+But now? Grid City becomes a **black box**.
+
+The drone has *no access* to the reward function. It has *no access* to the transition model. It doesn’t even know why or how it moves the way it does. All it can do is **interact**. The conversation goes like this:
+
+- **MDP:** “You are starting at state 8. Which action do you choose?”
+- **Drone:** “I choose action 2.”
+- **MDP:** “You are now in state 9. Reward: −0.04.”
+- **Drone:** “Okay… I choose action 1.”
+- **MDP:** “You drifted to state 5. Reward: −0.04.”
+- **Drone:** “Okay… I choose action 4.”
+- **MDP:** “You drifted to state 4. Reward: −0.04.”
+
+And that’s it. No explanations. No diagrams. Just inputs ****and outputs**.** From the drone’s perspective, all it ever receives is a sequence:
+
+$$
+s_0=8,\ a_0=2,\ r_0=-0.04,\ s_1=9,\ a_1=1,\ r_1=-0.04,\ldots
+$$
+
+Just an endless stream of **state**, **action**, **reward**, **state**, **action**, **reward**…
+
+The drone has *no idea* what “8” means. It doesn’t know that “2” means “LEFT” or that -0.04 is “battery drain.” It never sees the map or the labels. The meaning is hidden. Only the **experience** is visible.
+
+## Reconstructing the Invisible City
+
+The drone’s world is now reduced to a string of symbols:
+
+$$
+8,\ 2,\ -0.04,\ 9,\ 1,\ -0.04,\ 5,\ 4,\ -0.04,\ldots
+$$
+
+A long, cryptic rhythm of: **state → action → reward → next state**
+
+But here's the beautiful part:
+
+Even when the world hides its rules…**patterns always leak through.** And the drone can learn these patterns. That’s exactly what **model-based ADP** is about.
+
+### Learning the Reward Function
+
+Let’s start with something simple. The reward function $r(s)$ depends only on the state (function of state).
+
+If the drone sees:
+
+- At state 8: reward -0.04
+- At state 9: reward -0.04
+- At state 1: reward -1
+
+Then,
+
+$$
+r(8) = -0.04, r(9) = -0.04, r(1) = -1
+$$
+
+Each state reveals its reward simply by being visited.
+
+### Uncovering the Transition Model
+
+The transition model is trickier. The drone wants to know:
+
+$$
+p(s' \mid s, a)
+$$
+
+But the MDP never tells it. Instead, the drone gathers **triples**:
+
+$$
+\ (s, a, s'),\ (s, a, s''),\ldots
+$$
+
+and simply **counts** them.
+
+Let:
+
+- $N(s,a)$ = number of times the drone took action $a$ in state $s$
+- $N(s,a,s')$ = number of times that led to state $s'$
+
+Then:
+
+$$
+p(s' \mid s,a)
+= \frac{N(s,a,s')}{N(s,a)}
+$$
+
+That’s it. The transition model is reconstructed from pure experience.
+
+For example, suppose whenever the drone is in state 9 and chooses action 1, it sees this:
+
+- $9 \xrightarrow{1} 5$
+- $9 \xrightarrow{1} 5$
+- $9 \xrightarrow{1} 8$
+
+Then:
+
+- 2 out of 3 times → it reaches 5
+- 1 out of 3 times → it drifts to 8
+
+The estimated probabilities are:
+
+$$
+{p}(5 \mid 9, 1) = \frac{2}{3},\qquad
+{p}(8 \mid 9, 1) = \frac{1}{3}
+$$
+
+Just by counting, the drone discovers how the winds behave. It starts seeing *structure* inside the black box.
+
+$\textbf{Algorithm: Model-Based ADP Percept} \\[4pt]
+\textbf{input: } \text{sequence element } (s, a, r, s') \\[4pt]
+\textbf{persistent: }
+\begin{cases}
+r(s) \text{ initially zero} \\
+p(s'|s,a) \text{ initially zero} \\
+n(s,a,s') \text{ initially zero} \\
+n(s,a) \text{ initially zero} \\
+\text{visited}(s) \text{ initially false}
+\end{cases}
+\\[10pt]
+1.\hspace{0.5cm} \textbf{if } \text{visited}(s') = \text{false then} \\[6pt]
+2.\hspace{1.2cm} \text{visited}(s') \leftarrow \text{true} \\[6pt]
+3.\hspace{1.2cm} r(s') \leftarrow r \\[6pt]
+4.\hspace{1.2cm} V(s') \leftarrow r \\[6pt]
+5.\hspace{0.5cm} n(s,a,s') \leftarrow n(s,a,s') + 1 \\[4pt]
+6.\hspace{0.5cm} \textbf{for each } \hat{s} \in S \textbf{ do} \\[6pt]
+7.\hspace{1.2cm}
+p(\hat{s}|s,a) \leftarrow
+\dfrac{n(s,a,\hat{s})}{\sum_{i} n(s,a,s_i)} \\[6pt]$
+
+### With the Model Learned… back to Dynamic Programming
+
+Once the drone has estimated:
+
+- the reward map ${r}(s)$ , and
+- the transition probabilities ${p}(s' \mid s,a)$,
+
+it effectively has a complete reconstruction of the unseen MDP. From there, it can apply **value iteration** or **policy iteration** exactly like before.
+
+The drone’s intelligence adapts as the model improves. The more it flies, the better the city reveals itself. It learns not by being told, but by *discovering the rules behind its own experiences.*
+
+This family of approaches, learning the model from experience, then solving it with dynamic programming is known as **Adaptive Dynamic Programming (ADP)** and because we are relying on learning a model here we call it a model based approch hence model based ADP learner.
+
+$\textbf{Algorithm: Model-based ADP learner policy update} \\[6pt] \textbf{input: } convergence\ threshold\ \theta \\[6pt] \textbf{persistent: }
+\begin{cases}
+\pi(s) \text{ the current policy} \\
+V(s) \text{ the current value estimate} \\
+r(s) \text{ the learned reward model} \\
+p(s' \mid s,a) \text{ the learned transition model} \\
+\varepsilon \text{ exploration probability threshold} \\
+\xi \text{ decay factor for } \varepsilon
+\end{cases}
+\\[12pt] 1.\hspace{0.5cm} stable \leftarrow false \\[10pt] 2.\hspace{0.5cm} \textbf{while } stable = false\ \textbf{do} \\[6pt] 3.\hspace{1.2cm} V(s) \leftarrow policy\_evaluation\big(\hat{r}(s),\ \hat{p}(s' \mid s,a),\ \gamma,\ \theta,\ \pi(s),\ V(s)\big) \\[8pt] 4.\hspace{1.2cm} \pi(s),\ change \leftarrow policy\_improvement\big(\hat{p}(s' \mid s,a),\ \pi(s),\ V(s)\big) \\[10pt] 5.\hspace{1.2cm} \textbf{if } change = false\ \textbf{then} \\[4pt] 6.\hspace{1.8cm} stable \leftarrow true \\[8pt] 7.\hspace{0.5cm} \varepsilon \leftarrow \xi \varepsilon$
+
+## Gathering Knowledge
+
+By now, our drone has learned how to **reconstruct the invisible city,** estimating both the reward function and transition probabilities simply by observing sequences like:
+
+$$
+s,\ a,\ r,\ s,\ a,\ r,\ldots
+$$
+
+In theory, if the drone collected infinitely many such sequences, its estimates ${r}(s)$ and ${p}(s'|s,a)$ would eventually become *perfect*. The reconstructed MDP would match the real Grid City exactly. But there’s a catch:
+
+**Exploring an unknown world is not free.**
+
+In Grid City, generating one trajectory means flying one full episode. Flying ten thousand episodes means burning battery, risking crashes, drifting into restricted airspace and enduring constant turbulence.
+
+If the drone over-explores, it wastes time and battery wandering aimlessly. If it over-exploits too early, it might settle on a *wrong* understanding of the world.
+
+This should remind you of the dilemma in the **multi-armed bandit** casino story from earlier blog:
+
+- Every time you explore a new slot machine, you **risk losing coins**.
+- Every time you exploit your best-known machine, you **risk missing something better**.
+
+The drone faces the exact same tradeoff. In practice, model-based ADP must choose carefully:
+
+- when to explore (collect new data),
+- and when to exploit (use the current model).
+
+Just like the **ε-greedy** strategy in multi-armed bandit:
+
+- with probability $1 - \varepsilon$: exploit (take the best known action)
+- with probability $\varepsilon$: explore (try something new)
+
+Balancing exploration with exploitation allows the drone to **learn efficiently**, without burning itself out.
+
+$\textbf{Algorithm: Model-Based ADP Actuate (Exploration--Exploitation)} \\[10pt]
+\textbf{Input: } \text{state } s \\[6pt]
+\textbf{Persistent: }
+\begin{cases}
+\pi(s) \text{ (current policy, initially random)} \\
+\varepsilon \text{ (exploration probability, initially } 1.0)
+\end{cases}\\[12pt]
+1.\hspace{0.5cm} \beta \leftarrow \text{random number in }[0,1] \\[6pt]
+2.\hspace{0.5cm} \textbf{if } \beta < \varepsilon \ \textbf{then} \\[6pt]
+3.\hspace{1.2cm} a \leftarrow \text{random action from } A \\[6pt]
+4.\hspace{0.5cm} \textbf{else} \\[6pt]
+5.\hspace{1.2cm} a \leftarrow \pi(s) \\[6pt]
+6.\hspace{0.5cm} \text{return } a$
+
+## Combining Everything Together
+
+The interaction between the learner and the MDP black box follows a simple but powerful loop. Within each episode, the learner repeatedly **percepts** incoming information, the state transition and reward and then **actuates** by choosing the next action. This percept–act cycle continues until the episode reaches one of the terminal states.
+
+Once an episode is complete, the learner enters a different mode: it uses everything it has observed to update its policy and model estimates. As more episodes are played, these updates accumulate, allowing the policy to steadily improve. To measure how well training is going, the learner keeps a record of the total reward obtained in each episode, making it easy to track learning performance over time.
+
+$\textbf{Algorithm: Training a Model-based ADP learner for N episodes} \\[8pt] \textbf{input: }
+\begin{cases}
+\text{MDP black box} \\
+\text{ADP learner} \\
+N \text{ training episodes} \\
+s_0 \text{ starting state} \\
+S_{\text{end}} \text{ set of terminal states}
+\end{cases}
+\\[16pt] 
+1.\hspace{0.5cm} \text{initialize } R \text{ with zeros} \\[6pt] 
+2.\hspace{0.5cm} \textbf{for } i \leftarrow 1 \text{ to } N\ \textbf{do} \\[6pt] 
+3.\hspace{1.2cm} s \leftarrow s_0 \\[10pt] 
+4.\hspace{1.2cm} \textbf{while } s \notin S_{\text{end}}\ \textbf{do} \\[4pt] 
+5.\hspace{2cm} a \leftarrow \text{ADP learner actuate}(s) \\[6pt] 
+6.\hspace{2cm} r,\ s' \leftarrow \text{MDP black box}(s,a) \\[6pt] 
+7.\hspace{2cm} R(i) \leftarrow R(i) + r \\[6pt] 
+8.\hspace{2cm} \text{ADP learner percept}(s,a,r,s') \\[6pt] 
+9.\hspace{2cm} s \leftarrow s' \\[12pt] 
+10.\hspace{1.2cm} \text{ADP learner policy update} \\[12pt] 
+11.\hspace{0.5cm} \textbf{return } R$
+
+## When the World Is Too Complicated to Model
+
+Everything we built in this chapter rests on a single idea:
+
+> If the drone can learn the model, it can solve the model.
+> 
+
+That is why ADP is called **model-based**.
+
+It estimates the reward function, the transition probabilities, and then uses dynamic programming to compute an optimal policy. And as long as the transition structure is clear and learnable like in grid worlds, video games, puzzles, and controlled environments, ADP performs wonderfully.
+
+But what about worlds where the rules are murky?
+
+- A robot navigating uneven terrain
+- A self-driving car in chaotic traffic
+- A trader reacting to turbulent financial markets
+
+In these settings, the transition model $p(s'|s,a)$ is:
+
+- extremely hard to define,
+- expensive to estimate,
+- and sometimes changes faster than you can learn it.
+
+Building a model in such environments is like trying to bottle the wind.  For these domains, model-based learning becomes impractical, not because the idea is flawed, but because the world itself refuses to be neatly captured.
+
+This opens the door to **model-free** learning methods. These methods do not attempt to estimate $p(s'|s,a)$ at all. Instead, they learn values and policies **directly from observed returns**, bypassing the need for an internal model entirely.
+
+In the next blog, we’ll begin exploring this model-free landscape, starting with one of the most fundamental techniques in reinforcement learning: the **Monte Carlo (MC) learner**.

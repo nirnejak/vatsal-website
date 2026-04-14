@@ -1,0 +1,251 @@
+import Image from "next/image"
+
+import CoverImage from "./cover.png"
+import PCA from "./pca.png"
+
+# A Lagrange Multiplier Approach to PCA
+
+<span className="text-base leading-snug text-neutral-500">
+  Learn how Principal Component Analysis uses Lagrange multipliers to maximize
+  data variance.
+</span>
+
+<Image src={CoverImage} alt={"PCA Cover"} placeholder="blur" />
+
+Let us begin from a place that feels almost physical rather than mathematical.
+
+Imagine you are holding a thin elastic sheet in your hands. On that sheet are tiny dots, each dot representing one data point. Maybe each point describes a person using height and weight. Maybe each point is an image compressed into two numbers so we can visualize it. The exact meaning does not matter yet. What matters is this: the dots form a cloud.
+
+Now suppose you gently stretch the sheet. The cloud elongates. Some directions stretch a lot. Some directions barely change. Yet there is something subtle and powerful happening: there are certain special directions that do not rotate when the sheet is stretched. They simply scale. They grow longer or shorter, but they keep pointing in the same direction.
+
+Those special directions are **eigenvectors.**
+
+And how much they stretch? That is the **eigenvalue.**
+
+Even before we say the word “PCA,” this idea is already doing something important. It tells us that any linear transformation has natural axes along which its behavior is simplest. Most directions get twisted and mixed. Eigenvectors do not. They are the pure directions of action.
+
+Keep that geometric picture in your mind.
+
+## From Data Cloud to Variance Maximization
+
+Now return to the cloud of data points.
+
+Suppose we have data points
+
+$$
+x^{(i)} =
+\begin{bmatrix}
+x^{(i)}_1 \\
+x^{(i)}_2
+\end{bmatrix},
+\qquad
+i = 1, \dots, n.
+$$
+
+Before doing anything else, we center the data. That step is crucial. We subtract the mean so that the cloud is centered at the origin. After centering,
+
+$$
+\mathbb{E}[x] = 0.
+$$
+
+Why do we center? Because we are interested in spread, not location. **PCA is about shape, not position.**
+
+Now picture the simplest case: a 2D scatter plot. The points do not spread equally in every direction. Often they form an elongated ellipse, wide in one direction and narrow in the perpendicular direction. 
+
+<Image src={PCA} alt={"components"} placeholder="blur" />
+
+PCA asks a precise question: Can we find that long-axis direction in a principled way? Not by eyeballing, but by solving a clean mathematical problem.
+
+Pick any direction in space, represented by a vector $w$. If you project a data point $x$ onto this direction, you get a scalar
+
+$$
+z = w^\top x.
+$$
+
+Project the entire dataset and you obtain a one-dimensional representation along that direction. PCA says: choose the direction where these projected values spread out the most. In other words, **maximize the variance of $z$**.
+
+Since the data is centered, $\mathbb{E}[x] = 0$, which implies
+
+$$
+\mathbb{E}[z]
+=
+\mathbb{E}[w^\top x]
+=
+w^\top \mathbb{E}[x]
+=
+0.
+$$
+
+So the variance simplifies to
+
+$$
+\mathrm{Var}(z)
+=
+\mathbb{E}[z^2]
+=
+\mathbb{E}\big[(w^\top x)^2\big].
+$$
+
+Now expand the square carefully:
+
+$$
+(w^\top x)^2
+=
+(w^\top x)(w^\top x)
+=
+w^\top (x x^\top) w.
+$$
+
+Therefore,
+
+$$
+\mathrm{Var}(z)
+=
+\mathbb{E}\big[w^\top (x x^\top) w\big].
+$$
+
+Since $w$ is not random, pull it outside the expectation:
+
+$$
+\mathrm{Var}(z)
+=
+w^\top \mathbb{E}[x x^\top]\, w.
+$$
+
+That expected outer product is exactly the covariance matrix of the centered data:
+
+$$
+\Sigma = \mathbb{E}[x x^\top].
+$$
+
+So we arrive at the key expression:
+
+$$
+\mathrm{Var}(w^\top x)
+=
+w^\top \Sigma w.
+$$
+
+Notice how covariance appeared naturally. We did not introduce it separately; it emerged because the variance of a projection becomes a quadratic form.
+
+## The Optimization That Forces Eigenvectors
+
+Now we can state PCA as a crisp optimization problem:
+
+$$
+\max_{w} \quad w^\top \Sigma w.
+$$
+
+There is one issue. If we do not restrict $w$, the solution becomes meaningless. Scaling $w$ larger increases the objective proportionally to $\|w\|^2$, so it blows up. To avoid that, PCA fixes the length:
+
+$$
+w^\top w = 1.
+$$
+
+The true problem becomes
+
+$$
+\max_{w} \quad w^\top \Sigma w
+\quad
+\text{subject to}
+\quad
+w^\top w = 1.
+$$
+
+This is where Lagrange multipliers enter naturally. In general, to maximize $f(x)$ subject to $g(x) = c$, we form the Lagrangian
+
+$$
+L(x,\lambda)
+=
+f(x)
++
+\lambda\,(g(x) - c),
+$$
+
+and require that its gradient with respect to $x$ vanish at the optimum.
+
+Apply this to PCA. Let the objective be $w^\top \Sigma w$ and the constraint be $w^\top w = 1$. A convenient Lagrangian for maximization is
+
+$$
+L(w,\lambda)
+=
+w^\top \Sigma w
+-
+\lambda\,(w^\top w - 1).
+$$
+
+Now differentiate with respect to $w$.
+
+For symmetric $\Sigma$,
+
+$$
+\frac{\partial}{\partial w}(w^\top \Sigma w)
+=
+2\Sigma w.
+$$
+
+And
+
+$$
+\frac{\partial}{\partial w}(w^\top w)
+=
+2w.
+$$
+
+So the gradient of the Lagrangian is
+
+$$
+\nabla_w L(w,\lambda)
+=
+2\Sigma w
+-
+2\lambda w.
+$$
+
+Set it to zero at the optimum:
+
+$$
+2\Sigma w - 2\lambda w = 0.
+$$
+
+Divide by $2$:
+
+$$
+\Sigma w = \lambda w.
+$$
+
+Suddenly it is recognizable: this is the **eigenvalue equation**.
+
+PCA did not arbitrarily choose eigenvectors. The optimization problem “maximize variance of projection subject to unit length” forces us into the eigenvector condition. The maximizing direction $w$ must be an eigenvector of $\Sigma$, and $\lambda$ must be its eigenvalue.
+
+Now return to the data cloud. There are many eigenvectors, one for each dimension. PCA orders them by how much variance they capture. If
+
+$$
+\lambda_1 \ge \lambda_2 \ge \cdots \ge \lambda_p,
+$$
+
+with corresponding eigenvectors
+
+$$
+w_1, w_2, \ldots, w_p,
+$$
+
+then the first principal component is $w_1$, because it achieves the maximum projected variance $\lambda_1$. The second principal component is $w_2$, with an additional geometric condition: it must be orthogonal to the first, capturing the largest remaining variance in a perpendicular direction.
+
+This produces an orthonormal set:
+
+$$
+w_i^\top w_j = 0 \quad (i \ne j),
+\qquad
+w_i^\top w_i = 1.
+$$
+
+### Conclusion
+
+Eigenvectors are the special directions that remain pure under a transformation. The covariance matrix encodes how the data spreads. PCA asks for the direction where the spread is largest, and the moment we write that as “maximize $w^\top \Sigma w$ with $\|w\|=1$,” the mathematics inevitably leads to
+
+$$
+\Sigma w = \lambda w.
+$$
+
+The principal components are not arbitrary choices. They are the only directions that solve the variance-maximization problem.

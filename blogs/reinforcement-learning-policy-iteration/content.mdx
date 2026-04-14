@@ -1,0 +1,425 @@
+import Image from "next/image"
+
+import CoverImage from "./cover.png"
+import Iterations from "./iterations.png"
+import Policy from "./policy.png"
+import MDPState from "./mdp_state.png"
+
+# Reinforcement Learning: Policy Iterations
+
+<span className="text-base leading-snug text-neutral-500">
+  Explore policy evaluation and improvement to optimize drone navigation and eventually making drone smarter.
+</span>
+
+<Image src={CoverImage} alt={"MAB Cover"} placeholder="blur" />
+
+So far, we’ve seen our little delivery drone follow a **random policy,** a set of directions assigned to each block without any reasoning. The result? Endless wandering, wasted battery, and sometimes even crashes into no-fly zones.
+
+It’s time to make our drone *smarter.*
+
+But how does the drone know which direction is actually better?
+
+To answer that, we must teach it to **look beyond immediate rewards** and to think ahead, like a good chess player.
+
+Imagine the drone is standing at **state 14**. It can either fly right (to state 15) or left (to state 13). Both transitions give the same **immediate reward of −0.04**, so they look equally good at first glance. But intuition tells us something else: **state 15** is closer to the delivery rooftop (the green goal). If our drone only focuses on the immediate reward, it can’t distinguish between these options, it’s too **short-sighted.** To make wiser decisions, the drone must learn to consider the **long-term value** of each move and not just what happens *next.*
+
+Let’s introduce the concept of **utility** (also called **value**), denoted as $V(s)$. Think of it as a “goodness score” of a location, a number that reflects *how promising the future looks from that state onward.*
+
+But here’s the tricky part. To compute $V(s)$ exactly, the drone would have to imagine *every possible future sequence* of moves from that state, all possible paths, wind drifts, and random outcomes, and add up all the rewards it might collect.
+
+That’s like asking a chess player to simulate **every game possible** from the current board before making a move. In theory, it works. In practice, it’s impossible.
+
+For example, if our drone starts at **state 14**, it could:
+
+- Go RIGHT → UP → UP → Goal (+1)
+- Go RIGHT → UP → UP → LEFT → UP → RIGHT → Goal (+1)
+- Go RIGHT → UP → UP → LEFT → LEFT → UP → no-fly zone (-1)
+- Or get pushed sideways by the wind and drift endlessly…
+
+<Image src={MDPState} alt={"MAB Cover"} placeholder="blur" />
+
+Each sequence yields a different total reward. The number of such possibilities explodes exponentially, making it impossible to enumerate them all. So how can we estimate the value of a state without replaying every future flight path?
+
+To simplify, we make one crucial assumption:
+
+> Let’s estimate the utility of a state under a given policy $\pi$, meaning the drone always follows a specific set of rules for choosing actions.
+> 
+
+That is, instead of exploring *all possible* futures, we fix the drone’s behavior, perhaps the **random policy** we used earlier and ask:
+
+> If the drone always follows this policy, what’s the expected total reward starting from each state?
+> 
+
+<Image src={Policy} alt={"MAB Cover"} placeholder="blur" />
+
+Now that our drone has a fixed set of instructions, the blue-arrow policy, let’s watch what happens when it tries to compute the value of a state.
+
+Picture the drone at **state 13,** one block to the right of its home. The random policy arrow in this square points **UP**, urging the drone to climb to state 9.
+
+From **state 13 → UP → state 9 → UP → state 5 → RIGHT → state 6 → RIGHT → state 7 → UP → state 3**
+
+Eventually utility value for  state 13:
+
+$$
+V(13)
+= r(13) + r(9) + r(5) + r(6) + r(7) + r(3)
+$$
+
+If we start from state 9 then utility value for state 9 will be:
+
+$$
+V(9)
+= r(9) + r(5) + r(6) + r(7) + r(3)
+$$
+
+Following this pattern, we see a beautiful simplification emerging, state **13** just adds its own immediate reward to the utility of state **9.**
+
+$$
+V(13) = r(13) + V(9)
+$$
+
+And the same logic applies as we move down the chain:
+
+$$
+V(9) = r(9) + V(5)
+$$
+
+$$
+V(5) = r(5) + V(6)
+$$
+
+This gives us the **recursive relationship**:
+
+$$
+V(s) = r(s) + V(s')
+$$
+
+Where $s′$ is the next state chosen by the policy.
+
+This compact expression is the general form of the recursive relationship that defines state utility under a fixed policy.
+
+### Discount Factor
+
+In the real world, **rewards in the future are less valuable than rewards right now.** Our drone agrees after all:
+
+- One unit of battery saved today is more valuable than one saved ten steps later.
+- Uncertainty increases as we look further ahead
+
+To capture this intuition, we introduce the **discount factor**, denoted by $\gamma$, where:
+
+$$
+0 \le \gamma \le 1
+$$
+
+It tells the drone **how much it should care about the future**.
+
+- If $\gamma = 1$: the drone values future rewards just as much as immediate ones
+- If $\gamma = 0$: the drone cares **only about the present moment**
+- A smaller $\gamma$ makes it impatient and short-sighted. A larger $\gamma$ makes it farsighted and more strategic.
+
+With discounting added, the recursive definition evolves into:
+
+$$
+V(s) = r(s) + \gamma \, V(s')
+$$
+
+Then the utility of a state becomes a **discounted sum** of rewards:
+
+$$
+V(s_0)
+= r(s_0) + \gamma r(s_1) + \gamma^2 r(s_2) + \gamma^3 r(s_3) + \cdots
+$$
+
+### **Adding Stochasticity**
+
+Up to now, our drone’s world has been perfectly predictable, each blue arrow pointed to exactly one next state, and the drone always went there.
+
+The city air is turbulent, and our drone often faces **unexpected gusts of wind**. Even if it *intends* to move upward, it may get nudged sideways into a neighboring block. This randomness reintroduces the **stochasticity** we discussed earlier.
+
+At **state 9**, the policy says **UP**. But the drone’s actual movement unfolds like this:
+
+- **80% chance** → move UP to **state 5**
+- **10% chance** → drift LEFT to **state 8**
+- **10% chance** → drift RIGHT to **state 10**,
+    
+    but state 10 is a tall building, the drone **cannot enter**, so it stays in **state 9** instead.
+    
+
+So instead of a single deterministic future, state 9 has a **lottery of futures**. This means the utility of state 9 becomes:
+
+$$
+V(9)
+= r(9) 
+ + \gamma \Big(
+     0.8\,V(5)
+   + 0.1\,V(8)
+   + 0.1\,V(9)
+   \Big)
+$$
+
+Suddenly, computing value isn’t a straight line anymore. it’s a weighted blend of all possible outcomes. When movement becomes uncertain, our earlier equation:
+
+$$
+V(s) = r(s) + \gamma V(s')
+$$
+
+evolves into something richer:
+
+$$
+V(s)
+= r(s)
++ \gamma \sum_{s'} P(s' \mid s, a = \pi(s))\, V(s')
+$$
+
+Now each state value includes *all* possible successor states, each weighted by its probability. To understand this better, recall that:
+
+- $P(s' \mid s, a)$ is the transition probability model of the environment.
+- That formalizes the idea of a **stochastic world,** a world where the drone can drift away from its intended direction. It specifies how likely we are to end up in each next state $s'$ after taking action $a$
+
+Now that we are evaluating a **fixed policy**, the drone no longer decides its action directly. The policy $\pi$ does:
+
+$$
+a = \pi(s)
+$$
+
+Thus the transition model becomes:
+
+$$
+P(s' \mid s, a=\pi(s))
+$$
+
+which means:
+
+> Probability of transitioning to state $s'$, given that we’re in state $s$ and the policy instructs action $\pi(s)$.
+> 
+
+### Policy Evaluation
+
+Now that we’ve introduced stochastic transitions, we can finally answer the question:
+
+**“If the drone blindly follows the blue-arrow policy, how good is it?”**
+
+To answer this, we must compute the **utility of every non-terminal state**, given that the drone always obeys the blue arrows and the wind may push it off-course. This process is called **policy evaluation**.
+
+We can write above equation for each state as follows:
+
+$V(2)=r(2)+\gamma[0.8V(1)+0.1V(6)+0.1V(2)] \\[6pt] V(4)=r(4)+\gamma[0.8V(4)+0.1V(8)+0.1V(4)] \\[6pt]
+V(5)=r(5)+\gamma[0.8V(6)+0.1V(1)+0.1V(9)] \\[6pt]
+V(6)=r(6)+\gamma[0.8V(7)+0.1V(2)+0.1V(6)] \\[6pt]
+V(7)=r(7)+\gamma[0.8V(3)+0.1V(6)+0.1V(7)] \\[6pt]
+V(8)=r(8)+\gamma[0.8V(12)+0.1V(9)+0.1V(8)] \\[6pt]
+V(9)=r(9)+\gamma[0.8V(5)+0.1V(8)+0.1V(9)] \\[6pt]
+V(11)=r(11)+\gamma[0.8V(11)+0.1V(15)+0.1V(7)] \\[6pt]
+V(12)=r(12)+\gamma[0.8V(13)+0.1V(8)+0.1V(12)] \\[6pt]
+V(13)=r(13)+\gamma[0.8V(9)+0.1V(12)+0.1V(14)] \\[6pt]
+V(14)=r(14)+\gamma[0.8V(15)+0.1V(6)+0.1V(14)] \\[6pt]
+V(15)=r(15)+\gamma[0.8V(11)+0.1V(14)+0.1V(15)]$
+
+Terminal states:
+
+$$
+V(1)=r(1)
+$$
+
+$$
+V(3)=r(3)
+$$
+
+The next step is to compute these utilities but solving all of the linear equations at the same time in one big algebraic step. It would be very difficult. Instead, we use a dynamic programming method called iterative policy evaluation (or sweep), where we start by setting every state’s utility to zero and then loop through the states repeatedly to update them.
+
+**Iteration 1 (γ = 0.5)**
+
+**State 2**
+
+$$
+V(2)= -0.04 + 0.5[0.8(-1) + 0.1(0) + 0.1(0)]
+$$
+
+All values currently 0 except terminal state.
+
+$$
+V(2) = -0.04 + 0.5(-0.8) = -0.44
+$$
+
+**State 4**
+
+$$
+V(4)= -0.04 + 0.5[0.8V(4) + 0.1V(8) + 0.1V(4)]
+$$
+
+All values currently 0.
+
+$$
+V(4)= -0.04 + 0.5(0) = -0.04
+$$
+
+**State 5**
+
+$$
+V(5)= -0.04 + 0.5[0.8V(6) + 0.1(-1) + 0.1V(9)]
+$$
+
+All unknowns still 0 except $V(2)$ and terminal. $V(2)$ we have computed in previous step.
+
+$$
+V(5)= -0.04 + 0.5(0 + -0.1 + 0 )
+$$
+
+$$
+V(5)= -0.04 - 0.05 = -0.09
+$$
+
+**By the end of Sweep 1**
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>State</th>
+      <th>New V(s)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>V(1)</td>
+      <td>-1</td>
+    </tr>
+    <tr>
+      <td>V(2)</td>
+      <td>-0.44</td>
+    </tr>
+    <tr>
+      <td>V(3)</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>V(4)</td>
+      <td>-0.04</td>
+    </tr>
+    <tr>
+      <td>V(5)</td>
+      <td>-0.09</td>
+    </tr>
+    <tr>
+      <td>V(6)</td>
+      <td>-0.062</td>
+    </tr>
+    <tr>
+      <td>V(7)</td>
+      <td>0.34</td>
+    </tr>
+    <tr>
+      <td>V(8)</td>
+      <td>-0.04</td>
+    </tr>
+    <tr>
+      <td>V(9)</td>
+      <td>-0.08</td>
+    </tr>
+    <tr>
+      <td>V(11)</td>
+      <td>-0.023</td>
+    </tr>
+    <tr>
+      <td>V(12)</td>
+      <td>-0.042</td>
+    </tr>
+    <tr>
+      <td>V(13)</td>
+      <td>-0.073</td>
+    </tr>
+    <tr>
+      <td>V(14)</td>
+      <td>-0.063</td>
+    </tr>
+    <tr>
+      <td>V(15)</td>
+      <td>-0.052</td>
+    </tr>
+  </tbody>
+</table>
+
+After the first sweep, the grid already starts to take shape. Some states become slightly negative, others stay close to zero, and some like the goal or the no-fly zone keep their fixed terminal rewards.
+
+But this is **only Sweep 1**. The values are still rough, incomplete guesses. If we continue sweeping **Sweep 2, Sweep 3, …, Sweep 10, Sweep 20, …**  something fascinating happens:
+
+- States closer to the goal gradually gain higher values.
+- Cells that frequently drift into bad areas get more negative.
+- Paths that reliably lead toward the goal become more positive.
+
+During each sweep, every state updates its value using the *most recent* values of its neighbours, this creates a smooth flow of information across the grid. Eventually, after enough iterations, the numbers stop changing:
+
+$$
+|V_{\text{new}}(s) - V_{\text{old}}(s)| < \theta\quad\forall s
+$$
+
+This gives us the true long-term utility of every state under the blue-arrow policy.
+
+$\textbf{Algorithm (Iterative In-Place Sweep):} \\[10pt] \textbf{Input: } r(s),\ p(s' \mid s,a),\ \gamma,\ \pi(s),\ \theta \\[8pt] 1.\hspace{0.5cm} \text{Initialize } V(s) \leftarrow 0 \ \text{for all non-terminal states} \\[6pt] 2.\hspace{0.5cm} \text{Initialize } V(s) \leftarrow r(s) \ \text{for terminal states} \\[12pt] 3.\hspace{0.5cm} \text{Repeat until convergence:} \\[6pt] 4.\hspace{1.2cm} \Delta \leftarrow 0 \\[6pt] 5.\hspace{1.2cm} \text{for each state } s: \\[6pt] 6.\hspace{2cm} \text{temp} \leftarrow V(s) \\[6pt] 7.\hspace{2cm} V(s) \leftarrow
+r(s) + \gamma \sum_{s'} p(s' \mid s,\, a=\pi(s)) \, V(s') \\[6pt] 8.\hspace{2cm} \Delta \leftarrow \max\big(\Delta,\ |\text{temp} - V(s)|\big) \\[10pt] 9.\hspace{1.2cm} \text{if } \Delta < \theta:\ \text{stop; values have converged} \\[10pt] 10.\hspace{0.5cm} \text{return } V(s)$
+
+### **Policy Improvement**
+
+As we discussed earlier, the **utility** of a state tells us how good it is, not because of what the drone does *right now*, but because of what lies ahead if it continues following its policy.
+
+So naturally, if the drone wants to behave *better*, it should choose actions that lead toward **states with higher utility**.
+
+Take **state 13** for example. The old policy said “go UP.” But after evaluation, the drone may find that going **RIGHT** toward state 14 ultimately leads to a path with higher utility.
+
+The drone will simply replace the arrow at state 13 with the action that leads to the highest-valued neighbour.
+
+That is policy improvement in a nutshell:
+
+1. Look at all possible successor states.
+2. Choose the action with the largest utility.
+3. Update the arrow accordingly.
+
+Formally:
+
+$$
+\pi_{\text{new}}(s)
+= \arg\max_a \sum_{s'} P(s' \mid s, a)\, V(s')
+$$
+
+This selects the action that leads to the best *expected* next value.
+
+$\textbf{Algorithm:} \\[10pt] \textbf{Input: } p(s' \mid s,a),\ \pi(s),\ v(s) \\[8pt]
+1.\hspace{0.5cm} \text{change} \leftarrow \text{false} \\[8pt]
+2.\hspace{0.5cm} \text{for each state } s \in S: \\[6pt]
+3.\hspace{1.2cm} \text{temp} \leftarrow \pi(s) \\[6pt]
+4.\hspace{1.2cm} \pi(s) \leftarrow
+\arg\max_{a} \left( \sum_{s'} p(s' \mid s,a)\, v(s') \right) \\[6pt]
+5.\hspace{1.2cm} \text{if temp} \neq \pi(s): \\[4pt]
+6.\hspace{2cm} \text{change} \leftarrow \text{true} \\[10pt]
+7.\hspace{0.5cm} \text{return } \pi(s),\ \text{change}$
+
+### **Policy iteration**
+
+We are not done yet.
+
+Yes, we improved the policy.
+
+Yes, the drone is now making better moves than before.
+
+But is this the **best** possible behaviour? Not necessarily.
+
+The new arrows are only as good as the utility values that created them and those utility values were computed under the **previous** policy.
+
+So here’s the trick:
+
+We repeat the entire cycle.
+
+1. Evaluate the policy to compute $V^\pi(s)$
+2. Improve the policy using those utilities
+3. Repeat until nothing changes
+
+This loop is called **Policy Iteration**, and it’s one of the most elegant ideas in reinforcement learning.
+
+When we start Policy Evaluation the second time, we **don’t reset utilities to zero**. We simply continue from the values we already computed. Since they’re already close to the truth, the second round converges much faster.
+
+<Image src={Iterations} alt={"MAB Cover"} placeholder="blur" />
+
+$\textbf{Algorithm:} \\[12pt] \textbf{Input: } r(s),\ p(s' \mid s,a),\ \gamma,\ \theta \\[10pt] 1.\hspace{0.5cm} \text{initialize } \pi(s) \text{ randomly} \\[8pt] 2.\hspace{0.5cm} \text{initialize } V(s) \text{ with zeros} \\[10pt] 3.\hspace{0.5cm} \text{stable} \leftarrow \text{false} \\[12pt] 4.\hspace{0.5cm} \text{while stable} = \text{false do} \\[10pt] 5.\hspace{1.2cm} V(s) \leftarrow \text{policy\_evaluation}\big(r(s),\ p(s' \mid s,a),\ \gamma,\ \theta,\ \pi(s),\ V(s)\big) \\[10pt] 6.\hspace{1.2cm} \pi(s),\ \text{change} \leftarrow \text{policy\_improvement}\big(p(s' \mid s,a),\ \pi(s),\ V(s)\big) \\[10pt] 7.\hspace{1.2cm} \text{if change} = \text{false then} \\[6pt] 8.\hspace{2cm} \text{stable} \leftarrow \text{true} \\[12pt] 9.\hspace{0.3cm} \pi^*(s) \leftarrow \pi(s) \\[12pt] 10.\hspace{0.3cm} \text{return } \pi^*(s)$
+### Conclusion
+Policy iteration gives our drone a powerful way to learn from experience: evaluate how good each state is under its current behavior, then update its behavior to gravitate toward better outcomes. With every cycle, the drone’s understanding of the world sharpens, and its policy becomes more intelligent and reliable. After enough iterations, the drone settles on an optimal set of instructions, a policy that balances risk, reward, and uncertainty in a noisy environment.
+
+In the next post, we’ll explore Value Iteration, a faster and more elegant alternative that skips full policy evaluation and jumps straight toward the optimal values.

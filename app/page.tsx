@@ -38,7 +38,7 @@ const SOCIAL_LINKS = [
 const HomePage: React.FC = () => {
   return (
     <main className="flex min-h-dvh items-center justify-center">
-      <div className="mx-auto max-w-[580px] px-4 md:px-0">
+      <div className="mx-auto max-w-145 px-4 md:px-0">
         <h1 className="font-semibold text-4xl/snug tracking-tight md:text-5xl">
           <span className="flex text-neutral-800 dark:text-neutral-300">
             Hello, I{"'"}m

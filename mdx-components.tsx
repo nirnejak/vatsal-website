@@ -11,7 +11,7 @@ interface Props {
 
 const BlogWrapper: React.FC<Props> = ({ children }) => {
   return (
-    <main className="mx-auto w-full max-w-[580px] px-4 md:px-0">
+    <main className="mx-auto w-full max-w-145 px-4 md:px-0">
       <article
         className={classNames(
           "prose prose-neutral dark:prose-invert mb-24 prose:leading-snug prose:tracking-tight",

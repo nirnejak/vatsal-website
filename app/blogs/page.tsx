@@ -16,7 +16,7 @@ export const metadata: Metadata = getMetadata({
 
 const BlogsPage: React.FC = () => {
   return (
-    <main className="mx-auto w-full max-w-[580px] px-4 md:px-0">
+    <main className="mx-auto w-full max-w-145 px-4 md:px-0">
       <h1 className="mt-12 mb-8 font-semibold text-3xl/snug tracking-tight md:mb-12">
         <span className="flex text-neutral-800 dark:text-neutral-300">
           Blogs <br />
