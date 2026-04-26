@@ -1,6 +1,7 @@
 import { blogs } from "@/blogs"
 
 const orderedSlugs = [
+  "reinforcement-learning-n-step-sarsa",
   "reinforcement-learning-q-learning",
   "reinforcement-learning-sarsa",
   "reinforcement-learning-off-policy-monte-carlo",

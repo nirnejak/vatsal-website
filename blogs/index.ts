@@ -1,34 +1,33 @@
-import type * as React from "react"
 import type { StaticImageData } from "next/image"
-
-import b0Content from "./a-comprehensive-overview-of-bert/content.mdx"
+import type * as React from "react"
 import b0Cover from "./a-comprehensive-overview-of-bert/banner.jpg"
+import b0Content from "./a-comprehensive-overview-of-bert/content.mdx"
 import b1Content from "./a-lagrange-multiplier-approach-to-pca/content.mdx"
 import b1Cover from "./a-lagrange-multiplier-approach-to-pca/cover.png"
-import b2Content from "./annoy-and-efficient-approximate-nearest-neighbor-algorithm/content.mdx"
 import b2Cover from "./annoy-and-efficient-approximate-nearest-neighbor-algorithm/banner.jpg"
-import b3Content from "./attention-mechanism/content.mdx"
+import b2Content from "./annoy-and-efficient-approximate-nearest-neighbor-algorithm/content.mdx"
 import b3Cover from "./attention-mechanism/banner.jpg"
-import b4Content from "./encoder-decoder-architecture/content.mdx"
+import b3Content from "./attention-mechanism/content.mdx"
 import b4Cover from "./encoder-decoder-architecture/banner.jpg"
-import b5Content from "./encoder-decoder-attention-in-the-transformer/content.mdx"
+import b4Content from "./encoder-decoder-architecture/content.mdx"
 import b5Cover from "./encoder-decoder-attention-in-the-transformer/banner.jpg"
-import b6Content from "./evaluation-metrics-for-synthetic-qa-datasets-in-rag-evaluation/content.mdx"
+import b5Content from "./encoder-decoder-attention-in-the-transformer/content.mdx"
 import b6Cover from "./evaluation-metrics-for-synthetic-qa-datasets-in-rag-evaluation/banner.jpg"
-import b7Content from "./from-gpt-1-to-gpt-3-a-new-era-in-nlp/content.mdx"
+import b6Content from "./evaluation-metrics-for-synthetic-qa-datasets-in-rag-evaluation/content.mdx"
 import b7Cover from "./from-gpt-1-to-gpt-3-a-new-era-in-nlp/banner.jpg"
-import b8Content from "./lora-low-rank-adaptation-for-efficient-fine-tuning/content.mdx"
+import b7Content from "./from-gpt-1-to-gpt-3-a-new-era-in-nlp/content.mdx"
 import b8Cover from "./lora-low-rank-adaptation-for-efficient-fine-tuning/banner.jpg"
-import b9Content from "./model-evaluation-sensitivity-specificity-and-roc-auc/content.mdx"
+import b8Content from "./lora-low-rank-adaptation-for-efficient-fine-tuning/content.mdx"
 import b9Cover from "./model-evaluation-sensitivity-specificity-and-roc-auc/banner.jpg"
-import b10Content from "./normalization-in-deep-learning/content.mdx"
+import b9Content from "./model-evaluation-sensitivity-specificity-and-roc-auc/content.mdx"
 import b10Cover from "./normalization-in-deep-learning/banner.jpg"
-import b11Content from "./rag-enhancing-language-models-with-external-knowledge/content.mdx"
+import b10Content from "./normalization-in-deep-learning/content.mdx"
 import b11Cover from "./rag-enhancing-language-models-with-external-knowledge/banner.jpg"
-import b12Content from "./rag-evaluation-part-1-retriever-evaluation/content.mdx"
+import b11Content from "./rag-enhancing-language-models-with-external-knowledge/content.mdx"
 import b12Cover from "./rag-evaluation-part-1-retriever-evaluation/banner.png"
-import b13Content from "./rag-evaluation-part-2-generator-evaluation/content.mdx"
+import b12Content from "./rag-evaluation-part-1-retriever-evaluation/content.mdx"
 import b13Cover from "./rag-evaluation-part-2-generator-evaluation/banner.png"
+import b13Content from "./rag-evaluation-part-2-generator-evaluation/content.mdx"
 import b14Content from "./reinforcement-learning-markov-decision-process/content.mdx"
 import b14Cover from "./reinforcement-learning-markov-decision-process/cover.png"
 import b15Content from "./reinforcement-learning-model-based-adp-learner/content.mdx"
@@ -37,6 +36,8 @@ import b16Content from "./reinforcement-learning-model-free-monte-carlo-learner/
 import b16Cover from "./reinforcement-learning-model-free-monte-carlo-learner/cover.png"
 import b17Content from "./reinforcement-learning-multi-armed-bandits/content.mdx"
 import b17Cover from "./reinforcement-learning-multi-armed-bandits/mab.png"
+import b30Content from "./reinforcement-learning-n-step-sarsa/content.mdx"
+import b30Cover from "./reinforcement-learning-n-step-sarsa/cover.png"
 import b18Content from "./reinforcement-learning-off-policy-monte-carlo/content.mdx"
 import b18Cover from "./reinforcement-learning-off-policy-monte-carlo/cover.png"
 import b19Content from "./reinforcement-learning-policy-iteration/content.mdx"
@@ -47,20 +48,20 @@ import b21Content from "./reinforcement-learning-sarsa/content.mdx"
 import b21Cover from "./reinforcement-learning-sarsa/cover.png"
 import b22Content from "./reinforcement-learning-value-iteration/content.mdx"
 import b22Cover from "./reinforcement-learning-value-iteration/cover.png"
-import b23Content from "./self-attention/content.mdx"
 import b23Cover from "./self-attention/banner.jpg"
-import b24Content from "./sinusoidal-positional-encoding-in-the-transformer/content.mdx"
+import b23Content from "./self-attention/content.mdx"
 import b24Cover from "./sinusoidal-positional-encoding-in-the-transformer/banner.jpg"
-import b25Content from "./t5-the-text-to-text-transfer-transformer/content.mdx"
+import b24Content from "./sinusoidal-positional-encoding-in-the-transformer/content.mdx"
 import b25Cover from "./t5-the-text-to-text-transfer-transformer/banner.jpg"
-import b26Content from "./the-react-agent-framework/content.mdx"
+import b25Content from "./t5-the-text-to-text-transfer-transformer/content.mdx"
 import b26Cover from "./the-react-agent-framework/banner.jpg"
-import b27Content from "./understanding-padding-and-look-ahead-mask-in-the-transformer-decoder/content.mdx"
+import b26Content from "./the-react-agent-framework/content.mdx"
 import b27Cover from "./understanding-padding-and-look-ahead-mask-in-the-transformer-decoder/banner.jpg"
-import b28Content from "./understanding-scaling-in-self-attention/content.mdx"
+import b27Content from "./understanding-padding-and-look-ahead-mask-in-the-transformer-decoder/content.mdx"
 import b28Cover from "./understanding-scaling-in-self-attention/banner.jpg"
-import b29Content from "./understanding-the-transformer-architecture/content.mdx"
+import b28Content from "./understanding-scaling-in-self-attention/content.mdx"
 import b29Cover from "./understanding-the-transformer-architecture/banner.jpg"
+import b29Content from "./understanding-the-transformer-architecture/content.mdx"
 
 export interface BlogEntry {
   title: string
@@ -278,6 +279,13 @@ export const blogs: Record<string, BlogEntry> = {
       "Get a bird’s eye view of the Transformer architecture! and learn how attention, positional encoding, and encoder-decoder structures work together to revolutionize NLP tasks.",
     cover: b29Cover,
     Content: b29Content,
+  },
+  "reinforcement-learning-n-step-sarsa": {
+    title: "Reinforcement Learning: N-Step SARSA",
+    description:
+      "A clear walkthrough of n-step returns, showing how they unify Monte Carlo and temporal-difference methods through a controllable lookahead horizon.",
+    cover: b30Cover,
+    Content: b30Content,
   },
 }
 
