@@ -1,0 +1,124 @@
+import Image from "next/image"
+
+import CoverImage from "./cover.png"
+import TradeOff from "./tradeoff.png"
+
+# Reinforcement Learning: N-Step SARSA
+
+<span className="text-base leading-snug text-neutral-500">
+  A clear walkthrough of n-step returns, showing how they unify Monte Carlo and temporal-difference methods through a controllable lookahead horizon.
+</span>
+
+<Image src={CoverImage} alt={"Cover"} placeholder="blur" />
+
+Every method so far has made a very specific commitment about *how far into the future it wants to look*.
+
+Monte Carlo says:
+
+“I will wait. I will watch the entire episode unfold. Only when the story is finished will I decide what the first step was worth.”
+
+One-step TD methods like SARSA and Q-learning say:
+
+“I won’t wait that long. I’ll peek one step ahead, trust my current estimate for the rest, and update immediately.”
+
+And suddenly a question feels unavoidable. Why only one step? Why all the way to the end? Why not something in between?
+
+To see what this really means, let’s slow time again and zoom into a single episode in Grid City. Imagine the drone starts at state $s_1$. Over the next few moments, it experiences the following trajectory:
+
+$$
+s_1 \xrightarrow{r_1=3} s_2
+$$
+
+$$
+s_2 \xrightarrow{r_2=-1} s_3
+$$
+
+$$
+s_3 \xrightarrow{r_3=5} s_4
+$$
+
+$$
+s_4 \xrightarrow{r_4=2} s_5
+$$
+
+Assume $s_5$ is terminal.
+
+Now imagine you are standing at time $t=1$, just after leaving $s_1$. You want to estimate how good $s_1$ was. Monte Carlo would say:
+
+$$
+G_1 = 3 + (-1) + 5 + 2
+$$
+
+and only after reaching $s_5$ would it update:
+
+$$
+V(s_1) \leftarrow V(s_1) + \alpha (G_1 - V(s_1))
+$$
+
+One-step TD would instead say:
+
+$$
+\text{Target}_1^{(1)} = 3 + \gamma V(s_2).
+$$
+
+It peeks one step ahead, then bootstraps. But now let’s try something different. Suppose we look **two steps ahead** before bootstrapping. From $s_1$, we observe:
+
+$$
+r_1 = 3, \quad r_2 = -1,
+$$
+
+and then instead of waiting for the whole episode, we stop at $s_3$ and bootstrap from there. That gives us the **2-step return**:
+
+$$
+G_1^{(2)} = 3 + \gamma(-1) + \gamma^2 V(s_3).
+$$
+
+Notice what happened. We used two *real rewards*, then trusted our estimate for the rest. If we go three steps before bootstrapping, we get:
+
+$$
+G_1^{(3)} = 3 + \gamma(-1) + \gamma^2(5) + \gamma^3 V(s_4).
+$$
+
+And if we keep going until the episode ends, we get:
+
+$$
+G_1^{(4)} = 3 + \gamma(-1) + \gamma^2(5) + \gamma^3(2),
+$$
+
+which is exactly the Monte Carlo return. One-step TD is the **1-step return**:
+
+$$
+G_1^{(1)} = 3 + \gamma V(s_2)
+$$
+
+Monte Carlo is the **full n-step return**, where $n$ equals the remaining episode length. And in between? There is a whole spectrum of possibilities:
+
+$$
+G_t^{(n)} =
+r_t + \gamma r_{t+1} + \cdots + \gamma^{n-1} r_{t+n-1}
++ \gamma^n V(s_{t+n}).
+$$
+
+Now pause and reflect. Each choice of $n$ changes the personality of the learner.
+
+If $n=1$, we bootstrap quickly. Low variance. Slight bias.
+
+If $n$ is very large, we approach Monte Carlo. Unbiased. Higher variance.
+
+<Image src={TradeOff} alt={"Tradeoff"} placeholder="blur" />
+
+We are no longer trapped between two extremes. We have a dial we can turn.
+
+Now, how do we update?  So in general, at time $t$, we will update the state visited at time $t-n+1$. The learning signal travels backward with a delay of $n$.
+
+Mathematically, the update is always
+
+$$
+V(s_t) \leftarrow V(s_t) + \alpha \big(G_t^{(n)} - V(s_t)\big)
+$$
+
+Conceptually, what changes is how long we allow reality to unfold before trusting our estimate.
+
+If $n=1$, we trust our current value function almost immediately. If $n$ is large, we trust actual observed rewards longer and if n is of episode length then we update once the episode ends.
+
+Let’s keep it short this time. We will visit same concept again in “Generalized Advantage Estimation (GAE)”. There we will derive generalized way of balancing between 1 step TD bootstrap and full monte carlo return.
