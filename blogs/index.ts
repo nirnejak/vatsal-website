@@ -28,6 +28,10 @@ import b12Cover from "./rag-evaluation-part-1-retriever-evaluation/banner.png"
 import b12Content from "./rag-evaluation-part-1-retriever-evaluation/content.mdx"
 import b13Cover from "./rag-evaluation-part-2-generator-evaluation/banner.png"
 import b13Content from "./rag-evaluation-part-2-generator-evaluation/content.mdx"
+import b31Content from "./reinforcement-learning-continuous-state-space/content.mdx"
+import b31Cover from "./reinforcement-learning-continuous-state-space/cover.png"
+import b33Content from "./reinforcement-learning-deep-q-learning/content.mdx"
+import b33Cover from "./reinforcement-learning-deep-q-learning/cover.png"
 import b14Content from "./reinforcement-learning-markov-decision-process/content.mdx"
 import b14Cover from "./reinforcement-learning-markov-decision-process/cover.png"
 import b15Content from "./reinforcement-learning-model-based-adp-learner/content.mdx"
@@ -38,6 +42,8 @@ import b17Content from "./reinforcement-learning-multi-armed-bandits/content.mdx
 import b17Cover from "./reinforcement-learning-multi-armed-bandits/mab.png"
 import b30Content from "./reinforcement-learning-n-step-sarsa/content.mdx"
 import b30Cover from "./reinforcement-learning-n-step-sarsa/cover.png"
+import b32Content from "./reinforcement-learning-neural-network-approximation/content.mdx"
+import b32Cover from "./reinforcement-learning-neural-network-approximation/cover.png"
 import b18Content from "./reinforcement-learning-off-policy-monte-carlo/content.mdx"
 import b18Cover from "./reinforcement-learning-off-policy-monte-carlo/cover.png"
 import b19Content from "./reinforcement-learning-policy-iteration/content.mdx"
@@ -286,6 +292,27 @@ export const blogs: Record<string, BlogEntry> = {
       "A clear walkthrough of n-step returns, showing how they unify Monte Carlo and temporal-difference methods through a controllable lookahead horizon.",
     cover: b30Cover,
     Content: b30Content,
+  },
+  "reinforcement-learning-continuous-state-space": {
+    title: "Reinforcement Learning: Continuous State Space",
+    description:
+      "From State Aggregation to Tile Coding: Handling Continuous State Spaces in Reinforcement Learning.",
+    cover: b31Cover,
+    Content: b31Content,
+  },
+  "reinforcement-learning-neural-network-approximation": {
+    title: "Reinforcement Learning: Tile Coding to Neural Network",
+    description:
+      "How Neural Networks Replace Q-Tables in Continuous State Space Reinforcement Learning.",
+    cover: b32Cover,
+    Content: b32Content,
+  },
+  "reinforcement-learning-deep-q-learning": {
+    title: "Reinforcement Learning: Deep SARSA and Q Learning",
+    description:
+      "The Evolution of Reinforcement Learning: From Tables to Deep Q-Networks (DQN).",
+    cover: b33Cover,
+    Content: b33Content,
   },
 }
 
