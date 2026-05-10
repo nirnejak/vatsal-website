@@ -1,0 +1,437 @@
+import Image from "next/image"
+
+import CoverImage from "./cover.png"
+import TileCoding from "./tile_coding.png"
+import StateAg from "./state_ag.png"
+
+# Reinforcement Learning: Continuous State Space
+
+<span className="text-base leading-snug text-neutral-500">
+  From State Aggregation to Tile Coding: Handling Continuous State Spaces in Reinforcement Learning.
+</span>
+
+<Image src={CoverImage} alt={"MAB Cover"} placeholder="blur" />
+
+Imagine you are building a robot that balances a pole on its hand. The pole can lean slightly left, slightly right, or almost fall. The robot’s hand can move left or right with different speeds. Now pause for a second and think about the “state” of this world.
+
+In a simple grid world, a state might just be a number like 1, 2, 3, or 4. But here, the pole angle could be $0.01$ radians, $0.013$ radians, $0.0135$ radians… The velocity could be $0.2$, $0.201$, $0.2013$… There are infinitely many possibilities.
+
+This is what we call a **continuous state space**.
+
+In small textbook examples, we happily write something like
+
+$$
+V(1), \quad V(2), \quad V(3)
+$$
+
+or
+
+$$
+Q(s, a)
+$$
+
+as if we can store a separate value for every state. But what does that mean when the angle of the pole can be $0.001234$ radians? Are we going to store a value for every possible decimal?
+
+Let’s try to be naive for a moment.
+
+Suppose the angle of the pole ranges from $-1$ to $+1$ radians. We decide to store values with precision up to three decimal places. That means possible angles are
+
+$$
+-1.000, -0.999, -0.998, \dots, 0.999, 1.000
+$$
+
+That’s 2001 distinct angle values already. Now add angular velocity, also from $-1$ to $+1$ with the same precision. That’s another 2001 possibilities.
+
+The total number of states becomes
+
+$$
+2001 \times 2001 \approx 4{,}000{,}000
+$$
+
+And this is just two variables. Real systems have more. Suddenly, our simple table-based idea collapses.
+
+So the question becomes: if we cannot store a separate value for every continuous state, what can we do?
+
+## State Aggregation: Grouping the Continuous World
+
+<Image src={StateAg} alt={"State Aggregation"} placeholder="blur" />
+
+Let’s step back and think intuitively.
+
+Imagine you are a teacher observing students’ heights. Heights are continuous. No two students are exactly the same height. But if someone asks, “How many short students are there?” you don’t say:
+
+“There is one student who is 160.013 cm, one who is 160.027 cm…” Instead, you group them. You might say:
+
+150–160 cm → short
+
+160–170 cm → medium
+
+170–180 cm → tall
+
+You just discretized a continuous variable into bins. You lost some precision, but you gained something more important: simplicity.
+
+This idea is the heart of **state aggregation**.
+
+Return to the pole balancing example. Suppose the angle $\theta$ lies between $-1$ and $1$. Instead of remembering a value for every precise $\theta$, we divide the range into intervals:
+
+$$
+[-1, -0.8), \quad [-0.8, -0.6), \quad \dots, \quad [0.8, 1]
+$$
+
+Now, instead of asking:
+
+“What is $V(\theta = 0.0135)$?”
+
+we ask:
+
+“Which interval does $0.0135$ belong to?”
+
+Suppose it falls in $[0, 0.2)$. Then we treat all angles in that interval as if they are the same state.
+
+Let’s make it concrete. Assume we divide angle into 5 bins:
+
+$\begin{aligned}
+B_1 &: [-1, -0.6) \\
+B_2 &: [-0.6, -0.2) \\
+B_3 &: [-0.2, 0.2) \\
+B_4 &: [0.2, 0.6) \\
+B_5 &: [0.6, 1]
+\end{aligned}$
+
+Suppose during learning we observe:
+
+$$
+\theta = 0.05, \quad r = 1, \quad \theta' = 0.1
+$$
+
+Instead of writing
+
+$$
+V(0.05) \leftarrow V(0.05) + \alpha \left( r + \gamma V(0.1) - V(0.05) \right)
+$$
+
+we now write
+
+$$
+V(B_3) \leftarrow V(B_3) + \alpha \left( r + \gamma V(B_3) - V(B_3) \right)
+$$
+
+We are updating the value of the entire bin $B_3$.
+
+What just happened?
+
+We made a bold assumption: all states inside $B_3$ are approximately equivalent. That is the approximation. And that approximation gives us generalization.
+
+This is **state aggregation**: grouping continuous states into discrete clusters and learning a single value per group.
+
+But something subtle happens here.
+
+Suppose $\theta = -0.21$ and $\theta = -0.19$. They are only $0.02$ apart. Yet $-0.21$ belongs to $B_2$ and $-0.19$ belongs to $B_3$. Two almost identical angles now belong to different bins and get completely different values.
+
+That feels wrong.
+
+Our bins introduced artificial boundaries.
+
+If the optimal value function is smooth, we would prefer nearby states to have similar values. Hard bins break that smoothness.
+
+So we ask: can we do better than rigid buckets?
+
+## Tile Coding: Overlapping Structure and Smooth Generalization
+
+<Image src={TileCoding} alt={"Tile Coding"} placeholder="blur" />
+
+Imagine a long floor. Instead of dividing it into non-overlapping tiles like bathroom tiles, imagine laying multiple transparent grids on top of each other, each slightly shifted. This is the intuition behind **tile coding**.
+
+We still discretize but we do it multiple times, with overlapping tilings.
+
+Suppose $\theta \in [0, 1]$. Instead of one partition into 5 bins, we create two tilings.
+
+First tiling:
+
+$$
+[0, 0.2), \quad [0.2, 0.4), \quad [0.4, 0.6), \quad [0.6, 0.8), \quad [0.8, 1]
+$$
+
+Second tiling, shifted by $0.1$:
+
+$$
+[0.1, 0.3), \quad [0.3, 0.5), \quad [0.5, 0.7), \quad [0.7, 0.9)
+$$
+
+Now consider $\theta = 0.39$.
+
+In tiling 1, it falls into $[0.2, 0.4)$.
+
+In tiling 2, it falls into $[0.3, 0.5)$.
+
+We assign each tile a weight. The value of $\theta$ is the sum of the weights of the active tiles.
+
+Let
+
+- $w_1$ = weight of tile $[0.2, 0.4)$ in tiling 1
+- $w_2$ = weight of tile $[0.3, 0.5)$ in tiling 2
+
+Then
+
+$$
+V(\theta = 0.39) = w_1 + w_2
+$$
+
+If we observe TD error $\delta$, we update
+
+$$
+w_1 \leftarrow w_1 + \alpha \delta
+$$
+
+$$
+w_2 \leftarrow w_2 + \alpha \delta
+$$
+
+What does this accomplish?
+
+Consider $\theta = 0.41$.
+
+In tiling 1, it falls into $[0.4, 0.6)$.
+
+In tiling 2, it still falls into $[0.3, 0.5)$.
+
+So it shares one tile (tiling 2) with $0.39$.
+
+That means $0.39$ and $0.41$ will have partially shared representation. Their values will be similar, but not identical.
+
+We have achieved smooth generalization. with few more tiling in place, If we cosider three values $0.37$, $0.39$ and $0.41$ then all will have different value but in case of state aggregation, one or two of them may get a same value (based on boundry).
+
+With more tilings, each shifted differently, the representation becomes more expressive. With enough tilings, we can approximate quite complex value functions.
+
+Mathematically, tile coding can be viewed as a **linear function approximator**. We define a feature vector $\phi(s)$, where each component is 1 if a tile is active and 0 otherwise.
+
+Then
+
+$$
+V(s) = w^{\top} \phi(s)
+$$
+
+For a given state, only a few components of $\phi(s)$ are $1$, one per tiling. So updates are efficient. When we observe the transition
+
+$s \rightarrow r \rightarrow s'$
+
+the TD update becomes
+
+$$
+\delta = r + \gamma w^\top \phi(s') - w^\top \phi(s)
+$$
+
+and
+
+$$
+w \leftarrow w + \alpha \delta \phi(s)
+$$
+
+Notice something beautiful here.
+
+In tabular learning, each state had its own independent parameter.
+
+In state aggregation, each bin had its own parameter.
+
+In tile coding, states share parameters. Learning about one state slightly influences nearby states.
+
+As we increase the number of tilings, decrease tile width, or move to more advanced function approximators like neural networks, we are just refining this same idea: approximate the value function over a continuous space using shared parameters.
+
+State aggregation is the first step, rough, bold grouping.
+
+Tile coding is the next step, structured, overlapping, smoother approximation.
+
+And from there, the path naturally leads to the broader world of function approximation, where the table disappears entirely, and what remains is a learned surface stretched over a continuous world.
+
+## The Computational Cost of Tile Coding
+
+Now that we understand how tile coding helps us generalize smoothly over a continuous space, let us slow down and ask a practical question.
+
+How expensive is this idea?
+
+At first glance, tile coding feels lightweight. After all, for any given state, only a few tiles are active. If we use $k$ tilings, then exactly $k$ weights are involved in computing
+
+$$
+V(s) = w^\top \phi(s)
+$$
+
+So computing the value of a single state costs roughly $k$ additions. Updating also touches only those same $k$ weights. That sounds beautifully efficient. But the hidden cost is not in the update. It is in how many parameters we must maintain. Suppose we have just one continuous variable, say angle
+
+$$
+\theta \in [-1, 1]
+$$
+
+We divide it into $n$ bins in a single tiling. That means one tiling contains $n$ tiles. If we use $k$ tilings, each shifted slightly, then the total number of parameters becomes
+
+$$
+n \times k
+$$
+
+That seems manageable. Now let’s add a second variable, angular velocity $\dot{\theta}$. We again divide it into $n$ bins. In two dimensions, each tiling is now a grid. If angle has $n$ bins and velocity has $n$ bins, then each tiling contains
+
+$$
+n \times n = n^2
+$$
+
+tiles.
+
+With $k$ tilings, the total number of parameters becomes
+
+$$
+k \cdot n^2
+$$
+
+Now imagine three variables. Perhaps we also include cart position. Each variable has $n$ bins. Each tiling now has
+
+$$
+n \times n \times n = n^3
+$$
+
+tiles.
+
+With $k$ tilings, total parameters:
+
+$$
+k \cdot n^3
+$$
+
+See what is happening?
+
+If we have $d$ continuous state variables, each divided into $n$ bins per tiling, then each tiling contains
+
+$$
+n^d
+$$
+
+tiles.
+
+And with $k$ tilings, the total number of parameters becomes
+
+$$
+k \cdot n^d
+$$
+
+This exponential dependence on dimension $d$ is unavoidable.  Let’s make it concrete. Suppose:
+
+- $n = 20$ bins per dimension
+- $d = 4$ state variables
+- $k = 8$ tilings
+
+Each tiling has
+
+$$
+20^4 = 160,000
+$$
+
+tiles.
+
+Across 8 tilings:
+
+$$
+8 \times 160,000 = 1,280,000
+$$
+
+parameters.
+
+The growth is explosive in $d$, not in $k$. So time complexity for evaluating or updating a single state is
+
+$$
+\mathcal{O}(k)
+$$
+
+But memory complexity is
+
+$$
+\mathcal{O}(k n^d)
+$$
+
+This is why tile coding works beautifully for low-dimensional problems like CartPole. But as dimension grows, even tile coding begins to struggle.
+
+And that tension efficient updates but exponential growth in representation is exactly what pushes us toward more compact function approximators like neural networks.
+
+## Appendix
+
+In case if you have a question: How Tile Coding is linear function approximator ?
+
+Imagine again our simple continuous state variable:
+
+$$
+s \in [0, 1]
+$$
+
+Suppose we use two tilings, each dividing the interval into bins, slightly shifted from each other. Now pick a concrete state:
+
+$$
+s = 0.39
+$$
+
+As we saw before, that state activates exactly one tile in each tiling. So if we have:
+
+- Tiling 1 → 5 tiles
+- Tiling 2 → 5 tiles
+
+Then in total we have 10 possible tiles. 
+
+Now here is the key mental shift. Instead of thinking:
+
+“State $0.39$ belongs to tile A and tile B”
+
+we think:
+
+“State $0.39$ is represented by a vector of zeros and ones.”
+
+Let’s label the tiles:
+
+- $T1_1, T1_2, T1_3, T1_4, T1_5$
+- $T2_1, T2_2, T2_3, T2_4, T2_5$
+
+Now we define a feature vector:
+
+$$
+\phi(s) \in \mathbb{R}^{10}
+$$
+
+For $s = 0.39$, suppose:
+
+- In tiling 1, tile $T1_2$ is active
+- In tiling 2, tile $T2_3$ is active
+
+Then the feature vector looks like:
+
+$$
+\phi(s) = [0, 1, 0, 0, 0, 0, 0, 1, 0, 0]
+$$
+
+Everything is zero except the active tiles. Now comes the crucial part. We assign a weight to every tile:
+
+$$
+w = [w_1, w_2, \dots, w_{10}]
+$$
+
+The value of the state is defined as:
+
+$$
+V(s) = w^\top \phi(s)
+$$
+
+What does that mean? It means:
+
+$$
+V(s) = w_1 \phi_1 + w_2 \phi_2 + \dots + w_{10} \phi_{10}
+$$
+
+But remember: $\phi(s)$ is almost entirely zeros. So only the active tiles contribute.
+
+If $\phi_2 = 1$ and $\phi_8 = 1$, then:
+
+$$
+V(s) = w_2 + w_8
+$$
+
+That’s it. No multiplication between features. No nonlinear transformation. No squaring. No hidden layers. Just a weighted sum of features. That is exactly what a **linear function approximator** is:
+
+$$
+V(s) = w^\top \phi(s)
+$$
+
+The function is linear in the parameters $w$.
