@@ -1,6 +1,9 @@
 import { blogs } from "@/blogs"
 
 const orderedSlugs = [
+  "reinforcement-learning-deep-q-learning",
+  "reinforcement-learning-neural-network-approximation",
+  "reinforcement-learning-continuous-state-space",
   "reinforcement-learning-n-step-sarsa",
   "reinforcement-learning-q-learning",
   "reinforcement-learning-sarsa",

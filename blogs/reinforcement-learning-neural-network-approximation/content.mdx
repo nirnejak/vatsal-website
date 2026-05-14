@@ -1,0 +1,282 @@
+import Image from "next/image"
+
+import CoverImage from "./cover.png"
+
+# Reinforcement Learning: Tile Coding to Neural Network
+
+<span className="text-base leading-snug text-neutral-500">
+  How Neural Networks Replace Q-Tables in Continuous State Space Reinforcement Learning.
+</span>
+
+<Image src={CoverImage} alt={"MAB Cover"} placeholder="blur" />
+
+We ended the previous discussion standing at a very interesting place.
+
+We had taken a continuous world, angles, velocities, positions and instead of storing an impossible infinite table, we built structure. First rough bins. Then overlapping tilings. Then a feature vector
+
+$$
+\phi(s)
+$$
+
+And finally we arrived at something that looks deceptively simple:
+
+$$
+V(s) = w^\top \phi(s)
+$$
+
+At that moment, something profound happened. The table disappeared. The value of a state was no longer “stored.” It was computed. Now let’s continue that story. Imagine again the pole balancing robot. But this time, instead of 1 or 2 state variables, suppose we include:
+
+- pole angle
+- pole angular velocity
+- cart position
+- cart velocity
+- maybe wind force
+- maybe friction variation
+
+Now we are easily in 5 or 6 dimensions.
+
+You already saw what happens to tile coding in higher dimensions. Each tiling needs
+
+$$
+n^d
+$$
+
+tiles.
+
+Even if each update only touches $k$ weights, the total number of parameters explodes. Memory becomes painful. Worse, most tiles are never visited. So let’s pause and ask a different question.
+
+In tile coding, what were we really doing?
+
+We were defining features manually. For a given state $s$, we constructed a vector:
+
+$$
+\phi(s)
+$$
+
+mostly zeros, few ones. Then we said:
+
+$$
+V(s) = w^\top \phi(s)
+$$
+
+This is a linear model in disguise. Now imagine we do something radical. Instead of manually defining tiles, what if we let the system *learn the features itself*?
+
+That is the bridge to neural networks.
+
+### From Manual Features to Learned Features
+
+Forget reinforcement learning for a moment. Suppose I give you a simple regression task. You observe pairs:
+
+$$
+(x, y)
+$$
+
+And you want to predict $y$ from $x$. If you use a linear model, you assume:
+
+$$
+\hat{y} = w_1 x + b
+$$
+
+That works if the relationship is linear. But suppose the true relationship is curved. Maybe:
+
+$$
+y = \sin(x)
+$$
+
+A straight line won’t capture it well. In classical machine learning, you would manually create nonlinear features:
+
+$$
+\phi(x) = [x, x^2, x^3, \sin(x)]
+$$
+
+Then you would again compute:
+
+$$
+\hat{y} = w^\top \phi(x)
+$$
+
+Do you see the pattern? First we design features. Then we do linear learning on top.
+
+Tile coding is exactly the same idea. We designed binary indicator features, then learned a linear combination. Now imagine instead of hard-coded tiles, we define:
+
+$$
+\phi(s) = f(s; \theta)
+$$
+
+where $f$ is a small neural network. 
+
+Now the value becomes:
+
+$$
+V(s) = w^\top f(s; \theta)
+$$
+
+But we can simplify even further. Why keep two sets of parameters? Why not just define:
+
+$$
+V(s; \theta) \in \mathbb{R}
+$$
+
+directly as the output of a neural network? That is the leap.
+
+### TD Learning with a Neural Network
+
+Let’s construct this step by step in a reinforcement learning setting.
+
+Assume again a transition:
+
+$$
+s \rightarrow r \rightarrow s'
+$$
+
+In tabular TD learning, we wrote:
+
+$$
+\delta = r + \gamma V(s') - V(s)
+$$
+
+and updated:
+
+$$
+V(s) \leftarrow V(s) + \alpha \delta
+$$
+
+With tile coding, we wrote:
+
+$$
+\delta = r + \gamma w^\top \phi(s') - w^\top \phi(s)
+$$
+
+and updated:
+
+$$
+w \leftarrow w + \alpha \delta \phi(s)
+$$
+
+Now suppose:
+
+$$
+V(s; \theta)
+$$
+
+is a neural network. Then the TD error becomes:
+
+$$
+\delta = r + \gamma V(s'; \theta) - V(s; \theta)
+$$
+
+But what do we update?
+
+This is the moment where everything shifts. Until now, updates were easy. In the tabular case, you changed a single number. In tile coding, you nudged a few weights corresponding to active tiles. But now the value is produced by an entire network, layers of weights, nonlinearities, interactions we didn’t explicitly design. Here the real question is: 
+
+how do we push the network so that $V(s; \theta)$ moves closer to the target $r + \gamma V(s'; \theta)$?
+
+### From TD Error to Gradient Descent
+
+For a moment imagine we have a neural network trying to predict house prices. It outputs $\hat{y}(x; \theta).$ We observe the true price $y$. The natural thing to do is measure the squared error:
+
+$$
+L(\theta) = \frac{1}{2} (y - \hat{y}(x; \theta))^2
+$$
+
+Then we compute the gradient and adjust parameters:
+
+$$
+\theta \leftarrow \theta - \alpha \nabla_\theta L
+$$
+
+This is just gradient descent. Now come back to our reinforcement learning world. What is the “true” target? We don’t have a full Monte Carlo return. We have something bootstrapped:
+
+$$
+\text{target} = r + \gamma V(s'; \theta)
+$$
+
+So define a temporary loss:
+
+$$
+L(\theta) = \frac{1}{2} \big(r + \gamma V(s'; \theta) - V(s; \theta)\big)^2
+$$
+
+Look carefully at that expression. It is just squared TD error:
+
+$$
+L(\theta) = \frac{1}{2} \delta^2
+$$
+
+So what should we update? Exactly what we always update in neural networks:
+
+$$
+\theta \leftarrow \theta - \alpha \nabla_\theta L
+$$
+
+Let’s compute the gradient now. By chain rule,
+
+$$
+\nabla_\theta L = \delta \, \nabla_\theta \delta
+$$
+
+Now expand $\delta$:
+
+$$
+\delta = r + \gamma V(s'; \theta) - V(s; \theta)
+$$
+
+If we fully differentiate this expression, we would get gradients flowing through both $V(s'; \theta)$ and $V(s; \theta)$. But in standard TD learning, we make a simplifying choice: we treat the target
+
+$$
+r + \gamma V(s'; \theta)
+$$
+
+as if it were a constant. We “freeze” it during differentiation. That means the only term that contributes gradient is $-V(s; \theta)$.
+
+So the gradient becomes
+
+$$
+\nabla_\theta L = -\delta \, \nabla_\theta V(s; \theta)
+$$
+
+Plug this back into the update rule:
+
+$$
+\theta \leftarrow \theta - \alpha (-\delta \nabla_\theta V(s; \theta))
+$$
+
+which simplifies beautifully to
+
+$$
+\theta \leftarrow \theta + \alpha \delta \nabla_\theta V(s; \theta)
+$$
+
+And now something clicks. Compare this with tile coding. With tile coding we had
+
+$$
+w \leftarrow w + \alpha \delta \phi(s)
+$$
+
+for a linear function $V(s) = w^\top \phi(s)$ the gradient with respect to $w$ is exactly $\phi(s)$.
+
+So the neural network update is not a new idea at all.  It is the exact same TD update except now the “feature vector” is no longer manually designed. It is replaced by
+
+$$
+\nabla_\theta V(s; \theta)
+$$
+
+The gradient itself plays the role of features. 
+
+### Point to Note
+
+But important thing to note here is,  In supervised learning:
+
+$$
+L(\theta) = \frac{1}{2}(y - \hat{y}(x; \theta))^2
+$$
+
+The target $y$ never changes. When we visit same sample again next time, y will be as it is. In TD learning:
+
+$$
+L(\theta) = \frac{1}{2}(r + \gamma V(s'; \theta) - V(s; \theta))^2
+$$
+
+The “target” is another prediction. When I visit same $s \rightarrow r \rightarrow s’$ again value of target will not be the same so even though we treat it as fixed during a single gradient step, it is not fundamentally fixed.
+
+Keep these ideas in mind as we move forward. What we’ve derived so far isn’t perfect, but as the series progresses, everything will start to make more sense.
