@@ -52,6 +52,8 @@ import b20Content from "./reinforcement-learning-q-learning/content.mdx"
 import b20Cover from "./reinforcement-learning-q-learning/cover.png"
 import b21Content from "./reinforcement-learning-sarsa/content.mdx"
 import b21Cover from "./reinforcement-learning-sarsa/cover.png"
+import b34Content from "./reinforcement-learning-the-reinforce-algorithm/content.mdx"
+import b34Cover from "./reinforcement-learning-the-reinforce-algorithm/cover.png"
 import b22Content from "./reinforcement-learning-value-iteration/content.mdx"
 import b22Cover from "./reinforcement-learning-value-iteration/cover.png"
 import b23Cover from "./self-attention/banner.jpg"
@@ -313,6 +315,13 @@ export const blogs: Record<string, BlogEntry> = {
       "The Evolution of Reinforcement Learning: From Tables to Deep Q-Networks (DQN).",
     cover: b33Cover,
     Content: b33Content,
+  },
+  "reinforcement-learning-the-reinforce-algorithm": {
+    title: "Reinforcement Learning: The REINFORCE Algorithm",
+    description:
+      "How policy gradients let an agent learn action probabilities, without Q-values.",
+    cover: b34Cover,
+    Content: b34Content,
   },
 }
 
