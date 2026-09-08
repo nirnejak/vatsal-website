@@ -1,0 +1,448 @@
+import Image from "next/image"
+
+import CoverImage from "./cover.png"
+
+# Reinforcement Learning: The REINFORCE Algorithm
+
+<span className="text-base leading-snug text-neutral-500">
+  How policy gradients let an agent learn action probabilities, without
+  Q-values.
+</span>
+
+<Image src={CoverImage} alt={"REINFORCE Algorithm Cover"} placeholder="blur" />
+
+We have spent all this time estimating values. First we estimated returns directly. Then we bootstrapped. Then we replaced tables with tiles. Then tiles with neural networks. And through all of it, one pattern never changed. We always learned a function that tried to answer a question like:
+
+“How good is this state?”
+
+or
+
+“How good is this state–action pair?”
+
+From those numbers, we extracted a policy. We acted greedily with respect to $Q$. We injected $\varepsilon$ for exploration. But the policy was always derived indirectly. Now let’s imagine a different mindset. Suppose instead of asking,
+
+“How good is action LEFT in this state?”
+
+we ask something simpler and more direct:
+
+“What is the probability that I should go LEFT in this state?”
+
+No value tables. No max operators. No $\arg\max$. Just a function that outputs probabilities. That is the beginning of **policy gradients**.
+
+## A Policy as a Probability Distribution
+
+Imagine again our drone flying over Grid City. But this time, instead of outputting four $Q$-values, our neural network outputs four probabilities:
+
+$$
+\pi_\theta(s)
+=
+\big[
+\pi_\theta(\text{UP} \mid s),
+\pi_\theta(\text{DOWN} \mid s),
+\pi_\theta(\text{LEFT} \mid s),
+\pi_\theta(\text{RIGHT} \mid s)
+\big]
+$$
+
+Each number is between $0$ and $1$, and they sum to $1$. Internally, the network might produce logits $z_1, z_2, z_3, z_4$, and we apply a softmax:
+
+$$
+\pi_\theta(a \mid s)
+=
+\frac{\exp(z_a)}
+{\sum_{a'} \exp(z_{a'})}
+$$
+
+Now the agent does not act $\varepsilon$-greedily. It samples directly from its own distribution:
+
+$$
+a_t \sim \pi_\theta(\cdot \mid s_t)
+$$
+
+Action selection is built into the model. 
+
+Now is the moment where a quiet misunderstanding sneaks in for almost everyone the first time they see a policy written as probabilities. When you read something like
+
+$$
+\pi_\theta(\text{LEFT}\mid s)=0.7,\quad
+\pi_\theta(\text{RIGHT}\mid s)=0.1,\quad
+\pi_\theta(\text{UP}\mid s)=0.1,\quad
+\pi_\theta(\text{DOWN}\mid s)=0.1,
+$$
+
+it is extremely tempting to translate it into the old value-based habit and say: “So we always take LEFT.” That would be the $⁡\arg\max$ reflex coming back automatically. But in policy gradients, the policy network is not giving you a scorecard that you later convert into an action. It is giving you a distribution that directly *generates* the action. The symbol
+
+$$
+a_t \sim \pi_\theta(\cdot \mid s_t)
+$$
+
+doesn’t mean “pick the largest probability.” It means “sample from this distribution.” Think of a small bag with ten slips of paper: seven say LEFT, and one each says RIGHT, UP, and DOWN. Every time the agent reaches state $s$, it draws one slip. Over one hundred visits, you won’t see LEFT one hundred times, you’ll see it about seventy times. That is what “0.7” really means: not certainty, but frequency.
+
+Now read the core learning intuition in this new light. When we later say “actions that lead to high return become more likely,” that word *likely* is literal. We do not flip an action from off to on. We gently move probability mass. If LEFT led to a good outcome, we increase $\pi_\theta(\text{LEFT}\mid s)$ so it shows up more often next time. If it led to a bad outcome, we decrease it so it shows up less.
+
+This is also why exploration is no longer an extra trick like $\varepsilon$-greedy. In value methods, we had to force the agent to occasionally act randomly. Here, randomness is already baked into the policy itself. Early on, the distribution is typically spread out. As the agent gains confidence, it may concentrate but it concentrates because learning pushed it there, not because we hard-coded a max operator.
+
+But now the question is, how do we train such a thing?
+
+## What Is the Real Objective?
+
+To answer that, we must step back and ask a bigger question. What is the objective of reinforcement learning?
+
+In value-based methods, we implicitly tried to approximate optimal $Q$-values. But if we think more fundamentally, what we really want is to **maximize expected return**.
+
+Let’s write that carefully. Suppose the agent generates a trajectory:
+
+$$
+\tau =
+(s_0, a_0, r_0,
+ s_1, a_1, r_1,
+ \dots)
+$$
+
+The total return of that trajectory is:
+
+$$
+G(\tau)
+=
+\sum_{t=0}^{T}
+\gamma^t r_t
+$$
+
+Now here is the key idea: The trajectory itself depends on the policy. If we change the probabilities of actions, we change which trajectories are likely. So instead of learning values and extracting policies from them, we can directly define our objective as:
+
+**“Choose parameters $\theta$ so that the trajectories generated by $\pi_\theta$ have high expected return.”**
+
+ So we define an objective:
+
+$$
+J(\theta)
+=
+\mathbb{E}_{\tau \sim \pi_\theta}
+\big[ G(\tau) \big]
+$$
+
+This is the quantity we want to maximize. We are no longer approximating a Bellman equation. We are directly maximizing expected reward. That is the conceptual leap from value-based reinforcement learning to policy optimization.
+
+But how does this expectation actually look? There are two separate uncertainties:
+
+1. **Agent uncertainty**: which action gets chosen
+    
+    $$
+    \pi(a_t \mid s_t; \theta)
+    $$
+    
+2. **Environment uncertainty**: what next state results from that action
+    
+    $$
+    P(s_{t+1} \mid s_t, a_t)
+    $$
+    
+
+To make it concrete, let’s assume an episode lasts exactly three steps. Just to keep things small enough to see clearly. A trajectory might look like:
+
+$$
+\tau = (s_0, a_0, s_1, a_1, s_2, a_2)
+$$
+
+The probability of this trajectory under our policy is:
+
+$$
+P(\tau \mid \theta)
+=
+P(s_0)
+\pi_\theta(a_0 \mid s_0)
+P(s_1 \mid s_0, a_0)
+\pi_\theta(a_1 \mid s_1)
+P(s_2 \mid s_1, a_1)
+\pi_\theta(a_2 \mid s_2)
+$$
+
+The environment transition probabilities are fixed. The only thing that depends on $\theta$ is the policy terms hence the probability of a trajectory under policy $\pi_\theta$ is:
+
+$$
+P(\tau;\theta)
+=
+P(s_0)
+\prod_{t=0}^{T}
+\pi(a_t|s_t;\theta)
+P(s_{t+1}|s_t,a_t)
+$$
+
+Therefore the expected return becomes:
+
+$$
+J(\theta)
+=
+\sum_{\tau}
+P(\tau \mid \theta)
+G(\tau) =
+\mathbb{E}_{\tau \sim \pi_\theta}
+\big[ G(\tau) \big]
+$$
+
+Now suppose one particular trajectory gives a very high return. Intuitively, we want to increase its probability. If a trajectory gives terrible return, we want to decrease its probability. So we ask: how does the probability of a trajectory change if we slightly nudge $\theta$?
+
+Mathematically, that means we want the gradient:
+
+$$
+\nabla_\theta J(\theta)
+=
+\nabla_\theta
+\sum_{\tau}
+P(\tau \mid \theta)
+G(\tau) = \nabla_\theta
+\mathbb{E}_{\tau \sim \pi_\theta}
+\big[ G(\tau) \big]
+$$
+
+The sum is over all possible trajectories. In any realistic environment, that number is astronomical. We cannot enumerate them. We cannot even imagine listing them.
+
+But instead of trying to compute $J(\theta)$ exactly, we only need its gradient. And here a small trick unlocks everything. Focus on one trajectory term:
+
+$$
+\nabla_\theta
+\big(
+P(\tau \mid \theta)
+G(\tau)
+\big)
+=
+G(\tau)
+\nabla_\theta P(\tau \mid \theta)
+$$
+
+Now apply the log-derivative trick:
+
+$$
+\nabla_\theta \log P(\tau;\theta)
+=
+\frac{1}{P(\tau;\theta)} \nabla_\theta P(\tau;\theta)
+$$
+
+Multiply both sides by $P(\tau;\theta)$, and you get:
+
+$$
+\nabla_\theta P(\tau;\theta)=P(\tau;\theta)\,\nabla_\theta \log P(\tau;\theta)
+$$
+
+Let’s apply it to our objective:
+
+$$
+\nabla_\theta J(\theta)
+=
+\sum_{\tau}
+P(\tau;\theta)
+\nabla_\theta \log P(\tau;\theta)
+G(\tau)
+$$
+
+And now something beautiful happens. This becomes:
+
+$$
+\nabla_\theta J(\theta)
+=
+\mathbb{E}_{\tau \sim \pi_\theta}
+\left[
+G(\tau)
+\nabla_\theta
+\log P(\tau;\theta)
+\right]
+$$
+
+We have **converted a derivative of an expectation into an expectation of a derivative.** Now remember the structure of $P(\tau;\theta)$. Take the logarithm:
+
+$$
+\log P(\tau;\theta)
+=
+\log P(s_0)
++
+\sum_{t=0}^{T}
+\Big(
+\log \pi(a_t|s_t;\theta)
++
+\log P(s_{t+1}|s_t,a_t)
+\Big)
+$$
+
+The environment terms do not depend on $\theta$. So when we differentiate, they vanish. We are left with:
+
+$$
+\nabla_\theta \log P(\tau;\theta)
+=
+\sum_{t=0}^{T}
+\nabla_\theta
+\log \pi(a_t|s_t;\theta)
+$$
+
+Plug this back into the gradient:
+
+$$
+\nabla_\theta J(\theta)
+=
+\mathbb{E}
+\left[
+G(\tau)
+\sum_{t=0}^{T}
+\nabla_\theta
+\log \pi(a_t|s_t;\theta)
+\right]
+$$
+
+This is the policy gradient theorem in its Monte Carlo form.
+
+Pause for a second and really look at it. The gradient is telling us:
+
+If a trajectory produces high return $G(\tau)$, increase the log-probabilities of the actions that appeared in that trajectory.
+
+If it produces low return, decrease them.
+
+That is the entire idea. 
+
+### From Trajectories to REINFORCE
+
+Now let’s make it even more concrete with a tiny numerical story. Suppose in some state $s$, the network outputs:
+
+$$
+\pi_\theta(\text{LEFT}|s) = 0.4,
+\quad
+\pi_\theta(\text{RIGHT}|s) = 0.6
+$$
+
+The drone samples LEFT (assume). Later, the episode ends with a large return, say $G = 20$. The gradient contribution for this step is proportional to:
+
+$$
+20\nabla_\theta \log 0.4
+$$
+
+Since $\log 0.4$ increases when $0.4$ increases, the update will push the probability of LEFT upward. The policy is literally being **reinforced**.
+
+Now imagine the episode instead ends disastrously with $G = -5$.
+
+The gradient becomes:
+
+$$
+-5\nabla_\theta \log 0.4
+$$
+
+Now the update pushes the probability of LEFT downward.
+
+No max. No Bellman backup. No bootstrapping. Just reinforce what worked. Discourage what failed. This simplest Monte Carlo implementation is known as **REINFORCE**.
+
+But something subtle appears if we stare longer.
+
+Notice that every action in the trajectory is multiplied by the same $G(\tau)$. Suppose an early action was actually neutral, but a later random event caused the large reward. The early action still receives full credit. That introduces noise. To refine this, we can use the return from that specific time onward:
+
+$$
+G_t
+=
+\sum_{k=t}^{T}
+\gamma^{k-t} r_k
+$$
+
+Then the gradient becomes:
+
+$$
+\nabla_\theta J(\theta)
+=
+\mathbb{E}
+\left[
+\sum_{t=0}^{T}
+G_t
+\nabla_\theta
+\log \pi(a_t|s_t;\theta)
+\right]
+$$
+
+This makes more sense. Each action is weighted by what followed it.
+
+Now let’s turn this clean mathematical object into something operational. Imagine the episode has just ended. The drone has finished flying. The rewards are recorded. We are holding one single trajectory in our hands. No expectations. No infinite sums over all possible futures. Just one concrete experience.
+
+We walk backward through that episode and compute returns exactly as we did in Monte Carlo control:
+
+$$
+G_T = r_T
+$$
+
+$$
+G_{T-1} = r_{T-1} + \gamma G_T
+$$
+
+$$
+G_{T-2} = r_{T-2} + \gamma G_{T-1}
+$$
+
+Step by step, the future is folded into the present. Now we plug those returns directly into our gradient estimate. The expectation becomes a sample average. For a single episode, the stochastic gradient is simply
+
+$$
+\hat{\nabla}_\theta J(\theta)
+=
+\sum_{t=0}^{T}
+G_t
+\nabla_\theta \log \pi(a_t \mid s_t;\theta)
+$$
+
+And gradient ascent gives us the update rule:
+
+$$
+\theta
+\leftarrow
+\theta
++
+\alpha
+\sum_{t=0}^{T}
+G_t
+\nabla_\theta \log \pi(a_t \mid s_t;\theta)
+$$
+
+That is the full **REINFORCE update.**
+
+Notice the structure. There is no target network. No bootstrapped estimate. No temporal difference error. We wait until the episode finishes. Then we walk through each time step and gently nudge the parameters in the direction that increases the probability of actions that led to high returns.
+
+If $G_t$ is positive and large, the update increases the log-probability of that action. If $G_t$ is negative, the update decreases it. If $G_t$ is near zero, almost nothing changes.
+
+### How the Gradient Shapes Probabilities
+
+To see this even more concretely, suppose in state $s_1$ the network outputs:
+
+$$
+\pi_\theta(a_1 \mid s_1) = 0.25
+$$
+
+The episode finishes, and we compute:
+
+$$
+G_1 = 3
+$$
+
+The contribution of this step to the update is proportional to:
+
+$$
+3 \, \nabla_\theta \log 0.25
+$$
+
+Since increasing $0.25$ increases $\log 0.25$, the gradient step pushes that probability upward. Not by a fixed amount, but in proportion to how good the future turned out to be.
+
+Now imagine instead that:
+
+$$
+G_1 = -2
+$$
+
+The update becomes:
+
+$$
+-2 \, \nabla_\theta \log 0.25
+$$
+
+This time, the probability is nudged downward. The action is quietly discouraged.
+
+Over thousands of episodes, probabilities shift. Actions that consistently precede high returns become more likely. Actions that precede failure fade away.
+
+There is something elegant here.
+
+In value-based methods, we learned a critic that estimated numbers, and then derived a policy from those numbers. Here, there is no intermediary. The policy is the object we optimize. The gradient tells us directly how to reshape the distribution over actions.
+
+But this elegance comes with a cost.
+
+Because we rely purely on full-episode returns, the variance can be large. Two identical states might produce very different returns simply because of randomness later in the episode. The gradient signal can fluctuate wildly. Learning can be slow. Learning can be unstable.
+
+That instability motivates baselines and leads naturally to **actor–critic methods**, where we combine the stability of value estimation with the directness of policy optimization.
