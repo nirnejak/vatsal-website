@@ -28,10 +28,14 @@ import b12Cover from "./rag-evaluation-part-1-retriever-evaluation/banner.png"
 import b12Content from "./rag-evaluation-part-1-retriever-evaluation/content.mdx"
 import b13Cover from "./rag-evaluation-part-2-generator-evaluation/banner.png"
 import b13Content from "./rag-evaluation-part-2-generator-evaluation/content.mdx"
+import b35Content from "./reinforcement-learning-advantage-actor-critic/content.mdx"
+import b35Cover from "./reinforcement-learning-advantage-actor-critic/cover.png"
 import b31Content from "./reinforcement-learning-continuous-state-space/content.mdx"
 import b31Cover from "./reinforcement-learning-continuous-state-space/cover.png"
 import b33Content from "./reinforcement-learning-deep-q-learning/content.mdx"
 import b33Cover from "./reinforcement-learning-deep-q-learning/cover.png"
+import b36Content from "./reinforcement-learning-generalized-advantage-estimation/content.mdx"
+import b36Cover from "./reinforcement-learning-generalized-advantage-estimation/cover.png"
 import b14Content from "./reinforcement-learning-markov-decision-process/content.mdx"
 import b14Cover from "./reinforcement-learning-markov-decision-process/cover.png"
 import b15Content from "./reinforcement-learning-model-based-adp-learner/content.mdx"
@@ -48,12 +52,16 @@ import b18Content from "./reinforcement-learning-off-policy-monte-carlo/content.
 import b18Cover from "./reinforcement-learning-off-policy-monte-carlo/cover.png"
 import b19Content from "./reinforcement-learning-policy-iteration/content.mdx"
 import b19Cover from "./reinforcement-learning-policy-iteration/cover.png"
+import b38Content from "./reinforcement-learning-proximal-policy-optimization-ppo/content.mdx"
+import b38Cover from "./reinforcement-learning-proximal-policy-optimization-ppo/cover.png"
 import b20Content from "./reinforcement-learning-q-learning/content.mdx"
 import b20Cover from "./reinforcement-learning-q-learning/cover.png"
 import b21Content from "./reinforcement-learning-sarsa/content.mdx"
 import b21Cover from "./reinforcement-learning-sarsa/cover.png"
 import b34Content from "./reinforcement-learning-the-reinforce-algorithm/content.mdx"
 import b34Cover from "./reinforcement-learning-the-reinforce-algorithm/cover.png"
+import b37Content from "./reinforcement-learning-trust-region-policy-optimization-trpo/content.mdx"
+import b37Cover from "./reinforcement-learning-trust-region-policy-optimization-trpo/cover.png"
 import b22Content from "./reinforcement-learning-value-iteration/content.mdx"
 import b22Cover from "./reinforcement-learning-value-iteration/cover.png"
 import b23Cover from "./self-attention/banner.jpg"
@@ -322,6 +330,34 @@ export const blogs: Record<string, BlogEntry> = {
       "How policy gradients let an agent learn action probabilities, without Q-values.",
     cover: b34Cover,
     Content: b34Content,
+  },
+  "reinforcement-learning-advantage-actor-critic": {
+    title: "Reinforcement Learning: Advantage Actor-Critic",
+    description:
+      "From REINFORCE's high variance to actor-critic's stable TD-based updates.",
+    cover: b35Cover,
+    Content: b35Content,
+  },
+  "reinforcement-learning-generalized-advantage-estimation": {
+    title: "Reinforcement Learning: Generalized Advantage Estimation",
+    description:
+      "Moving beyond one-step TD and full-episode Monte Carlo with a single tunable dial.",
+    cover: b36Cover,
+    Content: b36Content,
+  },
+  "reinforcement-learning-trust-region-policy-optimization-trpo": {
+    title: "Reinforcement Learning: Trust Region Policy Optimization (TRPO)",
+    description:
+      "Why unconstrained policy gradient updates can destroy a working policy overnight.",
+    cover: b37Cover,
+    Content: b37Content,
+  },
+  "reinforcement-learning-proximal-policy-optimization-ppo": {
+    title: "Reinforcement Learning: Proximal Policy Optimization (PPO)",
+    description:
+      "How clipping the probability ratio keeps policy updates safely bounded.",
+    cover: b38Cover,
+    Content: b38Content,
   },
 }
 

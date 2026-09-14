@@ -1,0 +1,464 @@
+import Image from "next/image"
+
+import CoverImage from "./cover.png"
+
+# Reinforcement Learning: Generalized Advantage Estimation
+
+<span className="text-base leading-snug text-neutral-500">
+  Moving beyond one-step TD and full-episode Monte Carlo with a single tunable dial.
+</span>
+
+<Image src={CoverImage} alt={"A dial positioned between two extremes, representing GAE's lambda parameter balancing Monte Carlo and TD advantage estimates"} placeholder="blur" />
+
+By the time we reached Advantage Actor–Critic, something interesting had happened to the learning signal.
+
+At the very beginning of reinforcement learning, everything revolved around the true return. When the agent reached time step $t$, the value of that moment was defined by the entire future that followed it:
+
+$$
+G_t = r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \dots
+$$
+
+Nothing was hidden. Nothing was estimated. The future unfolded, and only after seeing everything did we compute the return. This had one beautiful property: it was correct. No bias. The return truly represented what happened.
+
+But it also had a major inconvenience. The agent had to wait until the episode finished before learning anything. If a robot was walking for 10 seconds before falling, we could not update the first step until all 10 seconds had played out. So Temporal Difference learning introduced a clever shortcut. Instead of waiting for the entire future, we used a prediction of the future:
+
+$$
+r_t + \gamma V(s_{t+1})
+$$
+
+This estimate was not perfect. It relied on the critic’s current guess $V(s_{t+1})$. But it allowed learning immediately after each transition. If we compare the two ideas side by side, the difference becomes clearer.
+
+**Monte Carlo return**
+
+$$
+G_t = r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \dots
+$$
+
+**One-step TD estimate**
+
+$$
+r_t + \gamma V(s_{t+1})
+$$
+
+The first uses the true future rewards. The second replaces the unknown future with the critic’s estimate. The difference between what we expected and what we observed became the famous **TD error**:
+
+$$
+\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)
+$$
+
+This single number turned out to be extremely powerful. It trained value functions. Later it trained policies through actor–critic. But if we pause for a moment, something subtle appears.
+
+The one-step TD signal uses very little of the real future. It uses:
+
+- the immediate reward $r_t$
+- the critic’s estimate $V(s_{t+1})$
+
+Everything beyond $s_{t+1}$ is replaced by the critic’s guess. That makes learning fast and stable, but it also introduces bias. Meanwhile, the Monte Carlo return uses the entire real future, but suffers from huge variance. So we now have two extremes.
+
+**Monte Carlo advantage**
+
+$$
+A_t^{MC} = G_t - V(s_t)
+$$
+
+Low bias. Very high variance.
+
+**TD advantage**
+
+$$
+A_t^{TD} = \delta_t
+$$
+
+Low variance. Higher bias.
+
+Reinforcement learning repeatedly runs into this exact tension: Do we want accuracy, or stability?
+
+### Watching Advantages Through Time
+
+To understand how these two extremes relate, imagine a very short episode. Suppose the agent experiences the following rewards:
+
+<table>
+  <thead>
+    <tr>
+      <th>Time</th>
+      <th>Reward</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>t</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>t+1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>t+2</td>
+      <td>3</td>
+    </tr>
+  </tbody>
+</table>
+
+Now imagine the critic currently predicts
+
+$$
+V(s_t)=5, \quad V(s_{t+1})=4, \quad V(s_{t+2})=2
+$$
+
+Let us compute the TD errors.
+
+At time $t$:
+
+$$
+\delta_t = 2 + \gamma \cdot 4 - 5
+$$
+
+At time $t+1$:
+
+$$
+\delta_{t+1} = 1 + \gamma \cdot 2 - 4
+$$
+
+At time $t+2$:
+
+$$
+\delta_{t+2} = 3 - 2
+$$
+
+Each $\delta$ measures a local surprise. It asks:
+
+“Was the reward plus predicted future better or worse than expected?”
+
+But notice something interesting.
+
+The advantage of an action does not depend only on the very next reward. Sometimes the effect of an action unfolds slowly.
+
+Suppose the agent chooses an action at time $t$ that leads to a great opportunity two steps later. The one-step TD error might barely notice this. The Monte Carlo return would capture it perfectly. So the natural question becomes:
+
+Can we combine these ideas?
+
+Can we use multiple TD errors to approximate the full future without waiting for the entire episode?
+
+### Rebuilding the Future from TD Errors
+
+Let us try something simple. Suppose we add together the TD errors from several consecutive steps:
+
+$$
+\delta_t + \gamma \delta_{t+1} + \gamma^2 \delta_{t+2}
+$$
+
+Now expand each term.
+
+First term:
+
+$$
+\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)
+$$
+
+Second term:
+
+$$
+\gamma \delta_{t+1} = \gamma \left( r_{t+1} + \gamma V(s_{t+2}) - V(s_{t+1}) \right)
+$$
+
+Third term:
+
+$$
+\gamma^2 \delta_{t+2} = \gamma^2 \left( r_{t+2} - V(s_{t+2}) \right)
+$$
+
+Now add them all together. Something magical happens.
+
+The $V(s_{t+1})$ terms cancel.
+
+The $V(s_{t+2})$ terms cancel.
+
+What remains is
+
+$$
+r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} - V(s_t)
+$$
+
+Which is exactly
+
+$$
+G_t - V(s_t)
+$$
+
+the **Monte Carlo advantage**.
+
+In other words, if we accumulate all TD errors until the end of the episode, we recover the true advantage. So the picture now looks like this.
+
+**One-step TD advantage**
+
+$$
+A_t = \delta_t
+$$
+
+**Full Monte Carlo advantage**
+
+$$
+A_t = \delta_t + \gamma \delta_{t+1} + \gamma^2 \delta_{t+2} + \dots
+$$
+
+One uses only the first term. The other uses all terms. This suddenly reveals a spectrum.
+
+We do not have to choose only one step or the entire future. We can choose how far into the future we want to look.
+
+### Introducing a New Dial: $\lambda$
+
+Imagine we insert a small damping factor that gradually reduces the influence of distant TD errors. Instead of summing them fully, we scale them:
+
+$$
+A_t =
+\delta_t
++ (\gamma \lambda)\delta_{t+1}
++ (\gamma \lambda)^2\delta_{t+2}
++ (\gamma \lambda)^3\delta_{t+3}
++ \dots
+$$
+
+This is **Generalized Advantage Estimation (GAE)**.
+
+$$
+A_t^{GAE(\lambda)} =
+\sum_{l=0}^{\infty} (\gamma \lambda)^l \delta_{t+l}
+$$
+
+The parameter $\lambda$ lies between 0 and 1.
+
+Suddenly this single number becomes a dial between two worlds. If
+
+$$
+\lambda = 0
+$$
+
+then all higher terms disappear:
+
+$$
+A_t = \delta_t
+$$
+
+which is exactly the one-step TD advantage. If
+
+$$
+\lambda = 1
+$$
+
+then the entire sum appears:
+
+$$
+A_t = \delta_t + \gamma \delta_{t+1} + \gamma^2 \delta_{t+2} + \dots
+$$
+
+which reconstructs the Monte Carlo advantage. Everything in between smoothly blends the two.
+
+$$
+0 \lt \lambda \lt 1
+$$
+
+means: Use several TD errors, but gradually discount the distant future.
+
+### Computing GAE in Practice
+
+At this point the formula for GAE looks elegant:
+
+$$
+A_t^{GAE(\lambda)} =
+\delta_t
++ (\gamma\lambda)\delta_{t+1}
++ (\gamma\lambda)^2\delta_{t+2}
++ \dots
+$$
+
+But if we look at it from an engineer’s perspective, a small question immediately appears. During training we usually collect trajectories like this (for example):
+
+<table>
+  <thead>
+    <tr>
+      <th>t</th>
+      <th>state</th>
+      <th>reward</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>s<sub>0</sub></td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>s<sub>1</sub></td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>s<sub>2</sub></td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>terminal</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+The critic already predicts
+
+$$
+V(s_0)=5,\quad V(s_1)=4,\quad V(s_2)=2
+$$
+
+From this we can compute the TD errors exactly as before:
+
+$$
+\delta_0 = 2 + \gamma V(s_1) - V(s_0)
+$$
+
+$$
+\delta_1 = 1 + \gamma V(s_2) - V(s_1)
+$$
+
+$$
+\delta_2 = 3 - V(s_2)
+$$
+
+Now the definition of GAE says that the advantage at time $0$ should be
+
+$$
+A_0 =
+\delta_0
++ (\gamma\lambda)\delta_1
++ (\gamma\lambda)^2\delta_2
+$$
+
+The advantage at time $1$ should be
+
+$$
+A_1 =
+\delta_1
++ (\gamma\lambda)\delta_2
+$$
+
+And at time $2$
+
+$$
+A_2 = \delta_2
+$$
+
+So far everything looks simple.
+
+But now imagine an episode with 1,000 time steps. If we compute the sum from scratch for every $t$, we would repeatedly recompute the same terms over and over again. That would be extremely inefficient.
+
+There is a much nicer trick hidden in the structure of the equation. Look again at two consecutive advantages.
+
+For time $t$:
+
+$$
+A_t =
+\delta_t
++ (\gamma\lambda)\delta_{t+1}
++ (\gamma\lambda)^2\delta_{t+2}
++ \dots
+$$
+
+For time $t+1$:
+
+$$
+A_{t+1} =
+\delta_{t+1}
++ (\gamma\lambda)\delta_{t+2}
++ (\gamma\lambda)^2\delta_{t+3}
++ \dots
+$$
+
+Now multiply the second equation by $\gamma\lambda$.
+
+$$
+\gamma\lambda A_{t+1}
+=
+(\gamma\lambda)\delta_{t+1}
++ (\gamma\lambda)^2\delta_{t+2}
++ (\gamma\lambda)^3\delta_{t+3}
++ \dots
+$$
+
+Now compare this with the first equation. Everything after $\delta_t$ is exactly the same. So we can rewrite the advantage recursively:
+
+$$
+A_t = \delta_t + \gamma\lambda A_{t+1}
+$$
+
+This tiny equation is what makes **GAE practical**.
+
+Instead of summing long sequences, we compute advantages backwards through the trajectory. Start from the last step. At the terminal state there is no future advantage, so
+
+$$
+A_T = 0
+$$
+
+Then move one step earlier.
+
+$$
+A_{T-1} = \delta_{T-1}
+$$
+
+Then keep moving backward.
+
+$$
+A_{T-2} =
+\delta_{T-2}
++ \gamma\lambda A_{T-1}
+$$
+
+And so on until the beginning of the episode.
+
+Suddenly the complicated infinite sum becomes a very simple backward pass through the trajectory. Each advantage is just the TD error plus a discounted version of the next advantage.
+
+This is why most modern reinforcement learning implementations compute GAE in reverse order over the rollout buffer. A single backward sweep reconstructs the entire sequence of advantages.
+
+If we step back for a moment, something elegant appears.
+
+At the smallest scale, the **TD error** measures a local surprise. GAE then allows these small surprises to ripple backward through time, gradually revealing how good an earlier action really was. The farther the consequence, the more it fades through the factor $\gamma\lambda$. The closer the consequence, the more strongly it influences the advantage.
+
+### Update Rule
+
+By now the pattern should feel familiar. Reinforcement learning repeatedly faces the same dilemma:
+
+Monte Carlo → correct but noisy.
+
+Temporal Difference → stable but biased.
+
+GAE introduces a **continuum between them**.
+
+Instead of choosing one extreme, we tune a parameter that balances both. And that small design choice turned out to be incredibly important. Algorithms like **TRPO**, **PPO**, and many modern policy gradient methods rely heavily on GAE because it provides **low-variance advantage estimates without introducing too much bias**.
+
+The actor still updates using the familiar rule:
+
+$$
+\theta
+\leftarrow
+\theta
++
+\alpha
+A_t
+\nabla_\theta
+\log \pi_\theta(a_t|s_t)
+$$
+
+But now the advantage $A_t$ is not a raw return and not just a single TD error. It is a carefully blended estimate of the future.
+
+### The Bigger Picture
+
+If we step back and look at the entire journey again, a beautiful symmetry appears.  We started reinforcement learning with **returns**. Then we replaced them with **TD errors**. Then we discovered that TD errors could be **stacked together** to reconstruct returns. And finally, GAE introduced a knob that lets us move smoothly between the two.
+
+The learning signal of modern actor–critic algorithms is not purely Monte Carlo and not purely Temporal Difference. It is something in between. A weighted echo of future TD errors. 
+
+And with that idea in place, we now have all the pieces needed to build the modern policy optimization algorithms used in deep reinforcement learning. Because once advantages become stable and reliable, we can finally ask a deeper question:
+
+**How much should we allow the policy to change after each update?**
+
+Answering that question leads directly to **Trust Region methods and Proximal Policy Optimization (PPO)** where the focus shifts from estimating advantages to **controlling how aggressively the policy is updated.**

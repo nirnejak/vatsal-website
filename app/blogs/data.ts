@@ -1,6 +1,10 @@
 import { blogs } from "@/blogs"
 
 const orderedSlugs = [
+  "reinforcement-learning-proximal-policy-optimization-ppo",
+  "reinforcement-learning-trust-region-policy-optimization-trpo",
+  "reinforcement-learning-generalized-advantage-estimation",
+  "reinforcement-learning-advantage-actor-critic",
   "reinforcement-learning-the-reinforce-algorithm",
   "reinforcement-learning-deep-q-learning",
   "reinforcement-learning-neural-network-approximation",
