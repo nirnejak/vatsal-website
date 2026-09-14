@@ -1,0 +1,537 @@
+import Image from "next/image"
+
+import CoverImage from "./cover.png"
+
+# Reinforcement Learning: Advantage Actor-Critic
+
+<span className="text-base leading-snug text-neutral-500">
+  From REINFORCE's high variance to actor-critic's stable TD-based updates.
+</span>
+
+<Image src={CoverImage} alt={"An actor and a critic facing each other, representing the policy that acts and the value function that evaluates"} placeholder="blur" />
+
+Actions that lead to better-than-expected outcomes should become more likely.
+
+Actions that lead to worse-than-expected outcomes should become less likely.
+
+Instead of learning values and extracting a policy, we directly shape the behavior itself. And that shift from estimating how good actions are, to directly sculpting how often we take them, is what makes policy gradients both powerful and fundamentally different from everything we built before.
+
+But even now, something is still off.
+
+Imagine two episodes starting from the same state and action. In one episode, randomness in the environment produces huge rewards later. In the other, bad luck ruins everything. The gradient contribution for the same action can swing wildly. 
+
+Why?
+
+Because $G_t$ is still a random variable.Even though it starts at time $t$, it still depends on:
+
+- All **future actions**
+- All **future state transitions**
+- All **future randomness in the environment**
+
+So we can think of it as:
+
+That last part is the key.  Suppose from state $s_t$, You take action $a_t$:
+
+$$
+G_t = f(s_t, a_t, \text{future randomness})
+$$
+
+- With 50% chance, you transition to a "good" state
+- With 50% chance, you transition to a "bad" state
+
+**Episode 1:**
+
+- Transition → good state, Future rewards large
+- $G_t = 100$
+
+**Episode 2:**
+
+- Transition → bad state, Future rewards small
+- $G_t = 5$
+
+Same $s_t$ ,$a_t$ , just different transition so the gradient contribution is scaled by **100 in one episode** and **5 in another**. 
+
+That’s **high variance.**
+
+The expected gradient is correct. But individual samples are noisy. And noisy gradients mean slow, unstable learning.
+
+Every action is being scaled by $G_t$. When $G_t$ is large, we push strongly. When $G_t$ is small, we barely move. When it is negative, we push in the opposite direction. The math is correct. The expectation is correct. But the variance is wild.
+
+### The Baseline: Learning from Relative Performance
+
+Let’s slow this down with a tiny story.
+
+Suppose you run a small café. Every morning you try one idea: maybe change the playlist, maybe adjust the lighting, maybe move the pastry display. At the end of the day you look at total revenue and say:
+
+“If revenue was high, whatever I did this morning must have been good.”
+
+But revenue doesn’t depend only on your change. Maybe it rained. Maybe a nearby office closed early. Maybe there was a festival in town. You are attributing the entire outcome to one small decision.
+
+That’s exactly what plain **REINFORCE** is doing.
+
+Now here is the key observation. Suppose instead of using raw revenue, you subtract the average daily revenue. Now you ask:
+
+“Was today better or worse than usual?”
+
+Suddenly, your updates are not based on absolute numbers. They are based on relative performance.
+
+This is the idea of a **baseline**.
+
+Let’s modify the gradient slightly:
+
+$$
+\nabla_\theta J(\theta)
+=
+\mathbb{E}
+\left[
+\sum_{t=0}^{T}
+\big(G_t - b\big)
+\nabla_\theta
+\log
+\pi(a_t \mid s_t; \theta)
+\right]
+$$
+
+Here $b$ is some baseline. Maybe a constant. Maybe something smarter. The magical fact is this:
+
+As long as $b$ does not depend on the action $a_t$, the expected gradient does not change.
+
+Now replay the earlier example.
+
+From state $s_t$, action $a_t$:
+
+Episode 1: $G_t = 100$
+
+Episode 2: $G_t = 5$
+
+Suppose the average return from that state is around 50. Let’s choose:
+
+$$
+b = 50
+$$
+
+Now the updates become:
+
+Episode 1:
+
+$$
+100 - 50 = 50
+$$
+
+Episode 2:
+
+$$
+5 - 50 = -45
+$$
+
+Instead of wildly scaling by 100 and 5, we scale by $+50$ and $-45$. The spread shrinks. The signal becomes centered.
+
+We are no longer asking:
+
+“Was this action good in absolute terms?”
+
+We are asking:
+
+“Was this action better than expected?”
+
+That difference  ($G_t - b$) is often called the **advantage**. If an action does better than expected, its advantage is positive and we increase its probability. If it does worse than expected, we decrease it. If we choose the baseline carefully, something beautiful happens. Suppose we choose:
+
+$$
+b(s_t) = V^\pi(s_t)
+$$
+
+the expected return from that state under the current policy. Then:
+
+$$
+G_t - V^\pi(s_t)
+$$
+
+tells us exactly how much better (or worse) this trajectory was compared to what we normally expect from that state. That is a much cleaner learning signal. In fact, once we write it this way, the gradient becomes:
+
+$$
+\nabla_\theta J(\theta)
+=
+\mathbb{E}
+\left[
+\sum_{t=0}^{T}
+A^\pi(s_t, a_t)
+\nabla_\theta
+\log
+\pi(a_t \mid s_t; \theta)
+\right]
+$$
+
+where
+
+$$
+A^\pi(s_t, a_t)
+=
+G_t - V^\pi(s_t)
+$$
+
+We have quietly reintroduced a value function. But this time it is not being used to derive a policy. It is being used to reduce variance. The value function is no longer the boss. It is now a helper. And this is the bridge from pure policy gradients to **actor–critic methods**.
+
+### The Actor and the Critic
+
+But we are back to learning a value function.
+
+But this time it is not the main object. It is a helper. A critic.
+
+The policy is the actor.
+
+Together, they form the actor–critic architecture.
+
+The critic estimates:
+
+$$
+V(s; w)
+$$
+
+The actor updates:
+
+$$
+\theta
+\leftarrow
+\theta
++
+\alpha
+A(s_t,a_t)
+\nabla_\theta
+\log \pi_\theta(a_t|s_t)
+$$
+
+And the critic itself is trained with TD learning:
+
+$$
+\delta_t
+=
+r_t
++
+\gamma V(s_{t+1}; w)
+-
+V(s_t; w)
+$$
+
+$$
+w
+\leftarrow
+w
++
+\beta
+\delta_t
+\nabla_w V(s_t; w)
+$$
+
+Do you see the pattern?
+
+The critic uses the same TD backbone we developed earlier. The actor uses gradients of log-probabilities weighted by advantage. The story comes full circle.
+
+In value-based methods, the policy was derived from Q.
+
+In policy gradients, the policy is primary and values assist.
+
+In actor–critic, both coexist.
+
+And just like when we moved from tables to neural networks, the core idea never changed. We are still nudging parameters in the direction that increases expected return.
+
+$$
+\text{parameters}
+\leftarrow
+\text{parameters}
++
+\alpha
+(\text{signal})
+\nabla(\text{prediction})
+$$
+
+Only now, the “prediction” is a probability distribution.
+
+From here, entire families of algorithms emerge. **Trust-region methods** constrain how much the policy can change. **PPO** clips probability ratios. **SAC** adds entropy to encourage exploration.
+
+But if you strip away the engineering details, every one of them is built on the same simple insight:
+
+Actions that lead to better-than-expected outcomes should become more likely.
+
+Actions that lead to worse-than-expected outcomes should become less likely.
+
+### What Actor and Critic Really Mean
+
+Up to this point, everything feels mathematical. We introduced a baseline. We subtracted it. We reduced variance. Then suddenly we gave things names.
+
+Actor.
+
+Critic.
+
+And it can feel like we just renamed two functions and moved on. So let’s slow this down and really understand what those words mean. Forget reinforcement learning for a moment.
+
+Imagine a theater rehearsal.
+
+There is a performer on stage. They decide how to move, how to speak, how to act. That performer is making choices. Taking actions.
+
+In the audience sits a director. After each scene, the director gives feedback:
+
+“That was strong.”
+
+“That was weak.”
+
+“You could have done that better.”
+
+The performer acts. The director evaluates. That is the entire idea.
+
+Now bring this back to reinforcement learning. The policy
+
+$$
+\pi_\theta(a \mid s)
+$$
+
+is the performer. It chooses actions. It generates behavior. It interacts with the environment. The value function
+
+$$
+V(s; w)
+$$
+
+does not act. It does not choose. It does not influence the world directly. It evaluates.
+
+It says:
+
+“From this state, I expect about 12 reward in the future.”
+
+or
+
+“This state is probably bad.”
+
+It is judging the situation. That is why it is called the critic.
+
+The critic critiques the situation.
+
+The actor performs in it.
+
+And that is why the name **Advantage Actor-Critic.**
+
+### From Monte Carlo Advantage to TD Advantage
+
+Up to this point, the advantage we used was
+
+$$
+A_\pi(s_t, a_t) = G_t - V_\pi(s_t)
+$$
+
+where $G_t$ was the full Monte Carlo return from time $t$. Conceptually, this made perfect sense. We waited until the episode finished, computed the real future return, compared it to what the critic predicted, and used that difference as the learning signal.
+
+But notice something familiar here. We have seen this pattern before. Early in reinforcement learning, we started with Monte Carlo evaluation. We waited until the episode ended and computed
+
+$$
+G_t = r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \dots
+$$
+
+Only after seeing the entire future did we update values.
+
+Then we discovered something powerful. We do not always need the full future. Sometimes a good estimate of the future is enough. That insight gave us **Temporal Difference learning**. Instead of the full return, we used a one-step target:
+
+$$
+r_t + \gamma V(s_{t+1})
+$$
+
+This allowed learning during the episode without waiting for the end. Exactly the same idea appears here. The advantage definition
+
+$$
+A_\pi(s_t, a_t) = G_t - V(s_t)
+$$
+
+still depends on the full return $G_t$. That means the actor must wait until the episode finishes before it can update. But the critic already knows how to estimate the future. Its estimate is
+
+$$
+V(s_{t+1})
+$$
+
+So instead of using the full return, we can form a **one-step estimate of the advantage.** Start with the TD target of the critic:
+
+$$
+r_t + \gamma V(s_{t+1})
+$$
+
+Now compare it with the critic’s current estimate $V(s_t)$. The difference is
+
+$$
+r_t + \gamma V(s_{t+1}) - V(s_t)
+$$
+
+Look at that expression carefully. It is exactly the **TD error** we used earlier when training value functions. But now it has a second interpretation.
+
+It is also an estimate of the advantage.
+
+If the observed reward plus predicted future value is larger than what we expected from $s_t$, then the action must have been better than expected. The advantage is positive.
+
+If it is smaller, the action was worse than expected.
+
+So we can approximate
+
+$$
+A(s_t, a_t) \approx \delta_t
+$$
+
+This small substitution changes everything.
+
+The actor no longer needs to wait until the episode ends. As soon as the transition
+
+$$
+s_t \rightarrow s_{t+1}
+$$
+
+happens, we already have:
+
+- the reward $r_t$
+- the critic’s estimate $V(s_{t+1})$
+
+That is enough to compute $\delta_t$. So the actor update becomes
+
+$$
+\theta \leftarrow \theta + \alpha \, \delta_t \, \nabla_\theta \log \pi_\theta(a_t \mid s_t)
+$$
+
+And the critic update remains
+
+$$
+w \leftarrow w + \beta \, \delta_t \, \nabla_w V(s_t; w)
+$$
+
+Both actor and critic now use the same **TD signal**. The critic uses it to improve its value estimates. The actor uses it to reshape the policy.
+
+## Parallel Experience
+
+There is still one practical issue hiding in the background. So far, we have imagined **one agent interacting with one environment.** The drone flies through Grid City, collects a trajectory, and the actor–critic updates after every step.
+
+That works. But it is also painfully slow.
+
+Think about what the algorithm is doing. At each step it collects exactly one transition:
+
+$$
+(s_t, a_t, r_t, s_{t+1})
+$$
+
+From that single experience we compute
+
+$$
+\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)
+$$
+
+and update both actor and critic.
+
+But that one experience might be misleading. Maybe the drone got lucky. Maybe it got unlucky. Maybe the wind randomly pushed it into a good state.
+
+Now imagine a different situation.
+
+Instead of one drone flying in Grid City, suppose we launch eight identical drones at the same time. Each drone starts from a random location. Each one follows the same policy network
+
+$$
+\pi_\theta(a \mid s)
+$$
+
+but their trajectories unfold independently.
+
+Drone 1 moves through one part of the city.
+
+Drone 2 crashes into a tower.
+
+Drone 3 finds a shortcut.
+
+Drone 4 gets stuck circling a building.
+
+At the same time step, instead of one transition, we suddenly observe eight transitions.
+
+<table>
+  <thead>
+    <tr>
+      <th>Drone</th>
+      <th>State</th>
+      <th>Action</th>
+      <th>Reward</th>
+      <th>Next State</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>s<sub>1</sub></td>
+      <td>up</td>
+      <td>2</td>
+      <td>s<sub>1</sub>'</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>s<sub>2</sub></td>
+      <td>left</td>
+      <td>-1</td>
+      <td>s<sub>2</sub>'</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>s<sub>3</sub></td>
+      <td>right</td>
+      <td>3</td>
+      <td>s<sub>3</sub>'</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>s<sub>4</sub></td>
+      <td>up</td>
+      <td>0</td>
+      <td>s<sub>4</sub>'</td>
+    </tr>
+    <tr>
+      <td>…</td>
+      <td>…</td>
+      <td>…</td>
+      <td>…</td>
+      <td>…</td>
+    </tr>
+  </tbody>
+</table>
+
+For each of these we compute a TD error:
+
+$$
+\delta^{(i)} = r^{(i)} + \gamma V(s'^{(i)}) - V(s^{(i)})
+$$
+
+Instead of one noisy signal, we now have many signals at once. The actor update becomes an average over them:
+
+$$
+\theta \leftarrow \theta + \alpha \frac{1}{N} \sum_{i=1}^{N} \delta^{(i)} \nabla_\theta \log \pi_\theta(a^{(i)} \mid s^{(i)})
+$$
+
+Now something beautiful happens. Because the environments run in parallel, randomness begins to cancel out.
+
+Maybe Drone 2 was unlucky.
+
+But Drone 3 was lucky.
+
+Drone 5 did something average.
+
+When we combine all of them, the gradient becomes much more stable. Also, it is the synchronous version of an earlier algorithm called **A3C (Asynchronous Advantage Actor–Critic)**. Instead of many workers updating parameters at random times, A2C collects experiences from multiple environments simultaneously, computes advantages together, and performs a single synchronized update. In other words, the learning process becomes batched, just like training a neural network.
+
+Instead of:
+
+one environment → one step → one update
+
+we now have:
+
+many environments → many steps → one stable update
+
+And suddenly policy gradient methods become dramatically more stable and efficient.
+
+The actor learns from **many experiences at once.**
+
+The critic evaluates **many states simultaneously.**
+
+And the noisy world of reinforcement learning starts to look a little more like the structured world of deep learning training.
+
+### The Circle Closes
+
+If you step back and look at the entire journey, something elegant appears. We started with **Monte Carlo returns**, moved to **Temporal Difference errors**, and now that same TD signal is guiding both the critic and the actor. The critic learns to predict the future, while the actor learns to choose actions that make that future better. The same small quantity,
+
+$$
+\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)
+$$
+
+has become the central feedback signal of actor–critic learning. But this still leaves one subtle question: **how exactly should we estimate the advantage?** Using full returns gives low bias but high variance, while one-step TD gives low variance but introduces bias (same as we have discussed in N step SARSA). Balancing these two worlds leads us to **Generalized Advantage Estimation (GAE)**.

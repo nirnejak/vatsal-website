@@ -1,0 +1,239 @@
+import Image from "next/image"
+
+import CoverImage from "./cover.png"
+
+# Reinforcement Learning: Trust Region Policy Optimization (TRPO)
+
+<span className="text-base leading-snug text-neutral-500">
+  Why unconstrained policy gradient updates can destroy a working policy overnight.
+</span>
+
+<Image src={CoverImage} alt={"A fenced region around a point in parameter space, representing the trust region a policy update is not allowed to step outside of"} placeholder="blur" />
+
+By this point in our journey through reinforcement learning, we have gradually shifted how we think about learning behavior.
+
+At the beginning, everything revolved around values. We estimated how good a state was, or how good a state–action pair was. The agent looked at those numbers and simply chose the best action.
+
+Later we replaced tables with function approximators, then neural networks, but the core idea remained the same: learn values, extract a policy.
+
+Then **policy gradients** changed the perspective completely. Instead of learning numbers that describe actions, we started directly shaping the policy itself. The policy became a probability distribution:
+
+$$
+\pi_\theta(a \mid s)
+$$
+
+where the neural network parameters $\theta$ decide how likely each action is. And the objective suddenly became very simple:
+
+$$
+J(\theta) = \mathbb{E}[G_t]
+$$
+
+Maximize the expected return. To do that, we compute a gradient and move the parameters in the direction that improves performance:
+
+$$
+\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)
+$$
+
+At first glance, this looks beautifully straightforward. If an action leads to good outcomes, increase its probability. If it leads to bad outcomes, decrease it. But something subtle and dangerous hides inside this update.
+
+### When Policy Updates Become Too Large
+
+To see it, imagine a small robot learning to navigate a warehouse. At some state $s$, its policy currently assigns probabilities to four actions:
+
+$$
+\pi_\theta(s) = [0.25,\, 0.25,\, 0.25,\, 0.25]
+$$
+
+The robot has no preference yet. Every direction is equally likely. 
+
+Now suppose the robot tries action $3$ and gets a surprisingly large reward. The return is much larger than expected. The gradient tells us:
+
+“Make action 3 more likely.”
+
+So we update the parameters. After the update the policy might become:
+
+$$
+\pi_{\theta'}(s) = [0.05,\, 0.05,\, 0.85,\, 0.05]
+$$
+
+Suddenly the robot almost always chooses action 3.
+
+At first this feels reasonable. The action worked well, so why not strongly increase its probability?
+
+But the problem is that the reward might have been lucky.
+
+Maybe action 3 worked well only because of randomness in the environment. Maybe later steps just happened to produce high rewards.
+
+Now imagine that action 3 is actually terrible in most situations. Because we made such a large policy update, the robot now almost always chooses it.
+
+Learning collapses.
+
+This problem becomes even worse when neural networks are involved. A small change in parameters can cause a huge shift in policy probabilities across many states.
+
+The agent might suddenly behave like a completely different policy.
+
+Learning becomes unstable.
+
+So the natural question appears:
+
+Instead of making large uncontrolled updates, what if we forced the policy to change only a little at a time?
+
+### The Intuition Behind Trust Regions
+
+Imagine again our warehouse robot.
+
+Suppose the current policy is $\pi_\theta$. After computing the gradient, we obtain a candidate new policy $\pi_{\theta'}$.
+
+Before accepting the update, we ask a simple question:
+
+“How different is the new policy from the old one?”
+
+If the change is small, we accept it.
+
+If the change is too large, we reject or shrink the update.
+
+This idea is the core intuition behind **Trust Region methods**.
+
+The phrase “trust region” comes from optimization.
+
+Instead of trusting the gradient everywhere, we only trust it within a small region around the current parameters.
+
+Inside this region the gradient approximation is reliable.
+
+Outside it, the approximation might break down.
+
+So the update becomes a constrained optimization problem.
+
+Instead of maximizing the objective freely, we maximize it subject to a constraint that prevents the policy from moving too far.
+
+we impose a rule: the new policy must remain close to the old one.
+
+So the optimizer searches for a policy that improves the objective, but only slightly changes the distribution.
+
+Maybe the new policy becomes something like
+
+$$
+\pi_{\theta'}(a \mid s) =
+[0.22,\;0.22,\;0.34,\;0.22]
+$$
+
+Action $3$ becomes more likely, but the change is gentle. The robot still explores the other directions.
+
+But this raises a deeper question.
+
+What does it actually mean for two policies to be “close”?
+
+### Measuring the Distance Between Policies
+
+Policies are probability distributions. So closeness cannot simply mean the parameters are numerically similar. Two neural networks might have slightly different weights yet produce drastically different action probabilities.
+
+Instead we need a way to measure the **distance between probability distributions**.
+
+To understand why this matters, imagine two policies at the same state:
+
+$$
+\pi_{old} =
+[0.25,\;0.25,\;0.25,\;0.25]
+$$
+
+and
+
+$$
+\pi_{new} =
+[0.24,\;0.24,\;0.28,\;0.24]
+$$
+
+The difference here is tiny. The agent behaves almost the same.
+
+But now consider another update:
+
+$$
+\pi_{new} =
+[0.01,\;0.01,\;0.97,\;0.01]
+$$
+
+Even though the parameters might have moved only slightly inside the neural network, the behavior has completely changed.
+
+The robot has effectively stopped exploring.
+
+So instead of measuring parameter changes, **trust region methods measure how much the action distribution itself changes**.
+
+Mathematically, this leads us to a quantity that compares two probability distributions:
+
+$$
+D_{KL}(\pi_\theta \,\|\, \pi_{\theta'})
+$$
+
+This is called the **Kullback–Leibler divergence**.
+
+This quantity measures how different two probability distributions are.
+
+If the policies are identical, the KL divergence is zero.
+
+If they differ significantly, the KL divergence becomes large.
+
+So we can enforce a rule like this:
+
+$$
+D_{KL}(\pi_{\theta} \,\|\, \pi_{\theta'}) \le \delta
+$$
+
+This says:
+
+The new policy must remain close to the old one.
+
+The parameter $\delta$ controls how large a step we allow.
+
+Now our policy improvement problem becomes slightly different.
+
+Earlier we simply maximized expected return:
+
+$$
+\max_{\theta} \; J(\theta)
+$$
+
+But now we add a constraint.
+
+We want to improve performance while keeping the policy close to the previous one.
+
+So the optimization problem becomes:
+
+$$
+\max_{\theta} \; J(\theta)
+$$
+
+subject to
+
+$$
+D_{KL}(\pi_{\theta_{\theta'}} \,\|\, \pi_{\theta'}) \le \delta
+$$
+
+This is the core idea behind **Trust Region Policy Optimization (TRPO)**.
+
+Improve the policy. But never trust updates that move too far from the current behavior.
+
+### The Practical Challenge
+
+While TRPO is elegant, it introduces a new challenge.
+
+The constraint
+
+$$
+D_{KL}(\pi_{\text{old}}, \pi_\theta) \leq \delta
+$$
+
+makes the optimization problem more complicated.
+
+Solving it exactly requires specialized second-order optimization techniques and careful approximations.
+
+The algorithm works beautifully in theory, but in practice it becomes quite heavy to implement.
+
+And that raises a natural question.
+
+Can we keep the **spirit of trust region updates** without solving such a complicated constrained optimization problem?
+
+That question leads directly to one of the most widely used reinforcement learning algorithms today:
+
+**Proximal Policy Optimization (PPO).**
+
+Instead of enforcing a hard trust region constraint, PPO introduces a clever trick that **clips probability ratios**, achieving a similar stabilizing effect with a much simpler implementation.
