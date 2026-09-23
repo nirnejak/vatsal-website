@@ -1,0 +1,495 @@
+import Image from "next/image"
+
+import CoverImage from "./cover.png"
+
+# Reinforcement Learning: Direct Preference Optimization (DPO)
+
+<span className="text-base leading-snug text-neutral-500">
+  A classification-style loss that trains directly on human preference pairs.
+</span>
+
+<Image src={CoverImage} alt={"Two response paths branching from a reference policy, one pulled toward the preferred response and the other pushed away from the rejected one"} placeholder="blur" />
+
+With RLHF the story has become both powerful and slightly unsatisfying at the same time.
+
+Powerful, because we finally stopped pretending that every good behavior can be captured by a neat hand-written reward function. Instead, we admitted something much closer to reality: humans are often far better at saying “this answer is better than that one” than at writing down an exact scalar reward for every possible response.
+
+But also slightly unsatisfying, because the full RLHF pipeline is heavy.
+
+We start with supervised fine-tuning so the model learns how to speak in a generally sensible way. Then we collect preference comparisons. Then we train a separate reward model. Then we run PPO to optimize the policy against that learned reward, while keeping it close to a reference model through a KL penalty.
+
+Conceptually, it all makes sense.
+
+And yet a natural question keeps lingering in the background.
+
+If our dataset already tells us which response humans preferred and which one they rejected, why do we need to build so much machinery in the middle? Why train a separate reward model just to convert comparisons into scores, and then run a reinforcement-learning algorithm just to make the policy prefer the chosen response?
+
+Why not learn that preference more directly?
+
+That question is exactly where **Direct Preference Optimization (DPO)** enters.
+
+To really understand why DPO feels so elegant, it helps to begin with a simple situation.
+
+Imagine a prompt
+
+$$
+x = \text{“Reply politely to a meeting cancellation.”}
+$$
+
+Now suppose we have two candidate responses.
+
+The first is
+
+$$
+y^+ = \text{“No worries at all. Thanks for letting me know, and we can reschedule anytime.”}
+$$
+
+The second is
+
+$$
+y^- = \text{“Okay.”}
+$$
+
+A human reads both and prefers the first one.
+
+This is the raw data we actually have in preference learning:
+
+$$
+(x, y^+, y^-)
+$$
+
+The prompt, a chosen response, and a rejected response.
+
+Now think carefully about what PPO-based RLHF is trying to achieve after all its intermediate steps. The reward model is trained so that the chosen response gets a higher score than the rejected one. Then PPO updates the policy so that responses with higher reward become more likely.
+
+If we compress those two stages into one sentence, the final goal is simply this:
+
+for a given prompt, make the policy assign higher probability to the chosen response than to the rejected one.
+
+That sounds almost embarrassingly straightforward.
+
+And once it is said that plainly, it becomes hard not to ask: can we just train that directly?
+
+## From a Naive Idea to a Precise One
+
+At first, this looks too naive. If we write something like
+
+$$
+\pi_\theta(y^+ \mid x) > \pi_\theta(y^- \mid x),
+$$
+
+then yes, it captures the direction we want. But it misses an important ingredient from RLHF. In RLHF, we never optimize preference in isolation. We always keep the new policy close to a reference policy, often the supervised fine-tuned model. That reference matters, because without it the model may drift into strange regions of behavior. It may exploit the preference signal in odd ways, become overly verbose, unnaturally confident, or collapse into stylistic quirks that happen to fool the objective.
+
+So if DPO is going to replace reward-model training plus PPO, it must somehow preserve the stabilizing role of that reference policy.
+
+This is where the idea becomes elegant.
+
+DPO does not simply say “increase the probability of chosen responses.” It says something more precise:
+
+increase the probability of chosen responses **relative to the reference policy**, and decrease the probability of rejected responses **relative to the reference policy**.
+
+That “relative to the reference” idea is the key.
+
+To see why, consider the KL-regularized RLHF objective:
+
+$$
+\max_{\pi}
+\;
+\mathbb{E}_{x \sim D,\; y \sim \pi(\cdot \mid x)}
+\left[
+r(x,y)
+\right]
+-
+\beta
+\,
+\mathbb{E}_{x}
+\left[
+D_{\mathrm{KL}}
+\big(
+\pi(\cdot \mid x)\,\|\,\pi_{\mathrm{ref}}(\cdot \mid x)
+\big)
+\right]
+$$
+
+This objective says: achieve high reward, but do not drift too far from the reference policy.
+
+Now comes a key mathematical insight. The optimal policy for this objective has a closed form (see Appendix):
+
+$$
+\pi^*(y \mid x)
+\propto
+\pi_{\mathrm{ref}}(y \mid x)
+\exp\!\left(\frac{1}{\beta} r(x,y)\right)
+$$
+
+This equation says that the optimal policy is simply the reference policy **tilted** by the exponential of the reward.
+
+If the reward is high, the probability increases relative to the reference.
+
+If the reward is low, the probability decreases.
+
+Taking logs (ignoring normalization constants), we obtain
+
+$$
+r(x,y)
+=
+\beta
+\left[
+\log \pi^*(y \mid x)
+-
+\log \pi_{\mathrm{ref}}(y \mid x)
+\right]
++ \text{constant}.
+$$
+
+Now something remarkable happens.
+
+The reward can be written in terms of a **log-probability difference** between the policy and the reference policy.
+
+This means the reward model is no longer strictly necessary. It is implicitly encoded in how the policy deviates from the reference.
+
+Now consider a preference pair $(x, y^+, y^-)$ where the human prefers $y^+$ over $y^-$. That implies
+
+$$
+r(x,y^+) > r(x,y^-).
+$$
+
+Substituting the expression above, we get
+
+$$
+\log \pi^*(y^+ \mid x) - \log \pi_{\mathrm{ref}}(y^+ \mid x)
+>
+\log \pi^*(y^- \mid x) - \log \pi_{\mathrm{ref}}(y^- \mid x).
+$$
+
+This expression is no longer about rewards at all.
+
+It compares **two preference gaps**:
+
+- how strongly the new policy prefers $y^+$ over $y^-$
+- how strongly the reference policy prefers $y^+$ over $y^-$
+
+And the condition is simple:
+
+the new policy should prefer the chosen response **more strongly than the reference policy does**.
+
+## Turning the Idea Into a Loss
+
+Now we can turn this into a learning objective.
+
+Define a score:
+
+$$
+s_\theta(x, y)
+=
+\log \pi_\theta(y \mid x)
+-
+\log \pi_{\text{ref}}(y \mid x).
+$$
+
+Then the preference condition becomes
+
+$$
+s_\theta(x, y^+) > s_\theta(x, y^-).
+$$
+
+We convert this into a probability:
+
+$$
+P(y^+ \succ y^- \mid x)
+=
+\sigma\Big(
+s_\theta(x, y^+) - s_\theta(x, y^-)
+\Big),
+$$
+
+where $\sigma(\cdot)$ is the sigmoid function.
+
+Finally, we optimize the likelihood of the human preference:
+
+$$
+\mathcal{L}_{\text{DPO}}
+=
+- \log \sigma\Big(
+s_\theta(x, y^+) - s_\theta(x, y^-)
+\Big).
+$$
+
+And just like that, we have replaced:
+
+- reward model training
+- PPO optimization
+
+with a single supervised-style loss.  No rollouts. No value functions. No advantage estimates. Just pairs, comparisons, and gradients.
+
+But there is a small detail we quietly brushed aside earlier.
+
+When we derived the connection between reward and log-probabilities, there was a parameter sitting there the whole time:
+
+$$
+r(x,y)
+=
+\beta
+\left[
+\log \pi^*(y \mid x)
+-
+\log \pi_{\mathrm{ref}}(y \mid x)
+\right]
+$$
+
+We ignored it to keep the story simple. Now it is time to bring it back. back into the score:
+
+$$
+s_\theta(x, y)
+=
+\beta
+\left[
+\log \pi_\theta(y \mid x)
+-
+\log \pi_{\text{ref}}(y \mid x)
+\right].
+$$
+
+Now look at the difference:
+
+$$
+s_\theta(x, y^+) - s_\theta(x, y^-)
+=
+\beta
+\Big(
+\log \frac{\pi_\theta(y^+ \mid x)}{\pi_\theta(y^- \mid x)}
+-
+\log \frac{\pi_{\text{ref}}(y^+ \mid x)}{\pi_{\text{ref}}(y^- \mid x)}
+\Big).
+$$
+
+and hence out loss become:
+
+$$
+L_{\mathrm{DPO}}(\theta)
+=
+-
+
+\log
+\sigma
+\left(
+\beta
+\left[
+\log \frac{\pi_\theta(y^+ \mid x)}{\pi_{\mathrm{ref}}(y^+ \mid x)}
+-
+\log \frac{\pi_\theta(y^- \mid x)}{\pi_{\mathrm{ref}}(y^- \mid x)}
+\right]
+\right)
+$$
+
+That is DPO.
+
+## Making It Concrete
+
+It helps to make this concrete with numbers. Imagine for a moment that for the same prompt $x$, the reference policy assigns the following log-probabilities:
+
+$$
+\log \pi_{\text{ref}}(y^+ \mid x) = -10.0,
+\qquad
+\log \pi_{\text{ref}}(y^- \mid x) = -9.2.
+$$
+
+This means that, under the reference model, the rejected response is actually slightly more likely.
+
+Now suppose our current policy has shifted a bit:
+
+$$
+\log \pi_\theta(y^+ \mid x) = -8.5,
+\qquad
+\log \pi_\theta(y^- \mid x) = -9.8.
+$$
+
+Let us compute the score difference step by step.
+
+First, measure how much the new policy has moved relative to the reference.
+
+For the chosen response,
+
+$$
+\log \pi_\theta(y^+ \mid x) - \log \pi_{\text{ref}}(y^+ \mid x)
+=
+-8.5 - (-10.0)
+=
+1.5
+$$
+
+For the rejected response,
+
+$$
+\log \pi_\theta(y^- \mid x) - \log \pi_{\text{ref}}(y^- \mid x)
+=
+-9.8 - (-9.2)
+=
+-0.6
+$$
+
+Now take the difference:
+
+$$
+1.5 - (-0.6) = 2.1
+$$
+
+If we choose $\beta = 1$, then the argument to the sigmoid becomes $2.1$. That gives
+
+$$
+\sigma(2.1) \approx 0.89
+$$
+
+So the model is already strongly aligned with the human preference. The loss
+
+$$
+-\log(0.89)
+$$
+
+is small, which means only a gentle update is needed.
+
+Another elegant piece of DPO is hidden in the gradient. If we define the preference margin
+
+$$
+m_\theta(x, y^+, y^-)
+=
+\beta \log \frac{\pi_\theta(y^+ \mid x)}{\pi_{\text{ref}}(y^+ \mid x)}
+-
+\beta \log \frac{\pi_\theta(y^- \mid x)}{\pi_{\text{ref}}(y^- \mid x)}
+$$
+
+then the loss for one example is simply
+
+$$
+-\log \sigma(m_\theta)
+$$
+
+Now consider how this behaves.
+
+If $m_\theta$ is already very large and positive, then $\sigma(m_\theta)$ is close to $1$, the loss is tiny, and the gradient is tiny. This means DPO does not keep pushing a preference pair that the model already gets right with a comfortable margin.
+
+But if $m_\theta$ is negative, then $\sigma(m_\theta)$ is small, the loss is large, and the gradient is large. That means DPO automatically focuses more strongly on examples where the model still implicitly favors the rejected response.
+
+This is a beautiful kind of self-weighting. No critic is needed to tell the algorithm where it is wrong. The pairwise margin itself tells us how wrong the current policy is. The original paper emphasizes exactly this intuition: the DPO update increases the likelihood of preferred completions, decreases the likelihood of dispreferred completions, and weights examples according to how incorrectly the model’s implicit reward ordering still ranks them.
+
+## What This Really Replaces
+
+At this point, the relationship to the earlier RLHF discussion becomes much clearer.
+
+In RLHF, the chain looked like this:
+
+human preference $\rightarrow$ reward model $\rightarrow$ PPO $\rightarrow$ improved policy.
+
+In DPO, the chain collapses into
+
+human preference $\rightarrow$ direct policy optimization.
+
+But it would be a mistake to think DPO “abandons” the RLHF objective. It actually keeps the same spirit. The KL-constrained reward-maximization picture is still there in the background. The difference is that DPO notices something PPO-based RLHF did not exploit cleanly enough: once the optimal KL-regularized policy can be written in closed form, and once pairwise preference models care only about reward differences, the reward model can be analytically folded into the policy itself.
+
+There is also something very satisfying about this from the perspective of language modeling.
+
+In ordinary reinforcement learning, the agent must interact with an environment, observe consequences, estimate returns, bootstrap values, and so on. Language-model alignment is a bit stranger. We already have an offline dataset of comparisons. We are not trying to discover the consequences of actions in some unknown world. We are trying to align a conditional sequence model with pairwise judgments. Once that is the problem, a classification-style objective begins to feel much more natural than a full actor-critic loop.
+
+And this is why DPO feels like such a natural next step after RLHF. In the previous blog, PPO was the engine that carried us from learned rewards to aligned behavior. In this blog, we discover that maybe the engine was not the essential part after all. Maybe the essential part was always the preference comparison itself, and the rest of the machinery was just one way of expressing it.
+
+## Appendix
+
+**Deriving the Optimal Policy Under a KL-Regularized Reward**
+
+Fix a prompt $x$. We want to choose the distribution $\pi(\cdot \mid x)$ over the response space $\mathcal{Y}$ to maximize
+
+$$
+J[\pi] = \sum_{y} \pi(y\mid x)\, r(x,y) - \beta \sum_{y} \pi(y\mid x) \log\frac{\pi(y\mid x)}{\pi_{\mathrm{ref}}(y\mid x)}
+$$
+
+subject to the constraint that $\pi(\cdot\mid x)$ is a valid probability distribution:
+
+$$
+\sum_y \pi(y\mid x) = 1, \qquad \pi(y\mid x) \geq 0 \;\; \forall y
+$$
+
+This is a constrained optimization over a function, with one variable $\pi(y\mid x)$ per $y$, so we use Lagrange multipliers.
+
+We start by forming the Lagrangian. We introduce a multiplier $\lambda$ for the normalization constraint, and we'll check that the nonnegativity constraint is automatically satisfied, so no multiplier is needed for it:
+
+$$
+\mathcal{L}[\pi,\lambda] = \sum_{y} \pi(y\mid x)\, r(x,y) - \beta \sum_{y} \pi(y\mid x) \log\frac{\pi(y\mid x)}{\pi_{\mathrm{ref}}(y\mid x)} - \lambda\left(\sum_y \pi(y\mid x) - 1\right)
+$$
+
+Next, we take the functional derivative. Treating each $\pi(y\mid x)$, for each fixed $y$, as an independent variable, we differentiate $\mathcal{L}$ with respect to it. There are three terms involving $\pi(y\mid x)$.
+
+The first term gives us:
+
+$$
+\frac{\partial}{\partial \pi(y\mid x)}\big[\pi(y\mid x)\, r(x,y)\big] = r(x,y)
+$$
+
+The second term, using the product rule on $\pi \log(\pi/\pi_{\mathrm{ref}})$, gives us:
+
+$$
+\frac{\partial}{\partial \pi(y\mid x)}\Big[\pi(y\mid x)\log\pi(y\mid x) - \pi(y\mid x)\log\pi_{\mathrm{ref}}(y\mid x)\Big] = \log\pi(y\mid x) + 1 - \log\pi_{\mathrm{ref}}(y\mid x)
+$$
+
+using $\frac{d}{d\pi}[\pi\log\pi] = \log\pi + 1$.
+
+The third term gives us:
+
+$$
+\frac{\partial}{\partial \pi(y\mid x)}\big[-\lambda\, \pi(y\mid x)\big] = -\lambda
+$$
+
+Putting it together and setting the total derivative to zero:
+
+$$
+\frac{\partial \mathcal{L}}{\partial \pi(y\mid x)} = r(x,y) - \beta\left[\log\frac{\pi(y\mid x)}{\pi_{\mathrm{ref}}(y\mid x)} + 1\right] - \lambda = 0
+$$
+
+Now we solve for $\pi(y\mid x)$. Rearranging:
+
+$$
+\beta \log\frac{\pi(y\mid x)}{\pi_{\mathrm{ref}}(y\mid x)} = r(x,y) - \beta - \lambda
+$$
+
+$$
+\log\frac{\pi(y\mid x)}{\pi_{\mathrm{ref}}(y\mid x)} = \frac{r(x,y)}{\beta} - \left(1 + \frac{\lambda}{\beta}\right)
+$$
+
+Exponentiating both sides:
+
+$$
+\pi(y\mid x) = \pi_{\mathrm{ref}}(y\mid x)\, \exp\!\left(\frac{r(x,y)}{\beta}\right)\cdot \exp\!\left(-1 - \frac{\lambda}{\beta}\right)
+$$
+
+The last factor doesn't depend on $y$, so we call it $C(x)$:
+
+$$
+\pi(y\mid x) = C(x)\; \pi_{\mathrm{ref}}(y\mid x)\, \exp\!\left(\frac{r(x,y)}{\beta}\right)
+$$
+
+To fix this constant, we apply the normalization constraint $\sum_y \pi(y\mid x) = 1$:
+
+$$
+1 = C(x) \sum_y \pi_{\mathrm{ref}}(y\mid x)\, \exp\!\left(\frac{r(x,y)}{\beta}\right) \implies C(x) = \frac{1}{Z(x)}
+$$
+
+where
+
+$$
+Z(x) = \sum_y \pi_{\mathrm{ref}}(y\mid x)\, \exp\!\left(\frac{r(x,y)}{\beta}\right)
+$$
+
+is the partition function. It normalizes the distribution and doesn't depend on $\pi$.
+
+This brings us to the final closed form:
+
+$$
+{\;\pi^*(y\mid x) = \frac{1}{Z(x)}\; \pi_{\mathrm{ref}}(y\mid x)\, \exp\!\left(\frac{r(x,y)}{\beta}\right) \propto \pi_{\mathrm{ref}}(y\mid x)\, \exp\!\left(\frac{1}{\beta}r(x,y)\right)\;}
+$$
+
+Finally, we verify that this is a maximum rather than a saddle point. Taking the second derivative of $\mathcal{L}$ with respect to $\pi(y\mid x)$:
+
+$$
+\frac{\partial^2 \mathcal{L}}{\partial \pi(y\mid x)^2} = -\frac{\beta}{\pi(y\mid x)}
+$$
+
+Since $\beta > 0$ and $\pi(y\mid x) > 0$, this is strictly negative everywhere. The objective is strictly concave in $\pi$, because $-\pi\log\pi$ is concave (negative entropy is convex, so its negative is concave), and adding the linear reward term preserves concavity. A strictly concave function on a convex constraint set, has a unique global maximum, which is exactly the critical point we found. This also confirms $\pi^*(y\mid x) > 0$ automatically.
