@@ -1,0 +1,395 @@
+import Image from "next/image"
+
+import CoverImage from "./cover.png"
+
+# Reinforcement Learning: Preference Learning
+
+<span className="text-base leading-snug text-neutral-500">
+  Learning a reward model from pairwise trajectory comparisons instead of scores.
+</span>
+
+<Image src={CoverImage} alt={"Two trajectories side by side with a human pointing to the preferred one, representing how pairwise comparisons replace scalar rewards"} placeholder="blur" />
+
+Until now, everything has revolved around **rewards**. The agent takes an action, the environment responds with a number, and that number tells us how good or bad that action was. Over time, the agent learns to choose actions that maximize these numbers.
+
+And that assumption works beautifully in many problems. In games, we know the score. In robotics, we can measure distance to a goal. In recommendation systems, we can track clicks.
+
+It sounds clean. Mathematical. Precise. But now imagine a slightly different situation.
+
+Suppose we are training an AI assistant to generate responses for users. A response is not “correct” or “incorrect” in a simple numeric way. Instead, humans read two responses.
+
+Response A:
+
+“Hey, send the report.”
+
+Response B:
+
+“Hi team, please find the attached report. Let me know if you have any questions.”
+
+Which one is better?
+
+There is no obvious numerical reward. You cannot say “Response B = +3 reward” and “Response A = +1 reward” with any objective ground truth. But if you ask a human, they will immediately say:
+
+“B is better than A.”
+
+This reveals the first crack in the traditional reinforcement learning setup. In many real-world problems, it is easier to say **which outcome is better** than to assign an exact numerical reward. And that simple observation leads us to a different way of learning.
+
+Imagine a very small setting.
+
+An agent produces outputs. For simplicity, suppose each output is just a number:
+
+$$
+x \in \lbrace 1,2,3,4 \rbrace
+$$
+
+We do not know the true reward function. But we have access to a human who can compare two outputs and say which one they prefer. Now suppose we collect the following comparisons:
+
+- Between 1 and 2 → human prefers 2
+- Between 2 and 3 → human prefers 3
+- Between 1 and 3 → human prefers 3
+- Between 3 and 4 → human prefers 4
+
+Notice what we have. We do not have rewards like
+
+$$
+r(1), r(2), r(3), r(4)
+$$
+
+Instead, we only have **pairwise preferences**. At first, this feels incomplete. How can we do reinforcement learning without rewards? But let us try to reconstruct what might be happening. If humans consistently prefer 3 over 2, and 2 over 1, then implicitly there must exist some hidden scoring function such that
+
+$$
+r(3) > r(2) > r(1)
+$$
+
+We do not know the exact numbers, but we can try to learn them.
+
+So far, every example we have looked at shares a quiet assumption. Whether it was two email responses or the numbers one through four, the thing being compared was a single, finished object. The human looked at a complete response, or a complete output, and judged it as a whole. In these cases the preference naturally attaches to the end result, the final produced thing, and there is nothing in between to worry about.
+
+But a great many problems do not look like this at all. Very often the thing we want to compare is not a single finished object but an entire *behavior* that unfolds over time. Think of a robot tidying a room, an agent playing a full game, or a car completing a parking maneuver. Here a "choice" is not one word or one number. It is a long sequence of small decisions, one after another, each nudging the world into a slightly different state, until some final situation is reached.
+
+And this is where the interesting machinery begins. Because if we want to learn a reward from these comparisons, we can no longer be content with a single number attached to the end. We will need a way to reach *inside* a behavior and decide how much each individual moment contributed. That question, how to turn a preference about a whole sequence into a sense of value for each step within it, is what the rest of this story is really about.
+
+## From Comparisons to a Hidden Reward
+
+Now let’s move bit closer to reality.Imagine training a household robot to clean a room. At first this sounds simple. We might say, “Give positive reward when the room becomes clean.” But almost immediately strange questions appear. If the robot hides all the toys under the bed, is that good? If it throws dirty clothes into the hallway, is that good? If it breaks a vase while vacuuming faster, how much should that penalty be? If it leaves one corner dusty but keeps everything else beautifully organized, should that be considered a success or a failure?
+
+The problem is not that we lack opinions. A human can look at two outcomes and say very quickly which one is better. The problem is that translating those opinions into a perfectly shaped scalar reward is often much harder than it first appears.
+
+The same thing happens in language models. Suppose we want an assistant to answer questions in a helpful, harmless, and honest way. We can try to invent reward terms for politeness, brevity, factuality, safety, clarity, and usefulness. But these properties interact in messy ways. A very brief answer may be safe but unhelpful. A very detailed answer may be helpful but too verbose. A very confident answer may sound good even when it is wrong. The real judgment humans make is often holistic. They do not naturally think,
+
+$$
+r = 0.3 \cdot \text{helpfulness} + 0.2 \cdot \text{brevity} + 0.5 \cdot \text{safety}.
+$$
+
+They think,
+
+“Response A is better than Response B.”
+
+That tiny shift turns out to be the beginning of **preference learning**.
+
+Instead of asking a supervisor to provide a perfect numerical reward for every action, we ask for something simpler and often more reliable: a comparison.
+
+Given two trajectories,
+
+$$
+\tau^A \quad \text{and} \quad \tau^B,
+$$
+
+which one do you prefer?
+
+At first, this sounds weaker than ordinary reward learning. After all, a scalar reward seems richer than a binary choice. But in practice, comparisons are often easier for humans to provide consistently.
+
+If we show someone two robot behaviors, they may struggle to assign them scores like 6.7 and 8.1. But they can often say without hesitation which one they like more. If we show someone two summaries of an article, they may find it difficult to give each one an absolute number out of 10. But they can usually identify the better one immediately.
+
+So preference learning begins from a surprisingly humble idea. Maybe we do not need the human to tell us the exact reward. Maybe it is enough for the human to tell us which outcome they would choose.
+
+To make this concrete, imagine a tiny navigation task. A robot must move from a start state to a goal. There are two possible trajectories.
+
+The first trajectory is slightly longer, but it goes around a fragile vase:
+
+$$
+\tau^A = (s_0, a_1, s_1, a_2, s_2, a_3, s_g)
+$$
+
+The second trajectory is shorter, but on the way it bumps the vase and knocks it over:
+
+$$
+\tau^B = (s_0, a'_1, s'_1, a'_2, s'_2, a'_3, s_g)
+$$
+
+A human watches both and says,
+
+$$
+\tau^A \succ \tau^B
+$$
+
+meaning trajectory $A$ is preferred over trajectory $B$.
+
+Notice what happened here. The human never specified the penalty for breaking the vase. They never wrote a reward function saying
+
+- 17.3 $\text{ for vase damage}$.
+
+They simply expressed a preference.
+
+Now the natural question is: how do we turn preferences into something an RL algorithm can optimize?
+
+The most common idea is to assume that behind these preferences there exists some hidden reward function. Not necessarily written down by the human, but implicitly reflected in their choices. If a trajectory is preferred, it should have higher total latent reward. So we imagine an unknown reward function
+
+$$
+r_*(s,a)
+$$
+
+and define the latent utility of a trajectory as
+
+$$
+R_*(\tau) = \sum_{t=0}^{T} r_*(s_t, a_t).
+$$
+
+If the human prefers $\tau^A$ over $\tau^B$, that suggests
+
+$$
+R_*(\tau^A) > R_*(\tau^B).
+$$
+
+This is the key conceptual jump. Preference learning does not usually try to learn reward from explicit scores. It tries to infer a reward that makes the observed comparisons make sense.
+
+But human judgments are noisy. If two trajectories are almost equally good, a person may choose differently on different days. So instead of enforcing a strict rule like
+
+$$
+\tau^A \succ \tau^B \iff R(\tau^A) > R(\tau^B),
+$$
+
+we turn this into a probability. A very common model is
+
+$$
+P\big(\tau^A \succ \tau^B\big)
+=
+\frac{\exp(R(\tau^A))}
+{\exp(R(\tau^A)) + \exp(R(\tau^B))}.
+$$
+
+This is simply a ranking loss (Read more about it if confused). While it may look like a small technical detail, it carries a lot of intuition.
+
+If the two trajectories have very similar rewards, the probability should be close to $0.5$. The human could reasonably go either way. If one trajectory is much better than the other, the probability should move closer to $1$. We can rewrite the same expression as
+
+$$
+P\big(\tau^A \succ \tau^B\big)
+=
+\sigma\big(R(\tau^A) - R(\tau^B)\big),
+$$
+
+where $\sigma(\cdot)$ is the sigmoid function.
+
+Now the role of the reward difference becomes very clear. Preferences are not driven by the absolute reward of one trajectory alone. They are driven by the gap
+
+$$
+R(\tau^A) - R(\tau^B).
+$$
+
+If this gap is large and positive, $A$ is very likely to be preferred. If it is near zero, the choice is uncertain. If it is negative, the model predicts that $B$ should win. Suppose, for example, that our current reward model assigns
+
+$$
+R(\tau^A) = 6, \qquad R(\tau^B) = 4.
+$$
+
+Then
+
+$$
+P(\tau^A \succ \tau^B)
+=
+\sigma(2)
+\approx 0.88.
+$$
+
+That means the model believes $A$ should be preferred most of the time. But if the rewards were
+
+$$
+R(\tau^A) = 5.1, \qquad R(\tau^B) = 5.0,
+$$
+
+then
+
+$$
+P(\tau^A \succ \tau^B)
+=
+\sigma(0.1)
+\approx 0.525.
+$$
+
+Now the model is only barely leaning toward $A$.
+
+Over time, we build a dataset that looks like this:
+
+$$
+(\tau^A, \tau^B, y)
+$$
+
+where $y = 1$ if the human prefers $A$, and $y = 0$ if they prefer $B$.
+
+## Spreading Credit Across a Sequence
+
+Now here is the interesting part. Each trajectory is not a single number; it is a sequence:
+
+$$
+\tau = (s_0, a_0, s_1, a_1, \dots, s_T)
+$$
+
+and its reward is defined as
+
+$$
+R(\tau) = r(s_0, a_0) + r(s_1, a_1) + \dots + r(s_T, a_T).
+$$
+
+So when we say “increase $R(\tau^A)$”, what we are really doing is increasing the rewards of the individual steps inside that trajectory. What actually happens during training is:
+
+- You take **all pairs** from trajectory $A$
+- Pass each $(s_t^A, a_t^A)$ through the network
+- this gives $R(\tau^A)$
+
+Same for trajectory $B$ and then we compute a loss. we are not comparing **step-by-step**, like:
+
+- Compare $(s_0^A,a_0^A)$ vs $(s_0^B,a_0^B)$
+- Then $(s_1^A,a_1^A)$ vs $(s_1^B,a_1^B)$
+
+Because trajectories can be completely different, different lengths, different states and different actions are involved.  Intuitively also it make sense. Imagine two essays:
+
+- Essay A (preferred)
+- Essay B (not preferred)
+
+You train a model that scores essays by summing sentence scores:
+
+$$
+R(\text{essay}) = \sum \text{sentence scores}
+$$
+
+Now the teacher says: “Essay A is better than Essay B”
+
+You don’t know *which sentence* made it better. 
+
+So what do you do?
+
+You slightly increase scores of sentences in A and decrease scores of sentences in B.
+
+Slowly, across many comparisons, the model begins to assign higher rewards to actions that tend to appear in preferred trajectories, and lower rewards to those that appear in rejected ones. It is almost like reverse engineering human judgment.
+
+So preference learning turns human comparison into a probabilistic prediction problem. Each example contains two trajectories and a label indicating which one the human preferred. If the human chose $\tau^+$ over $\tau^-$, then the model should assign a higher score to $\tau^+$. So we train $\hat R_\phi$ by minimizing the negative log-likelihood:
+
+$$
+\mathcal L(\phi)
+=
+-
+\sum
+\log
+\sigma
+\Big(
+\hat R_\phi(\tau^+) - \hat R_\phi(\tau^-)
+\Big).
+$$
+
+This is the core loss of **preference learning**.
+
+But this raises a question worth sitting with for a moment. The human never pointed at a single sentence in Essay A and said "this one, this is the good part." They only ever judged the whole essay. So how does the model, seeing only whole-essay comparisons, ever manage to figure out which individual sentence deserves the credit?
+
+Let's shrink the problem down to something small enough to watch closely. Forget essays for a moment, and imagine a tiny robot whose entire behavior, for the sake of this toy example, is made up of just two moves in sequence. Suppose there are only four possible moves it can ever make, call them $A$, $B$, $C$, and $D$. Now suppose the very first comparison ever collected looks like this: segment one is the move $A$ followed by the move $B$, and segment two is the move $C$ followed by the move $D$. A human watches both short clips and says segment one looks better.
+
+At this exact moment, before any other data exists, notice how little the network actually knows. Writing $\hat r_\phi$ for the reward network, all it knows is that
+
+$$
+\hat r_\phi(A) + \hat r_\phi(B) \;>\; \hat r_\phi(C) + \hat r_\phi(D)
+$$
+
+should roughly hold, so that the sigmoid of the difference matches the human's choice. But it has no way of knowing whether $A$ was the brilliant part and $B$ was mediocre, or the other way around. Look at what the loss actually does mathematically. Writing $R_1 = \hat r_\phi(A) + \hat r_\phi(B)$ and $R_2 = \hat r_\phi(C) + \hat r_\phi(D)$, the loss is $-\log \sigma(R_1 - R_2)$, and the gradient of this loss with respect to $\hat r_\phi(A)$ turns out to be exactly the same number as the gradient with respect to $\hat r_\phi(B)$. This is simply a consequence of $R_1$ being a plain sum: the derivative of a sum with respect to any one of its terms is just $1$, so the same error signal flows backward into every step of the segment equally. After this single comparison, the network nudges $\hat r_\phi(A)$ and $\hat r_\phi(B)$ up by identical amounts, and nudges $\hat r_\phi(C)$ and $\hat r_\phi(D)$ down by identical amounts. It cannot yet tell $A$ from $B$, or $C$ from $D$. If this were the only comparison the network ever saw, it would remain permanently confused about which individual move actually mattered.
+
+So where does the disentangling actually come from? It comes from the fact that thousands of comparisons get collected, and the same moves keep reappearing in different company. Suppose a second comparison arrives later. Segment three consists of the move $A$ followed by the move $D$. Segment four consists of the move $C$ followed by the move $B$. The human watches these and again prefers segment three. Now we have two pieces of information sitting side by side:
+
+$$
+\hat r_\phi(A) + \hat r_\phi(B) > \hat r_\phi(C) + \hat r_\phi(D), \qquad \hat r_\phi(A) + \hat r_\phi(D) > \hat r_\phi(C) + \hat r_\phi(B)
+$$
+
+Add these two inequalities together, and something pleasant happens. The $B$ terms appear once on the left and once on the right, and so do the $D$ terms, so they cancel out of the combined statement entirely, leaving behind simply
+
+$$
+\hat r_\phi(A) > \hat r_\phi(C)
+$$
+
+Notice this conclusion never needed a human to look at $A$ and $C$ side by side directly. It fell out purely from the fact that $A$ and $C$ each appeared once, paired with something else, and those something-elses happened to be swapped between the two comparisons. This is the actual mechanism behind the reverse engineering. A single comparison spreads equal, undifferentiated credit across every move inside it, exactly like the first comparison showed. But once a large pile of overlapping comparisons exists, where the same moves recur again and again in different combinations with different partners, gradient descent is effectively solving a giant, messy version of this same cancellation trick, across thousands of overlapping inequalities at once, gradually pinning down which individual moves are consistently on the winning side and which are consistently on the losing side, even though no single comparison ever isolated one move on its own.
+
+## Back to Reinforcement Learning, and Its New Risks
+
+Once the learned reward attaches negative value to the “bump vase” transition, ordinary RL machinery can use that signal. Returns, advantages, value functions, and policy gradients all become available again. So the story now loops back to familiar territory. After training the preference model, we can assign learned rewards along a trajectory:
+
+$$
+\hat r_t = \hat r_\phi(s_t, a_t).
+$$
+
+From these we build learned returns:
+
+$$
+\hat G_t
+=
+\hat r_t + \gamma \hat r_{t+1} + \gamma^2 \hat r_{t+2} + \dots
+$$
+
+or learned advantages:
+
+$$
+\hat A_t = \hat G_t - V(s_t),
+$$
+
+or, Using the learned reward in the TD error:
+
+$$
+\hat \delta_t
+=
+\hat r_t + \gamma V(s_{t+1}) - V(s_t).
+$$
+
+Then the actor update takes a completely familiar form:
+
+$$
+\theta
+\leftarrow
+\theta
++
+\alpha
+\hat A_t
+\nabla_\theta \log \pi_\theta(a_t \mid s_t).
+$$
+
+This is one of the most elegant features of preference learning. It does not replace reinforcement learning so much as it changes where the reward comes from. Earlier, the environment handed us reward directly. Now the reward is inferred from human comparisons.
+
+So the training loop becomes conceptually simple.
+
+The current policy generates behavior.
+
+Humans compare samples of that behavior.
+
+A reward model is trained to predict those preferences.
+
+Then the policy is optimized using that learned reward.
+
+And then the improved policy produces new behaviors, which can be compared again.
+
+But the moment this idea becomes powerful, a new danger appears.
+
+If the reward model is learned rather than given, then it can also be wrong.
+
+This is not just a minor implementation issue. It changes the personality of the whole system.
+
+In ordinary RL, reward hacking means exploiting loopholes in a hand-designed reward function. In preference learning, reward hacking means exploiting loopholes in the learned reward model.
+
+Imagine again the household robot. Suppose the comparison data mostly involved ordinary rooms with toys, clothes, and furniture, but never included fragile paintings leaning against the wall.  The policy might discover a bizarre action that knocks it over but leaves everything else perfectly clean. If the reward model has never seen similar examples, it may assign high score to this behavior even though a human would dislike it immediately.
+
+The same thing happens with language models. If the preference model learns that humans often prefer answers that sound confident and detailed, the policy may drift toward outputs that are verbose and assertive even when uncertain. From the policy’s perspective, it has found a region where the learned reward is high. From the human’s perspective, it has started gaming the evaluator.
+
+The policy can drift into regions where the learned preference model has little evidence, and once it does, the reward predictions may become unreliable.
+
+So preference learning usually needs a stabilizing force.
+
+The fix is to never let the reward model go stale, the policy, the human, and the reward predictor keep running together, not one after another, so the moment the policy starts drifting toward some odd exploit, fresh clips of that exact behavior get shown to the human right away, corrected, and folded back into the reward model before the drift can grow.
+
+To spend limited human attention wisely, comparisons are chosen from wherever a small group of reward predictors disagrees most, since disagreement usually points to exactly the behavior the reward model understands least. 
+
+Step back, and the whole shape of the idea becomes visible. It started from a small observation, that humans are better at pointing to the better of two things than at inventing a fair score for either, and that pushed us from rewards to comparisons, from comparisons to a hidden reward recovered through a sigmoid and a gap, and from a single opaque trajectory score to a sum over individual steps, the one design choice that let ordinary gradient descent quietly disentangle a whole-behavior judgment into a distinct reward for every moment inside it. Once that dense reward exists, every old tool, returns, advantages, value functions, policy gradients, works exactly as before. Preference learning, in the end, is not a replacement for reinforcement learning. It is a new way of getting the one thing reinforcement learning has always needed and never quite been able to ask for directly, a number that says how good this moment was.
+
+This is why preference learning has become so central in modern alignment work. It provides a bridge between human judgment and reinforcement learning. It lets us say, “The human may not know the exact reward function, but they know what they prefer when they see it.”

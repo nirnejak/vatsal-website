@@ -34,6 +34,10 @@ import b31Content from "./reinforcement-learning-continuous-state-space/content.
 import b31Cover from "./reinforcement-learning-continuous-state-space/cover.png"
 import b33Content from "./reinforcement-learning-deep-q-learning/content.mdx"
 import b33Cover from "./reinforcement-learning-deep-q-learning/cover.png"
+import b41Content from "./reinforcement-learning-direct-preference-optimization-dpo/content.mdx"
+import b41Cover from "./reinforcement-learning-direct-preference-optimization-dpo/cover.png"
+import b40Cover from "./reinforcement-learning-from-human-feedback-rlhf/banner.jpg"
+import b40Content from "./reinforcement-learning-from-human-feedback-rlhf/content.mdx"
 import b36Content from "./reinforcement-learning-generalized-advantage-estimation/content.mdx"
 import b36Cover from "./reinforcement-learning-generalized-advantage-estimation/cover.png"
 import b14Content from "./reinforcement-learning-markov-decision-process/content.mdx"
@@ -52,6 +56,8 @@ import b18Content from "./reinforcement-learning-off-policy-monte-carlo/content.
 import b18Cover from "./reinforcement-learning-off-policy-monte-carlo/cover.png"
 import b19Content from "./reinforcement-learning-policy-iteration/content.mdx"
 import b19Cover from "./reinforcement-learning-policy-iteration/cover.png"
+import b39Content from "./reinforcement-learning-preference-learning/content.mdx"
+import b39Cover from "./reinforcement-learning-preference-learning/cover.png"
 import b38Content from "./reinforcement-learning-proximal-policy-optimization-ppo/content.mdx"
 import b38Cover from "./reinforcement-learning-proximal-policy-optimization-ppo/cover.png"
 import b20Content from "./reinforcement-learning-q-learning/content.mdx"
@@ -358,6 +364,27 @@ export const blogs: Record<string, BlogEntry> = {
       "How clipping the probability ratio keeps policy updates safely bounded.",
     cover: b38Cover,
     Content: b38Content,
+  },
+  "reinforcement-learning-preference-learning": {
+    title: "Reinforcement Learning: Preference Learning",
+    description:
+      "Learning a reward model from pairwise trajectory comparisons instead of scores.",
+    cover: b39Cover,
+    Content: b39Content,
+  },
+  "reinforcement-learning-from-human-feedback-rlhf": {
+    title: "Reinforcement Learning from Human Feedback (RLHF)",
+    description:
+      "RLHF trains a reward model from comparisons, then optimizes the policy with PPO.",
+    cover: b40Cover,
+    Content: b40Content,
+  },
+  "reinforcement-learning-direct-preference-optimization-dpo": {
+    title: "Reinforcement Learning: Direct Preference Optimization (DPO)",
+    description:
+      "A classification-style loss that trains directly on human preference pairs.",
+    cover: b41Cover,
+    Content: b41Content,
   },
 }
 
