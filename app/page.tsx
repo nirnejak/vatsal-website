@@ -50,10 +50,10 @@ const HomePage: React.FC = () => {
         <p className="mb-20 text-neutral-600 text-sm md:text-base dark:text-neutral-500">
           I{"'"}m a{" "}
           <span className="font-semibold text-neutral-800 dark:text-neutral-300">
-            Senior AI Scientist @
+            Staff ML Scientist @
           </span>{" "}
           <span className="font-semibold text-neutral-800 dark:text-neutral-300">
-            JPMorgan Chase & Co.
+            Visa
           </span>
           . With a degree in{" "}
           <span className="font-semibold text-neutral-800 dark:text-neutral-300">
