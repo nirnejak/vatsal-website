@@ -24,19 +24,24 @@ const WorkPage: React.FC = () => {
         </h1>
         <div className="space-y-2.5 text-neutral-800 dark:text-neutral-400">
           <div className="flex items-center gap-2">
-            <p className="font-medium">JPMorgan Chase & Co.</p>
+            <p className="font-medium">Visa</p>
             <div className="flex-1 border-neutral-300 border-t border-dashed dark:border-neutral-800" />
-            <p>2025 - Now</p>
+            <p className="w-24 shrink-0">2026 - Now</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <p className="font-medium">JPMorganChase & Co.</p>
+            <div className="flex-1 border-neutral-300 border-t border-dashed dark:border-neutral-800" />
+            <p className="w-24 shrink-0">2025 - 2026</p>
           </div>
           <div className="flex items-center gap-2">
             <p className="font-medium">Jupiter Money</p>
             <div className="flex-1 border-neutral-300 border-t border-dashed dark:border-neutral-800" />
-            <p>2022 - 2025</p>
+            <p className="w-24 shrink-0">2022 - 2025</p>
           </div>
           <div className="flex items-center gap-2">
             <p className="font-medium">ZS Associates</p>
             <div className="flex-1 border-neutral-300 border-t border-dashed dark:border-neutral-800" />
-            <p>2021 - 2022</p>
+            <p className="w-24 shrink-0">2021 - 2022</p>
           </div>
         </div>
       </div>

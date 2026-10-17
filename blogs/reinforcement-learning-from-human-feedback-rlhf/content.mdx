@@ -1,0 +1,606 @@
+import Image from "next/image"
+
+import CoverImage from "./banner.jpg"
+
+# Reinforcement Learning from Human Feedback (RLHF)
+
+<span className="text-base leading-snug text-neutral-500">
+  RLHF trains a reward model from comparisons, then optimizes the policy with PPO.
+</span>
+
+<Image src={CoverImage} alt={"A language model generating a response token by token, with a human comparing two candidate replies to train a reward model"} placeholder="blur" />
+
+Reinforcement learning is no longer receiving reward as a clean number directly from the environment. Instead, we have started to admit something much closer to real life:
+
+humans are often much better at saying which outcome they prefer than at writing down an exact reward function.
+
+That idea was already powerful in the previous blog. We looked at two trajectories, asked a human which one was better, and then trained a reward model so that preferred trajectories received higher scores. Once that reward model existed, ordinary reinforcement learning machinery could come back. Returns, advantages, policy gradients, all of them reappeared.
+
+Now RLHF takes that same idea and puts it into the world of large language models. And this changes the feel of the problem in a very interesting way. 
+
+In a game, the agent moves in an environment. In a robot task, it pushes objects, walks, turns, and receives consequences from the physical world. But what exactly is the “environment” for a language model?
+
+Suppose the user gives a prompt
+
+$$
+x = \text{“Write a polite reminder email.”}
+$$
+
+The model then generates a response token by token:
+
+$$
+y = (y_1, y_2, y_3, \ldots, y_T)
+$$
+
+At time step $1$, the model sees the prompt and chooses the first token. At time step $2$, it sees the prompt plus the first token and chooses the second. Then the third. Then the fourth. Eventually it emits an end-of-sequence token and stops.
+
+So if we really want to force this into reinforcement-learning language, the state at time $t$ is simply the current text prefix:
+
+$$
+s_t = (x, y_{\lt t})
+$$
+
+and the action is the next token
+
+$$
+a_t = y_t
+$$
+
+The full trajectory is the entire generated response.
+
+This looks a little unusual at first, but structurally it is still an MDP-like sequence. The only strange part is the reward. In ordinary supervised learning for language models, we never ask whether a response was good in any deep sense. We just ask whether the next token matches the training data. That objective looks like
+
+$$
+\max_{\theta} \sum_t \log \pi_{\theta}(y_t^* \mid x, y_{\lt t}^*)
+$$
+
+where $y^*$ is the target response from the dataset.
+
+This is next-token prediction. It teaches fluency. It teaches grammar. It teaches style patterns. It teaches a vast amount of world knowledge. But it does not directly teach preference. To see the gap, imagine a user asks:
+
+“Write a short reply declining a meeting politely.”
+
+Now suppose the model produces one of these two responses.
+
+The first says,
+
+“No, I can’t.”
+
+The second says,
+
+“Thanks for the invite. I won’t be able to join, but I appreciate you reaching out.”
+
+Both are grammatically valid. Both are plausible continuations of text seen somewhere on the internet. But a human clearly prefers the second. This is exactly where **RLHF** enters.
+
+RLHF means Reinforcement Learning from Human Feedback. The name sounds broad, but the basic idea is actually very concrete.
+
+We first obtain a model that can already produce reasonable responses. Then we ask humans to compare model outputs. Then we train a reward model from those comparisons. Then we use reinforcement learning to optimize the language model against that learned reward, while preventing it from drifting too far into strange territory. So RLHF is not one single trick. It is a pipeline. And the reason the pipeline exists becomes much clearer if we build it slowly.
+
+Let us begin with the first stage.
+
+## Building the Reward Model
+
+If we started from a completely raw language model and immediately asked humans to compare its responses, much of the data would be wasted. The outputs might be incoherent, irrelevant, or obviously bad. Human comparison is expensive, so we do not want to spend it on nonsense if we can avoid it.
+
+So before the reinforcement-learning part begins, we usually perform a supervised fine-tuning stage. Suppose we have a dataset of prompts and high-quality responses:
+
+$$
+(x^{(1)}, y^{(1)}), \; (x^{(2)}, y^{(2)}), \; \ldots
+$$
+
+We train the model to imitate these demonstrations:
+
+$$
+L_{\mathrm{SFT}}(\theta)
+=
+-
+\sum_{(x,y)}
+\sum_{t=1}^{T}
+\log \pi_{\theta}(y_t \mid x, y_{\lt t})
+$$
+
+This is still ordinary supervised learning. There is no reward model yet. No human preference pair yet. No PPO yet. The purpose of this stage is simple. It gives us a model that already knows how to answer in roughly the right format. It becomes a sensible starting policy. You can think of it this way.
+
+Before RLHF, the model needs to learn how to speak.
+
+During RLHF, it learns how humans prefer it to speak.
+
+That difference is subtle but crucial.
+
+A supervised model may already know that when asked for an email reply, the output should look like an email reply. It may know that code should look like code, summaries should look like summaries, explanations should look like explanations.
+
+But even then, there are many possible valid responses. Some are more helpful. Some are more polite. Some are more concise. Some are more honest about uncertainty. Some are safer. Some are more aligned with what people actually want.
+
+Supervised fine-tuning does not fully solve that ranking problem. So after SFT, we move to the second stage.
+
+Now the model is used to generate multiple candidate responses to the same prompt. For a prompt $x$, the model might produce two outputs:
+
+$$
+y_A, \; y_B
+$$
+
+A human labeler reads both and chooses the better one. Maybe the prompt is
+
+“Explain overfitting to a beginner.”
+
+Response $A$ is technically correct but dense and intimidating.
+
+Response $B$ is simpler, warmer, and easier to follow.
+
+The human selects
+
+$$
+y_B \succ y_A
+$$
+
+This should feel extremely familiar now, because it is exactly the preference-learning setup from the previous blog. We are no longer asking the human to assign a scalar reward like $7.3$ or $9.1$. We are only asking for a comparison. Over many prompts, we collect a dataset like
+
+$$
+(x, y^+, y^-)
+$$
+
+where $y^+$ is the preferred response and $y^-$ is the rejected one.
+
+Now comes the reward model. We build a network
+
+$$
+R_{\phi}(x, y)
+$$
+
+that takes a prompt and a complete response and outputs a scalar score. This score is not given by the environment. It is not a human-written reward formula. It is a learned quantity whose job is to explain human preferences. If the human preferred $y^+$ over $y^-$, then we want
+
+$$
+R_{\phi}(x, y^+) > R_{\phi}(x, y^-)
+$$
+
+But, just as in the preference-learning story, we do not usually enforce that as a hard rule. Human judgments are noisy. Two responses may be very close. So we convert the score difference into a probability. A standard choice is
+
+$$
+P_{\phi}(y^+ \succ y^- \mid x)
+=
+\frac{\exp(R_{\phi}(x, y^+))}
+{\exp(R_{\phi}(x, y^+)) + \exp(R_{\phi}(x, y^-))}
+$$
+
+which is the same as
+
+$$
+P_{\phi}(y^+ \succ y^- \mid x)
+=
+\sigma\!\left(R_{\phi}(x, y^+) - R_{\phi}(x, y^-)\right)
+$$
+
+Then we train the reward model by minimizing the negative log-likelihood:
+
+$$
+L_{\mathrm{RM}}(\phi)
+=
+-
+\sum_{(x, y^+, y^-)}
+\log \sigma\!\left(R_{\phi}(x, y^+) - R_{\phi}(x, y^-)\right)
+$$
+
+This equation is the heart of reward modeling in RLHF. Notice what it is doing. It is not saying, “This token is worth $+0.4$ and that token is worth $-0.2$.” It is saying, “When humans saw these two entire responses, they preferred one over the other. Learn a scoring function that would make that preference unsurprising.”
+
+This is why RLHF feels like a direct continuation of preference learning rather than something completely separate. At this point, it is helpful to pause and ask a natural question.
+
+If we now have a reward model, why not stop here? Why not simply use the reward model as a judge and pick the highest-scoring responses at inference time?
+
+The reason is that inference-time reranking is limited. It only chooses among a small number of sampled candidates. But we want something stronger. We want the policy itself to change so that it naturally generates better responses in the first place.
+
+That is the reinforcement-learning step.
+
+## Optimizing the Policy While Staying Grounded
+
+Once the reward model exists, we can define the ideal objective very simply:
+
+$$
+\max_{\theta} \;
+\mathbb{E}_{x \sim D,\; y \sim \pi_{\theta}(\cdot \mid x)}
+\left[
+R_{\phi}(x, y)
+\right]
+$$
+
+This says: sample prompts from the prompt distribution, sample responses from the current policy, and maximize the reward model’s score.
+
+At first, this looks exactly right. The reward model predicts what humans would prefer, so just optimize it. But this is where one of the most important dangers in RLHF appears. A learned reward model is not the same thing as true human judgment. It is only an approximation. And once we start optimizing a policy against that approximation, the policy may discover strange responses that score highly according to the reward model but would not actually be preferred by humans. This is the RLHF version of reward hacking.
+
+Suppose the reward model has learned that humans like responses that sound confident, structured, and detailed. The policy may start becoming excessively verbose and overly certain, because it has found a cheap way to impress the reward model.
+
+Or suppose the reward model has seen many examples where apologetic tone correlates with safe behavior. The policy may start inserting unnecessary caution or boilerplate everywhere, because that pattern scores well.
+
+The problem is not that the policy is “misbehaving” in a mysterious way. It is doing exactly what reinforcement learning always does. It is exploiting the reward signal we gave it. And that means RLHF needs a stabilizer. This is where the SFT model returns in a new role.
+
+The supervised fine-tuned model is not only a good starting point. It also becomes a reference policy. Call it
+
+$$
+\pi_{\mathrm{ref}}
+$$
+
+Instead of maximizing reward alone, we maximize reward while penalizing large departures from this reference behavior. A common objective is
+
+$$
+J(\pi_{\theta})
+=
+\mathbb{E}_{x,\; y \sim \pi_{\theta}}
+\left[
+R_{\phi}(x, y)
+\right]
+-
+\beta \,
+\mathbb{E}_x
+\left[
+D_{\mathrm{KL}}
+\bigl(
+\pi_{\theta}(\cdot \mid x)
+\;\|\;
+\pi_{\mathrm{ref}}(\cdot \mid x)
+\bigr)
+\right]
+$$
+
+This expression says something very intuitive.Generate responses that the reward model likes, but do not drift too far from the supervised model humans already considered reasonable.
+
+That KL term plays a role very similar to trust-region style stabilizers we saw earlier in PPO and TRPO. 
+
+Without it, the policy may sprint toward weird high-reward corners of response space.
+
+With it, the policy is encouraged to improve while remaining near a known-good baseline.
+
+To see how this works, imagine a prompt:
+
+“Decline this invitation politely.”
+
+Suppose the reward model gives the response
+
+“Thank you for the invitation, but I won’t be able to attend.”
+
+a score of
+
+$$
+R_{\phi}(x, y) = 2.5
+$$
+
+Now suppose the current policy has started making this response much more likely than the reference policy. If
+
+$$
+\log \pi_{\theta}(y \mid x) = -1.0
+\quad \text{and} \quad
+\log \pi_{\mathrm{ref}}(y \mid x) = -2.2
+$$
+
+then the log-ratio is
+
+$$
+\log \frac{\pi_{\theta}(y \mid x)}{\pi_{\mathrm{ref}}(y \mid x)}
+=
+-1.0 - (-2.2)
+=
+1.2
+$$
+
+If the KL coefficient is, say,
+
+$$
+\beta = 0.2
+$$
+
+then the penalty contribution is roughly
+
+$$
+0.2 \times 1.2 = 0.24
+$$
+
+So the shaped score of that sampled response becomes
+
+$$
+2.5 - 0.24 = 2.26
+$$
+
+Now imagine the policy had drifted much more aggressively, pushing that same response into a region where its probability under the current policy is enormously larger than under the reference. Then the KL penalty would grow, and the net gain from further drift would shrink. This is the key psychological move in RLHF.
+
+The reward model says, “Go toward what humans seem to like.”
+
+The KL term says, “But stay near human-written behavior while doing it.”
+
+Once this objective is in place, the remaining question is purely algorithmic. How do we actually optimize it?
+
+And now we arrive at a beautiful point of connection with the rest of the reinforcement-learning story.
+
+A language model generates a response token by token, so we can treat the generation as an episode.
+
+At time $t$, the state is
+
+$$
+s_t = (x, y_{\lt t})
+$$
+
+and the action is the next token
+
+$$
+a_t = y_t
+$$
+
+The episode ends when the response is complete. The reward model usually produces a score for the whole completed response:
+
+$$
+r_{\phi}(x, y)
+$$
+
+So almost all the meaningful evaluation happens at the end. 
+
+This is worth pausing on, because it is a genuine departure from the earlier robot and Atari story. In the original robotics-and-Atari preference learning, the natural unit a human judges is a short clip of continuous motion, and every frame inside that clip genuinely carries meaning, so the learned reward is evaluated densely, at each state-action pair, and the sum over those steps is what gets compared to the human's judgment. In RLHF for language models, the natural unit a human judges is a whole response, because half a sentence is not yet a coherent thing to prefer or reject, so the learned reward model reads the entire completed response and produces one number for it. So both the **preference and the reward** are being asked for at the level of the entire response in RLHF, and this sparsity, one honest reward signal buried at the very end of a long sequence of tokens, is exactly what makes the credit assignment problem in RLHF harder than it was in the segment-based setting.
+
+So does this mean every token except the last one is simply left with nothing to learn from? Not quite. While the reward model genuinely has nothing to say about an unfinished response, there is a second ingredient sitting inside the objective that can be evaluated at every single token, without any of the coherence problems a partial sentence causes for a reward model. That ingredient is the KL penalty. Unlike the reward model, which needs a finished, readable response before it can render judgment, the KL term only ever compares two probability distributions over the next token, something the policy and the reference model can both produce at every position, even in the middle of a sentence. So while the true, meaningful reward stays sparse and arrives only at the end, the KL penalty can be computed densely, one token at a time, and this turns out to be enough to build a working per-step reward signal (see Appendix for more details). To see why, recall that sequence probabilities factorize as
+
+$$
+\pi_{\theta}(y \mid x)
+=
+\prod_{t=1}^{T}
+\pi_{\theta}(y_t \mid x, y_{\lt t}),
+$$
+
+the log-ratio of full responses becomes
+
+$$
+\log \frac{\pi_{\theta}(y \mid x)}{\pi_{\mathrm{ref}}(y \mid x)}
+=
+\sum_{t=1}^{T}
+\log
+\frac{\pi_{\theta}(y_t \mid x, y_{\lt t})}
+{\pi_{\mathrm{ref}}(y_t \mid x, y_{\lt t})}
+$$
+
+This means the KL penalty can be distributed across tokens. So for one sampled response we can think of a shaped return like
+
+$$
+\hat{R}(x, y)
+=
+R_{\phi}(x, y)
+-
+\beta
+\sum_{t=1}^{T}
+\log
+\frac{\pi_{\theta}(y_t \mid x, y_{\lt t})}
+{\pi_{\mathrm{ref}}(y_t \mid x, y_{\lt t})}
+$$
+
+Now two very important things that we need to understand about above equation is:
+
+1. This equation is just for illustration purpose, it makes concrete what we are ultimately trying to maximize for a sampled response: reward model score minus total KL penalty. In practice we never compute the gradient from this single collapsed number; we keep the reward in its per-token form $r_t$ and run it through the critic and GAE so each token gets its own advantage.
+2. Technically, the KL divergence at each step is a sum over every possible next token the model could have chosen, weighted by how likely the current policy thinks each one is. But since we only ever look at the one token that was actually sampled, using just its log ratio turns out to be an unbiased estimate of that full sum, noisy on any single token, but correct on average across the many tokens generated during training. This lets the KL penalty be tracked cheaply, one sampled token at a time, without ever having to loop over the entire vocabulary.
+
+That expression is extremely important because it turns the abstract RLHF objective into something a token-level RL algorithm can actually work with.
+
+Now we can introduce a critic
+
+$$
+V_{\psi}(s_t) = V_{\psi}(x, y_{\lt t})
+$$
+
+which estimates the expected future shaped return from the current prefix. Then, exactly as before, we can define temporal-difference errors such as
+
+$$
+\delta_t
+=
+r_t
++
+\gamma V_{\psi}(s_{t+1})
+-
+V_{\psi}(s_t)
+$$
+
+Here, $r_t$ is the shaped, per-token reward, the small KL penalty at that step, with the reward model's full-response score $R_{\phi}(x, y)$ added in only once, at the very last token and it will propagate to time $t$ via updates of $V_{\psi}(s_t)$.
+
+and from them build advantages, perhaps using GAE:
+
+$$
+\hat{A}_t
+=
+\delta_t
++
+\gamma \lambda \hat{A}_{t+1}
+$$
+
+At this point the whole thing suddenly looks familiar again. 
+
+We started with human comparisons.
+
+That gave us a reward model.
+
+That reward model gave us a scalar evaluation of full responses.
+
+The KL term turned that evaluation into a stabilized RL objective.
+
+The critic estimated future shaped reward from partial text prefixes.
+
+And now **PPO** can be used to update the policy.
+
+## Where PPO Fits into RLHF
+
+If the policy that generated the rollout is called
+
+$$
+\pi_{\theta_{\mathrm{old}}}
+$$
+
+then at token $t$ we form the usual ratio
+
+$$
+\rho_t(\theta)
+=
+\frac{\pi_{\theta}(y_t \mid x, y_{\lt t})}
+{\pi_{\theta_{\mathrm{old}}}(y_t \mid x, y_{\lt t})}
+$$
+
+and use the clipped surrogate objective
+
+$$
+L_{\mathrm{PPO}}(\theta)
+=
+\mathbb{E}_t
+\left[
+\min
+\left(
+\rho_t(\theta)\hat{A}_t,
+\;
+\operatorname{clip}(\rho_t(\theta), 1-\epsilon, 1+\epsilon)\hat{A}_t
+\right)
+\right]
+$$
+
+So now the full identity of RLHF becomes visible.
+
+Human comparisons teach a reward model.
+
+The reward model provides a learned scalar objective.
+
+PPO performs stable policy optimization against that objective.
+
+And the **KL penalty** prevents the policy from racing too far away from the supervised reference.
+
+To make this feel less abstract, Suppose the prompt is
+
+$$
+x = \text{“Reply politely to: Send me the report now.”}
+$$
+
+The SFT model produces two plausible responses:
+
+$$
+y^A = \text{“Okay.”}
+$$
+
+and
+
+$$
+y^B = \text{“Sure, I’ll send it shortly. Thanks for the reminder.”}
+$$
+
+Humans consistently prefer $y^B$, so after training, the reward model learns something like
+
+$$
+r_\phi(x,y^B) > r_\phi(x,y^A)
+$$
+
+Now the RL policy samples $y^B$. Suppose the reward model gives it score
+
+$$
+r_\phi(x,y^B)=3.0
+$$
+
+Suppose also that under the reference policy the response was moderately likely, but under the new policy it has become significantly more likely. Then the KL penalty might be, say,
+
+$$
+0.4
+$$
+
+So the net shaped reward becomes
+
+$$
+3.0 - 0.4 = 2.6
+$$
+
+That number is now what the critic tries to predict from prefixes like
+
+$$
+(x), \quad (x,\text{“Sure”}), \quad (x,\text{“Sure, I’ll”}), \dots
+$$
+
+If the old value estimate at the start of the response was only
+
+$$
+V_\psi(x) = 1.9
+$$
+
+then the advantage of producing this response is roughly positive:
+
+$$
+\hat A \approx 2.6 - 1.9 = 0.7
+$$
+
+A positive advantage means the sampled actions that led to this response should become more likely. The probability of generating “Sure” as the first token will increase.
+
+So PPO nudges up the probabilities of those tokens, but not recklessly, because the clipping and KL regularization keep the policy from overreacting.
+
+So RLHF is not a break from reinforcement learning. It is reinforcement learning adapted to a setting where the reward is too subtle to specify directly and must be inferred from human judgments. This also explains why RLHF became so natural for language models. For many language tasks, writing an explicit reward is awkward.
+
+RLHF is the process of turning human comparisons into a learned reward signal, and then using stable reinforcement learning to make a language model generate responses that score well under that signal without drifting too far from sane behavior.
+
+That is why the name matters.
+
+It is **reinforcement learning**, because the policy is being optimized against returns and advantages rather than only imitating labels.
+
+It is **from human feedback**, because the reward does not come from the external world in any direct form. It is inferred from human judgments about model outputs.
+
+And once this picture becomes clear, a very natural next question appears.
+
+If the whole RLHF pipeline ultimately exists to make the policy prefer the human-chosen response over the rejected one, do we always need to explicitly train a separate reward model and then run PPO on top of it?
+
+Or can we sometimes move more directly from preference data to policy improvement itself?
+
+That question is exactly what leads toward newer direct preference-optimization methods.
+
+## Appendix
+
+**Q: Ideally we can compute everything at the end in monte carlo way then why do we need critic ?**
+
+why does the field bother with the critic at all, if the reward only truly arrives at the end anyway? The answer is variance, and it's the same reason the intern example existed in your blog. Two responses can end with the exact same reward model score of 2.5, but for completely different reasons. In one response, an early token genuinely steered things toward a great answer. In another, an early token was mediocre and the response only recovered because a later token happened to save it. Monte Carlo gives both of those early tokens the same credit, because both trajectories ended at 2.5. It can't tell the difference between a token that caused a good outcome and a token that merely rode along with one. That's high variance, the same all-over-the-place behavior the second intern showed even though their average matched the first.
+The critic is what separates skill from luck here. When you compute $δ_t = r_t + γV_ψ(s_{t+1}) − V_ψ(s_t)$, you're asking a sharper question than "how did the whole episode end." You're asking "did this specific token lead somewhere better or worse than the critic already expected from this point." A token that pushes the expected outcome from 2.0 up to 2.4 gets credited for that jump, regardless of whether the episode's final total was lucky or unlucky downstream. That's a much lower-variance signal, and lower variance means the policy learns from far fewer samples and updates far more stably.
+
+There's a genuine cost on the other side, which is why this is a real tradeoff and not a free lunch. The critic is only an estimate, and early in training it's a bad one, so it introduces bias. Monte Carlo, by contrast, is unbiased, its returns are the real thing, actual rewards actually received, never a guess. So the honest framing is that Monte Carlo gives you unbiased but noisy signal, while the critic gives you biased but stable signal. This is exactly the bias-variance tension you'd expect, and it's why the standard modern answer is not purely one or the other but generalized advantage estimation, GAE, which has a knob λ that slides smoothly between full Monte Carlo returns at one extreme and pure one-step TD bootstrapping at the other, letting you dial in how much you trust the critic versus how much you trust the actual observed rewards.
+
+**Q:** $r_t$ **is a shaped reward calculated using the KL term, but in a true sense, what is that reward supposed to be? That reward should reflect the reward for that state, and that should be *some_reward − KL_term*. But here we are using only the KL term to compute the error, so how will the effect of the final reward** $r_T$ **propagate back to the earlier steps?**
+
+Let’s build it with concrete numbers so the propagation is visible rather than asserted. Take a short response of four tokens, and to keep the arithmetic transparent set $\gamma = 1$ for now. The shaped rewards, exactly as we defined them, are the KL terms at every step plus the reward model score folded into the last one:
+
+$$
+r_1 = 0, \quad r_2 = -0.01, \quad r_3 = -0.05, \quad r_4 = -0.05 + 2.5 = 2.45
+$$
+
+Now ask what a fully trained critic should predict at each state. The value of a state is the expected return from that state onward, so it is the sum of all rewards still to come. Working backward:
+
+$$
+V(s_4) = 2.45
+$$
+
+$$
+V(s_3) = r_3 + V(s_4) = -0.05 + 2.45 = 2.40
+$$
+
+$$
+V(s_2) = r_2 + V(s_3) = -0.01 + 2.40 = 2.39
+$$
+
+$$
+V(s_1) = r_1 + V(s_2) = 0 + 2.39 = 2.39
+$$
+
+Stop and look at $V(s_1)$. It equals 2.39, even though $r_1$ is exactly zero. The reward for being at the very first state, in the sense you were reaching for, is not zero at all, it is high, because the critic has learned that a response starting this way tends to end with a big reward model score. That "goodness of the state" you correctly felt should be there is there, it just does not live in $r_t$. It lives in $V(s_t)$. The reward model's judgment about the complete response gets absorbed into the critic's value estimates, and those estimates are what tell you whether an intermediate prefix is a good place to be. $r_t$ is only the small increment the environment actually hands you at each step, the KL nudge, while $V$ is the learned prediction of everything still to come, and that prediction is saturated with the terminal reward.
+
+Now watch the terminal reward actually travel backward, because this is the exact mechanism in question. Start training with the critic knowing nothing, $V = 0$ everywhere. Compute the TD errors on the very first pass:
+
+$$
+\delta_1 = 0 + V(s_2) - V(s_1) = 0 + 0 - 0 = 0
+$$
+
+$$
+\delta_2 = -0.01 + 0 - 0 = -0.01
+$$
+
+$$
+\delta_3 = -0.05 + 0 - 0 = -0.05
+$$
+
+$$
+\delta_4 = 2.45 + V(\text{terminal}) - V(s_4) = 2.45 + 0 - 0 = 2.45
+$$
+
+On this first pass, exactly as the intuition warned, the big signal shows up only at the last token. $\delta_4$ is a loud 2.45, while the earlier tokens feel almost nothing. If this were the whole story, the final reward really would be stuck at the end. But the update from $\delta_4$ pushes $V(s_4)$ up toward 2.45. And now look what happens on the next pass, at token 3:
+
+$$
+\delta_3 = r_3 + V(s_4) - V(s_3) = -0.05 + 2.45 - 0 = 2.40
+$$
+
+Suddenly token 3 feels a large signal, and it came entirely from $V(s_4)$, which is now carrying the terminal reward. The big number has taken one step backward. $V(s_3)$ then moves toward 2.40, and on the pass after that, $\delta_2$ lights up because $V(s_3)$ now carries the reward, and then $\delta_1$ after that.
