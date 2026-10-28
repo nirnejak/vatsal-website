@@ -13,7 +13,7 @@ export const metadata: Metadata = getMetadata({
 const PhotosPage: React.FC = () => {
   return (
     <main className="mx-auto max-w-[980px] px-4 md:px-0">
-      <h1 className="mt-16 mb-8 font-semibold text-3xl/snug tracking-tight md:mb-12">
+      <h1 className="mt-16 mb-8 text-3xl/snug font-semibold tracking-tight md:mb-12">
         <span className="flex text-neutral-800 dark:text-neutral-300">
           Moments
         </span>

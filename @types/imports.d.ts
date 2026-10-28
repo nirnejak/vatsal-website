@@ -14,6 +14,7 @@ declare module "*.wav"
 
 declare module "*.mdx" {
   import type * as React from "react"
+
   const content: React.ComponentType<Record<string, unknown>>
   export default content
 }

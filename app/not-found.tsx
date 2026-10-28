@@ -15,10 +15,10 @@ const NotFoundPage: React.FC = () => {
     <main className="flex min-h-dvh items-center justify-center">
       <div className="mx-auto w-full max-w-145 px-4 md:px-0">
         <h1>
-          <span className="flex font-semibold text-3xl/snug text-neutral-800 dark:text-neutral-300">
+          <span className="flex text-3xl/snug font-semibold text-neutral-800 dark:text-neutral-300">
             Not <br />
           </span>
-          <span className="flex font-semibold text-3xl/snug text-neutral-800 dark:text-neutral-300">
+          <span className="flex text-3xl/snug font-semibold text-neutral-800 dark:text-neutral-300">
             <span className="text-neutral-400 dark:text-neutral-600">
               Found.
             </span>

@@ -1,4 +1,5 @@
 ---
+
 name: add-blog
 description: Migrate a raw Notion export sitting in this repo's blogs/ folder into a fully wired-up MDX blog post for vatsal-website (rename to slug, convert content.mdx, wire images, fix MDX-breaking LaTeX, register in blogs/index.ts and app/blogs/data.ts). Use this whenever the user runs /add-blog, says they've "added a blog folder", "dropped a Notion export", or asks to "add a new blog post" / "publish this blog" in this repo — even if they don't name the skill directly, since a raw export sitting in blogs/ with a loose .md file is the trigger, not just the phrase "add blog".
 ---
@@ -35,7 +36,7 @@ for the `.md` file). List `blogs/` and find that folder.
 
 Once found, look at what's inside:
 - The `.md` file itself (the post body).
-- Usually a cover/banner image sitting *parallel* to the `.md` file (same
+- Usually a cover/banner image sitting _parallel_ to the `.md` file (same
   directory, not nested) — this is the post's hero image. It can be `.png`
   or `.jpg`, any filename; don't rename it.
 - Sometimes a subfolder (Notion's default attachment folder, typically named
@@ -54,7 +55,7 @@ Before doing anything irreversible (renaming folders), get from the user:
    standalone posts are titled (skim a few entries in `blogs/index.ts` for
    calibration).
 2. **An SEO description, ~80 characters.** This becomes both the registry's
-   `description` field *and* the subtitle `<span>` rendered under the H1 on
+   `description` field _and_ the subtitle `<span>` rendered under the H1 on
    the page itself — they're always the same text in this codebase, so you
    only need to write it once. Propose 4 options, each under ~80 characters,
    each emphasizing a different angle of the post (the mechanism, the
@@ -83,7 +84,7 @@ by single hyphens, nothing else.
 ## 4. Handle inline images
 
 If the export had a nested attachment subfolder, every image inside it needs
-to become a *sibling* of `content.mdx` — MDX imports use flat relative paths
+to become a _sibling_ of `content.mdx` — MDX imports use flat relative paths
 like `./buffer.png`, not nested ones. Move each image out of the subfolder to
 sit directly in `blogs/<slug>/`, then delete the now-empty subfolder.
 
@@ -132,7 +133,7 @@ Concretely:
   `<Image src={ImportedVar} alt={"..."} placeholder="blur" />`, in the same
   spot in the text.
 - **Dark mode**: add `className="dark:invert"` to an `<Image>` only when that
-  image's *original filename* contains "transparent" (case-insensitive) —
+  image's _original filename_ contains "transparent" (case-insensitive) —
   that's the site's signal that the PNG has a transparent background and
   needs inverting so it reads correctly against the dark theme. Leave every
   other image, including the cover, without that class unless its filename

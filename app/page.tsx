@@ -39,7 +39,7 @@ const HomePage: React.FC = () => {
   return (
     <main className="flex min-h-dvh items-center justify-center">
       <div className="mx-auto max-w-145 px-4 md:px-0">
-        <h1 className="font-semibold text-4xl/snug tracking-tight md:text-5xl">
+        <h1 className="text-4xl/snug font-semibold tracking-tight md:text-5xl">
           <span className="flex text-neutral-800 dark:text-neutral-300">
             Hello, I{"'"}m
           </span>
@@ -47,7 +47,7 @@ const HomePage: React.FC = () => {
             Vatsal Dhameliya.
           </span>
         </h1>
-        <p className="mb-20 text-neutral-600 text-sm md:text-base dark:text-neutral-500">
+        <p className="mb-20 text-sm text-neutral-600 md:text-base dark:text-neutral-500">
           I{"'"}m a{" "}
           <span className="font-semibold text-neutral-800 dark:text-neutral-300">
             Staff ML Scientist @
@@ -71,7 +71,7 @@ const HomePage: React.FC = () => {
             <a
               key={link.href}
               href={link.href}
-              className="flex items-center justify-center gap-2.5 rounded-md bg-neutral-200 px-3.5 py-2 text-neutral-700 text-xs outline-none transition-all hover:bg-neutral-300 focus:bg-neutral-300 active:scale-95 md:px-5 md:py-2.5 md:text-base dark:bg-neutral-800 dark:text-neutral-400 dark:focus:bg-neutral-700 dark:focus:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-neutral-300"
+              className="flex items-center justify-center gap-2.5 rounded-md bg-neutral-200 px-3.5 py-2 text-xs text-neutral-700 transition-all outline-none hover:bg-neutral-300 focus:bg-neutral-300 active:scale-95 md:px-5 md:py-2.5 md:text-base dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700 dark:hover:text-neutral-300 dark:focus:bg-neutral-700 dark:focus:text-neutral-300"
               target="_blank"
               rel="noopener"
             >
