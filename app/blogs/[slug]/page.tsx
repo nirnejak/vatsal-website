@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { notFound } from "next/navigation"
 import type * as React from "react"
 
 import { blogSlugs, blogs } from "@/blogs"
@@ -9,6 +8,8 @@ interface Props {
   params: Promise<{ slug: string }>
 }
 
+export const dynamicParams = false
+
 export function generateStaticParams() {
   return blogSlugs.map((slug) => ({ slug }))
 }
@@ -16,7 +17,6 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const blog = blogs[slug]
-  if (!blog) return {}
   return getMetadata({
     path: `/blogs/${slug}/`,
     title: blog.title,
@@ -27,9 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const BlogPage: React.FC<Props> = async ({ params }) => {
   const { slug } = await params
-  const blog = blogs[slug]
-  if (!blog) notFound()
-  const Content = blog.Content
+  const { Content } = blogs[slug]
   return <Content />
 }
 

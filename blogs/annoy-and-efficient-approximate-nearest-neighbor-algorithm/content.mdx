@@ -1,4 +1,3 @@
-import Image from "next/image"
 
 import CoverImage from "./banner.jpg"
 import Annoy from "./annoy.png"
@@ -12,7 +11,7 @@ import AnnoyMissing from "./annoy_missing.png"
   balancing speed and accuracy in high-dimensional data applications.
 </span>
 
-<Image src={CoverImage} alt={"Annoy Cover"} placeholder="blur" />
+<Cover src={CoverImage} alt={"Annoy Cover"} placeholder="blur" />
 
 In modern data-driven applications, finding the _k_ nearest neighbors for a query point is a common operation. However, as datasets grow larger and dimensionality increases, the classic brute-force _k_-Nearest Neighbors approach often becomes prohibitively slow. This is where **Approximate Nearest Neighbors (ANN)** comes in—trading off a small amount of accuracy for a substantial speed-up. In this article, we will explore a popular ANN algorithm known as **Annoy** (Approximate Nearest Neighbors Oh Yeah), discuss how it constructs trees to speed up neighbor searches, and dive into why this “approximate” method is so powerful in practice.
 

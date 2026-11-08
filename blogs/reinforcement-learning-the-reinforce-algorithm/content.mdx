@@ -1,4 +1,3 @@
-import Image from "next/image"
 
 import CoverImage from "./cover.png"
 
@@ -9,7 +8,7 @@ import CoverImage from "./cover.png"
   Q-values.
 </span>
 
-<Image src={CoverImage} alt={"REINFORCE Algorithm Cover"} placeholder="blur" />
+<Cover src={CoverImage} alt={"REINFORCE Algorithm Cover"} placeholder="blur" />
 
 We have spent all this time estimating values. First we estimated returns directly. Then we bootstrapped. Then we replaced tables with tiles. Then tiles with neural networks. And through all of it, one pattern never changed. We always learned a function that tried to answer a question like:
 

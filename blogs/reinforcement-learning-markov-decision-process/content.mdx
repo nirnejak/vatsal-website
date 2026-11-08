@@ -1,4 +1,3 @@
-import Image from "next/image"
 
 import CoverImage from "./cover.png"
 import Policy from "./mdp-policy.png"
@@ -10,7 +9,7 @@ import MDPState from "./mdp-state.png"
   Beginner-friendly guide to Markov Decision Processes through a drone story, navigates a stochastic grid with rewards.
 </span>
 
-<Image src={CoverImage} alt={"MAB Cover"} placeholder="blur" />
+<Cover src={CoverImage} alt={"Cover image for Reinforcement Learning: Markov Decision Process"} placeholder="blur" />
 
 Imagine a busy futuristic city seen from above, a grid of rooftops, roads, and no-fly zones. Our little delivery drone starts its day at the bottom-left corner of this city grid. It carries a small package that must be delivered to a customer waiting on a rooftop at the top-right corner.
 
@@ -26,7 +25,7 @@ Each decision, whether to go up, down, left, or right will affects not only the 
 
 To make our drone’s world easier to describe mathematically, let’s assign numbers to each block (state) in the grid. We’ll start numbering from the top-left corner (state 0) and move row by row toward the bottom-right corner (state 15).
 
-<Image src={MDPState} alt={"MAB Cover"} placeholder="blur" />
+<Image src={MDPState} alt={"Grid world with states numbered 0 to 15 from the top-left corner"} placeholder="blur" />
 
 ### Transition Model
 
@@ -103,7 +102,7 @@ $$
 
 The diagram below shows an example of a **random policy,** where every state has been assigned a random action (UP, DOWN, LEFT, or RIGHT), regardless of rewards or obstacles.
 
-<Image src={Policy} alt={"MAB Cover"} placeholder="blur" />
+<Image src={Policy} alt={"Grid world showing a random policy with one action assigned to each state"} placeholder="blur" />
 
 For example, if:
 

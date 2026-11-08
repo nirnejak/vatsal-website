@@ -1,4 +1,3 @@
-import Image from "next/image"
 
 import CoverImage from "./cover.png"
 
@@ -8,7 +7,7 @@ import CoverImage from "./cover.png"
   Learning a reward model from pairwise trajectory comparisons instead of scores.
 </span>
 
-<Image src={CoverImage} alt={"Two trajectories side by side with a human pointing to the preferred one, representing how pairwise comparisons replace scalar rewards"} placeholder="blur" />
+<Cover src={CoverImage} alt={"Two trajectories side by side with a human pointing to the preferred one, representing how pairwise comparisons replace scalar rewards"} placeholder="blur" />
 
 Until now, everything has revolved around **rewards**. The agent takes an action, the environment responds with a number, and that number tells us how good or bad that action was. Over time, the agent learns to choose actions that maximize these numbers.
 

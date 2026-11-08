@@ -18,6 +18,7 @@ const sansFont = Inter({
 const monoFont = JetBrains_Mono({
   variable: "--mono-font",
   subsets: ["latin"],
+  preload: false,
 })
 
 export const viewport: Viewport = {

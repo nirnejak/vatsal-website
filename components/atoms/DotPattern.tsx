@@ -1,55 +1,11 @@
-import * as React from "react"
+import type * as React from "react"
 
-import classNames from "@/utils/classNames"
-
-interface DotPatternProps {
-  width?: number
-  height?: number
-  x?: number
-  y?: number
-  cx?: number
-  cy?: number
-  cr?: number
-  className?: string
-}
-
-const DotPattern: React.FC<DotPatternProps> = ({
-  width = 16,
-  height = 16,
-  x = 0,
-  y = 0,
-  cx = 1,
-  cy = 1,
-  cr = 1,
-  className,
-  ...props
-}) => {
-  const id = React.useId()
-
+const DotPattern: React.FC = () => {
   return (
-    <svg
+    <div
       aria-hidden="true"
-      className={classNames(
-        "pointer-events-none fixed inset-0 z-[-1] h-full w-full fill-neutral-400/20 dark:fill-neutral-400/10",
-        className
-      )}
-      {...props}
-    >
-      <defs>
-        <pattern
-          id={id}
-          width={width}
-          height={height}
-          patternUnits="userSpaceOnUse"
-          patternContentUnits="userSpaceOnUse"
-          x={x}
-          y={y}
-        >
-          <circle id="pattern-circle" cx={cx} cy={cy} r={cr} />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" strokeWidth={0} fill={`url(#${id})`} />
-    </svg>
+      className="pointer-events-none fixed inset-0 z-[-1] bg-[radial-gradient(circle_at_1px_1px,var(--color-neutral-400)_1px,transparent_0)] bg-size-[16px_16px] opacity-20 dark:opacity-10"
+    />
   )
 }
 

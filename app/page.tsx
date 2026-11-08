@@ -3,6 +3,7 @@ import { Envelope, GithubFill, LinkedinFill, XFill } from "akar-icons"
 import type { Metadata } from "next"
 import type * as React from "react"
 
+import PageHeading from "@/components/atoms/PageHeading"
 import getMetadata from "@/utils/metadata"
 
 export const metadata: Metadata = getMetadata({
@@ -39,14 +40,11 @@ const HomePage: React.FC = () => {
   return (
     <main className="flex min-h-dvh items-center justify-center">
       <div className="mx-auto max-w-145 px-4 md:px-0">
-        <h1 className="text-4xl/snug font-semibold tracking-tight md:text-5xl">
-          <span className="flex text-neutral-800 dark:text-neutral-300">
-            Hello, I{"'"}m
-          </span>
-          <span className="mb-7 flex text-neutral-400 dark:text-neutral-600">
-            Vatsal Dhameliya.
-          </span>
-        </h1>
+        <PageHeading
+          title="Hello, I'm"
+          subtitle="Vatsal Dhameliya."
+          className="mb-7 text-4xl/snug md:text-5xl"
+        />
         <p className="mb-20 text-sm text-neutral-600 md:text-base dark:text-neutral-500">
           I{"'"}m a{" "}
           <span className="font-semibold text-neutral-800 dark:text-neutral-300">

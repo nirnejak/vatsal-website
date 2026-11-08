@@ -1,4 +1,3 @@
-import Image from "next/image"
 
 import CoverImage from "./banner.jpg"
 import PostNormPreNormDiagram from "./Post_Norm_Pre_Norm_Diagram.png"
@@ -12,7 +11,7 @@ import FinetuneDiagram from "./finetune.png"
   few-shot prompting reshaped modern NLP.
 </span>
 
-<Image src={CoverImage} alt={"Cover"} placeholder="blur" />
+<Cover src={CoverImage} alt={"Cover image for From GPT-1 to GPT-3: A New Era in NLP"} placeholder="blur" />
 
 In 2018, OpenAI introduced **GPT-1** (Generative Pre-Trained Transformer) in a paper titled “[_Improving Language Understanding by Generative Pre-Training_](https://cdn.openai.com/research-covers/language-unsupervised/language_understanding_paper.pdf)” by Alec Radford, Karthik Narasimhan, Tim Salimans, and Ilya Sutskever. This work laid the foundation for a new paradigm in large-scale language models: **pre-train** first on a large corpus, and then **fine-tune** on specific tasks. While the original Transformer architecture (Vaswani et al., 2017) introduced a powerful sequence-to-sequence model, GPT-1 showed that focusing on a **decoder-only** model with generative pre-training could yield remarkable results across various downstream language tasks.
 

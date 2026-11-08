@@ -1,7 +1,7 @@
 import type { MDXComponents } from "mdx/types"
+import Image, { type ImageProps } from "next/image"
 import { Link } from "next-view-transitions"
 import type * as React from "react"
-import { codeToHtml } from "shiki"
 
 import classNames from "./utils/classNames"
 
@@ -14,14 +14,14 @@ const BlogWrapper: React.FC<Props> = ({ children }) => {
     <main className="mx-auto w-full max-w-145 px-4 md:px-0">
       <article
         className={classNames(
-          "prose prose-neutral dark:prose-invert prose:leading-snug prose:tracking-tight mb-24",
+          "prose prose-neutral dark:prose-invert mb-24",
           "prose-p:opacity-85 dark:prose-p:opacity-80",
           "prose-blockquote:opacity-85 dark:prose-blockquote:opacity-80",
           "prose-headings:font-semibold prose-headings:opacity-85 dark:prose-headings:opacity-80",
           "prose-h1:mt-24 prose-h1:mb-0 prose-h1:text-3xl prose-h1:leading-snug prose-h1:tracking-tight",
 
           "prose-img:mx-auto md:prose-img:my-28 md:prose-img:scale-125",
-          "prose-pre:bg-black prose-pre:p-0 prose-pre:px-3 prose-code:text-sm",
+          "prose-pre:bg-black prose-pre:px-6 prose-pre:py-5.5 prose-pre:leading-5.5 prose-code:text-sm",
           "prose-table:overflow-hidden prose-table:rounded-xl",
           "prose-thead:border-neutral-300 prose-tr:border-neutral-300 dark:prose-thead:border-neutral-900 dark:prose-tr:border-neutral-900",
           "prose-th:bg-neutral-200 dark:prose-th:bg-neutral-900/60 dark:prose-th:text-neutral-50",
@@ -35,32 +35,26 @@ const BlogWrapper: React.FC<Props> = ({ children }) => {
   )
 }
 
+// Inline images are scaled up 125% from the 580px article column on desktop
+const BlogImage: React.FC<ImageProps> = ({ alt, ...props }) => {
+  return <Image alt={alt} sizes="(min-width: 768px) 725px, 100vw" {...props} />
+}
+
+// The cover is the largest element on the page, so it loads eagerly
+const BlogCover: React.FC<ImageProps> = ({ alt, ...props }) => {
+  return (
+    <Image
+      alt={alt}
+      preload
+      sizes="(min-width: 768px) 580px, 100vw"
+      {...props}
+    />
+  )
+}
+
 const components: MDXComponents = {
-  code: async ({
-    className = "",
-    children,
-    ...props
-  }: React.ComponentPropsWithoutRef<"code">) => {
-    const isInline = !className.includes("language-")
-
-    const codeHTML = await codeToHtml(children as string, {
-      lang: className != null ? className.replace(/language-/, "") : "text",
-      theme: "vitesse-black",
-    })
-
-    if (isInline) {
-      return (
-        <code
-          className="rounded-sm bg-neutral-100 px-1.5 py-0.5 font-semibold text-green-600 before:hidden after:hidden dark:bg-neutral-950 dark:text-green-400"
-          {...props}
-        >
-          {(children as string).replaceAll("`", "")}
-        </code>
-      )
-    } else {
-      return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />
-    }
-  },
+  Image: BlogImage,
+  Cover: BlogCover,
   a: ({
     href = "",
     children,

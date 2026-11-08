@@ -1,4 +1,3 @@
-import Image from "next/image"
 
 import CoverImage from "./banner.jpg"
 import SelfAttentionDiagram from "./self_attention_diagram.png"
@@ -12,7 +11,7 @@ import MultiHeadAttentionDiagram from "./multi_head_attention_diagram.png"
   applications.
 </span>
 
-<Image src={CoverImage} alt={"Self-attention Cover"} placeholder="blur" />
+<Cover src={CoverImage} alt={"Self-attention Cover"} placeholder="blur" />
 
 Self-attention, or scaled dot-product attention, computes a representation of each word in a sequence by considering all other words in the sequence. This allows the model to capture contextual relationships between words. In the attached figure, each word (e.g., "Time," "for," "a," "break") attends to every other word through a combination of operations.
 

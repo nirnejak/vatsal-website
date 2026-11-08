@@ -7,11 +7,6 @@
   text-rendering: geometricPrecision;
 }
 
-::-moz-selection {
-  @apply bg-neutral-600 text-white;
-  -webkit-text-fill-color: white;
-}
-
 ::selection {
   @apply bg-neutral-600 text-white;
   -webkit-text-fill-color: white;
@@ -24,4 +19,8 @@
 
 article > img:first-of-type {
   @apply my-0 scale-100 rounded-xl border-0;
+}
+
+article :not(pre) > code {
+  @apply rounded-sm bg-neutral-100 px-1.5 py-0.5 font-semibold text-green-600 before:hidden after:hidden dark:bg-neutral-950 dark:text-green-400;
 }

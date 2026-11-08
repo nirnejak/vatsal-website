@@ -1,4 +1,3 @@
-import Image from "next/image"
 
 import CoverImage from "./banner.jpg"
 
@@ -8,7 +7,7 @@ import CoverImage from "./banner.jpg"
   RLHF trains a reward model from comparisons, then optimizes the policy with PPO.
 </span>
 
-<Image src={CoverImage} alt={"A language model generating a response token by token, with a human comparing two candidate replies to train a reward model"} placeholder="blur" />
+<Cover src={CoverImage} alt={"A language model generating a response token by token, with a human comparing two candidate replies to train a reward model"} placeholder="blur" />
 
 Reinforcement learning is no longer receiving reward as a clean number directly from the environment. Instead, we have started to admit something much closer to real life:
 

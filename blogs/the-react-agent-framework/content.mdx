@@ -1,4 +1,3 @@
-import Image from "next/image"
 
 import CoverImage from "./banner.jpg"
 import ActOnly from "./act_only.png"
@@ -16,7 +15,7 @@ import Graph from "./graph_image.png"
   development and innovation.
 </span>
 
-<Image src={CoverImage} alt={"Cover"} placeholder="blur" />
+<Cover src={CoverImage} alt={"Cover image for The ReACT Agent Framework"} placeholder="blur" />
 
 **ReACT** stands for **Reasoning and Acting**, a paradigm that integrates chain-of-thought reasoning with the ability to call external tools or services. Imagine a large language model that not only thinks through a problem step by step in its internal “chain-of-thought,” but also knows when to pause, consult a database, query an API, or perform another external action. The ReACT framework orchestrates that interplay: the LLM can generate a plan, take an action (like calling a tool), analyse the result, then continue reasoning.
 

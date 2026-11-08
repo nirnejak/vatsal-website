@@ -38,14 +38,16 @@ const getMetadata = ({
   const metaImage = image ?? `${config.baseUrl}/cover.png`
 
   const metadata: Metadata = {
+    metadataBase: new URL(config.baseUrl),
+    alternates: { canonical: `${config.baseUrl}${path}` },
     title: metaTitle,
     description: metaDescription,
 
     applicationName: config.applicationName,
     creator: config.creator,
     authors: [
-      { name: "Vatsal Dhameliya", url: "https://nirnejak.com/" },
-      { name: "Jitendra Nirnejak", url: "https://vatsal.website/" },
+      { name: "Vatsal Dhameliya", url: "https://vatsal.website/" },
+      { name: "Jitendra Nirnejak", url: "https://nirnejak.com/" },
     ],
     robots:
       "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
@@ -53,8 +55,6 @@ const getMetadata = ({
 
     icons: {
       icon: "/favicon.ico",
-      shortcut: "/icons/icon-512x512.png",
-      apple: "/icons/icon-512x512.png",
     },
     manifest: `${config.baseUrl}/manifest.json`,
 
@@ -91,8 +91,6 @@ const getMetadata = ({
       email: true,
       url: true,
     },
-
-    appLinks: {},
   }
   return metadata
 }

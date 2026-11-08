@@ -1,4 +1,3 @@
-import Image from "next/image"
 
 import CoverImage from "./banner.jpg"
 import EncoderDecoderDiagram from "./Encoder_Decoder_Diagram.png"
@@ -11,7 +10,7 @@ import EncoderDecoderDiagram from "./Encoder_Decoder_Diagram.png"
   drives machine translation, text summarization, and more.
 </span>
 
-<Image src={CoverImage} alt={"Seq2Seq Learning Cover"} placeholder="blur" />
+<Cover src={CoverImage} alt={"Seq2Seq Learning Cover"} placeholder="blur" />
 
 The Encoder-Decoder architecture is widely used in sequence-to-sequence tasks, particularly in natural language processing (NLP) for tasks such as machine translation, text summarization, and image captioning. This architecture typically consists of two main components: an Encoder, which processes the input sequence and compresses it into a context vector, and a Decoder, which generates the output sequence based on this context vector. This approach enables the model to handle inputs and outputs of varying lengths, making it a powerful framework for a wide range of applications.
 
