@@ -1,17 +1,33 @@
 {
   "name": "vatsal-website",
-  "description": "Personal website of Vatsal Dhameliya, a machine learning scientist.",
   "version": "1.0.0",
+  "description": "Personal website of Vatsal Dhameliya, a machine learning scientist.",
+  "keywords": [
+    "nextjs",
+    "oxfmt",
+    "oxlint",
+    "precommit",
+    "react",
+    "typescript"
+  ],
+  "bugs": {
+    "url": "https://github.com/nirnejak/vatsal-website/issues"
+  },
+  "license": "MIT",
   "author": "Jitendra Nirnejak <jeetnirnejak@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nirnejak/vatsal-website"
+  },
   "type": "module",
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "biome check .",
-    "lint:fix": "biome check --fix .",
-    "format": "biome format --write .",
-    "format:check": "biome format .",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "type-check": "tsc --pretty --noEmit",
     "prepare": "husky"
   },
@@ -31,7 +47,6 @@
     "sharp": "^0.35.5"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.6.6",
     "@tailwindcss/postcss": "^4.3.5",
     "@tailwindcss/typography": "^0.5.20",
     "@types/mdx": "^2.0.14",
@@ -40,29 +55,21 @@
     "babel-plugin-react-compiler": "^1.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
+    "oxfmt": "^0.77.0",
+    "oxlint": "^1.92.0",
     "shiki": "^4.6.0",
     "tailwindcss": "^4.3.5",
     "typescript": "^7.0.2"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,json,css}": "biome check --fix --no-errors-on-unmatched"
+    "*.{js,jsx,ts,tsx}": [
+      "oxlint --fix",
+      "oxfmt"
+    ],
+    "*.{json,css,md}": "oxfmt"
   },
   "volta": {
     "node": "24.12.0"
   },
-  "keywords": [
-    "nextjs",
-    "react",
-    "typescript",
-    "biome",
-    "precommit"
-  ],
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/nirnejak/vatsal-website"
-  },
-  "bugs": {
-    "url": "https://github.com/nirnejak/vatsal-website/issues"
-  }
+  "packageManager": "bun@1.4.0"
 }

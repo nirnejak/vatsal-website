@@ -42,7 +42,7 @@ const Navbar: React.FC = () => {
             href={link.href}
             className={classNames(
               pathname === link.href ? "bg-neutral-800" : "",
-              "flex items-center gap-2 rounded-3xl px-2.5 py-2 text-neutral-200 outline-none transition-colors hover:bg-neutral-800 focus:bg-neutral-800 md:px-3.5 dark:text-neutral-400"
+              "flex items-center gap-2 rounded-3xl px-2.5 py-2 text-neutral-200 transition-colors outline-none hover:bg-neutral-800 focus:bg-neutral-800 md:px-3.5 dark:text-neutral-400"
             )}
           >
             {link.icon} {link.text}

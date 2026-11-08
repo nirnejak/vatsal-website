@@ -1,6 +1,6 @@
 declare module "*.svg" {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  import React = require("react")
+  import type * as React from "react"
+
   const content: React.FunctionComponent<React.SVGAttributes<SVGElement>>
   export default content
 }

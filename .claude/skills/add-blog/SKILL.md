@@ -1,5 +1,4 @@
 ---
-
 name: add-blog
 description: Migrate a raw Notion export sitting in this repo's blogs/ folder into a fully wired-up MDX blog post for vatsal-website (rename to slug, convert content.mdx, wire images, fix MDX-breaking LaTeX, register in blogs/index.ts and app/blogs/data.ts). Use this whenever the user runs /add-blog, says they've "added a blog folder", "dropped a Notion export", or asks to "add a new blog post" / "publish this blog" in this repo — even if they don't name the skill directly, since a raw export sitting in blogs/ with a loose .md file is the trigger, not just the phrase "add blog".
 ---
@@ -35,6 +34,7 @@ for the `.md` file). List `blogs/` and find that folder.
   creating a duplicate post is worse than asking.
 
 Once found, look at what's inside:
+
 - The `.md` file itself (the post body).
 - Usually a cover/banner image sitting _parallel_ to the `.md` file (same
   directory, not nested) — this is the post's hero image. It can be `.png`
@@ -212,6 +212,7 @@ Two files make a post live. Both are append-only in the sense that you should
 match existing conventions rather than reorganize them:
 
 **`blogs/index.ts`**
+
 - Find the highest existing `bNN` import number in the file (search for
   `import b` and take the max N) and use `N+1` for this post's two imports.
 - Insert the two new import lines (`b<N>Content` and `b<N>Cover`) in
@@ -225,6 +226,7 @@ match existing conventions rather than reorganize them:
   inserted alphabetically, so match that.
 
 **`app/blogs/data.ts`**
+
 - Add the new slug as a new first entry in the `orderedSlugs` array, ahead of
   whatever was previously first — this array is the display order on
   `/blogs/`, newest first.
@@ -240,7 +242,7 @@ Run the project's own checks before calling it done — they'll catch quoting,
 import-order, or type mistakes far more reliably than re-reading the diff:
 
 ```
-bun run lint          # biome check — matches this repo's formatting rules
+bun run lint          # oxlint — matches this repo's lint rules
 bun run type-check     # tsc --noEmit
 ```
 
