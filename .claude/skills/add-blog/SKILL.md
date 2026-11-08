@@ -100,8 +100,6 @@ about to write much more readable.
 Every post follows the same opening shape. Build it like this:
 
 ```mdx
-import Image from "next/image"
-
 import CoverImage from "./cover.png"
 import SomeDiagram from "./some-diagram.png"
 
@@ -111,20 +109,21 @@ import SomeDiagram from "./some-diagram.png"
   <Chosen SEO description>
 </span>
 
-<Image src={CoverImage} alt={"<Descriptive alt text>"} placeholder="blur" />
+<Cover src={CoverImage} alt={"<Descriptive alt text>"} placeholder="blur" />
 
 <rest of the post body, unchanged>
 ```
 
 Concretely:
 
-- Add one `import Image from "next/image"` line, then one import per image
-  (cover plus every inline image), each with a descriptive PascalCase
-  variable name matching the file it points at.
+- Add one import per image (cover plus every inline image), each with a
+  descriptive PascalCase variable name matching the file it points at. Don't
+  import `Image` or `Cover`: `mdx-components.tsx` provides both, and importing
+  `next/image` directly bypasses their responsive `sizes` and cover preload.
 - Replace the original `# Title` line with the chosen title.
 - Add the subtitle `<span>` immediately after the title, containing the exact
   SEO description text chosen in step 2.
-- Add the cover `<Image>` immediately after the subtitle, before the first
+- Add the `<Cover>` immediately after the subtitle, before the first
   paragraph of body text.
 - Write a real, specific `alt` for every image — never reuse the same alt
   text across images or copy-paste one from another post; describe what that

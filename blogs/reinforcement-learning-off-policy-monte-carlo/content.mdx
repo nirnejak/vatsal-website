@@ -1,4 +1,3 @@
-import Image from "next/image"
 
 import CoverImage from "./cover.png"
 
@@ -8,7 +7,7 @@ import CoverImage from "./cover.png"
   Explore how importance sampling lets RL evaluate policies without executing them.
 </span>
 
-<Image src={CoverImage} alt={"MAB Cover"} placeholder="blur" />
+<Cover src={CoverImage} alt={"Cover image for Reinforcement Learning: Off Policy Monte Carlo"} placeholder="blur" />
 
 In the last blog, our drone learned by doing. And “doing” meant *crashing into buildings*, wasting battery, drifting into restricted airspace, and spiraling around in the wind until it finally figured things out. The agent must *live through its own mistakes* in order to learn from them. That’s fine when we’re training a tiny drone in Grid City…But this approach quickly hits a wall when the world becomes more serious. Let’s look into couple of scenarios to understand it better.
 

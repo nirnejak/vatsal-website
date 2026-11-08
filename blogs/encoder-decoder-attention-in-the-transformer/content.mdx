@@ -1,4 +1,3 @@
-import Image from "next/image"
 
 import CoverImage from "./banner.jpg"
 import EncoderDecoderAttentionImage from "./Encoder Decoder Attention Diagram.png"
@@ -11,7 +10,7 @@ import EncoderDecoderAttentionImage from "./Encoder Decoder Attention Diagram.pn
   values.
 </span>
 
-<Image src={CoverImage} alt={"Attention Mechanism Cover"} placeholder="blur" />
+<Cover src={CoverImage} alt={"Attention Mechanism Cover"} placeholder="blur" />
 
 The encoder-decoder attention mechanism is a pivotal component in modern sequence-to-sequence models, particularly in tasks like machine translation, text summarization, and speech recognition. It allows the model to dynamically focus on different parts of the input sequence when generating each element of the output sequence. In this section, we delve deeply into how encoder-decoder attention works, explaining the roles of the query, key, and value matrices, why they are derived from the decoder and encoder respectively, and how they operate within multi-layer architectures like the Transformer.
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Image from "next/image"
 import type * as React from "react"
+import PageHeading from "@/components/atoms/PageHeading"
 import getMetadata from "@/utils/metadata"
 import { photos } from "@/utils/photos"
 
@@ -13,14 +14,11 @@ export const metadata: Metadata = getMetadata({
 const PhotosPage: React.FC = () => {
   return (
     <main className="mx-auto max-w-[980px] px-4 md:px-0">
-      <h1 className="mt-16 mb-8 text-3xl/snug font-semibold tracking-tight md:mb-12">
-        <span className="flex text-neutral-800 dark:text-neutral-300">
-          Moments
-        </span>
-        <span className="flex text-neutral-400 dark:text-neutral-600">
-          & Pictures.
-        </span>
-      </h1>
+      <PageHeading
+        title="Moments"
+        subtitle="& Pictures."
+        className="mt-16 mb-8 text-3xl/snug md:mb-12"
+      />
       <div className="mb-24 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5 lg:grid-cols-4">
         {photos.map((photo) => (
           <div
@@ -29,7 +27,7 @@ const PhotosPage: React.FC = () => {
           >
             <Image
               src={photo}
-              alt={photo.src}
+              alt="Photograph by Vatsal Dhameliya"
               width={300}
               height={533}
               placeholder="blur"

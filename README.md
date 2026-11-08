@@ -30,7 +30,7 @@ bun run dev
 bun run lint
 ```
 
-**Format all files with Prettier**
+**Format all files with oxfmt**
 
 ```bash
 bun run format

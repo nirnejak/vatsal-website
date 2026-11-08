@@ -4,6 +4,7 @@ import type { Metadata } from "next"
 import { Link } from "next-view-transitions"
 import type * as React from "react"
 
+import PageHeading from "@/components/atoms/PageHeading"
 import getMetadata from "@/utils/metadata"
 
 import { allBlogs } from "./data"
@@ -17,14 +18,11 @@ export const metadata: Metadata = getMetadata({
 const BlogsPage: React.FC = () => {
   return (
     <main className="mx-auto w-full max-w-145 px-4 md:px-0">
-      <h1 className="mt-12 mb-8 text-3xl/snug font-semibold tracking-tight md:mb-12">
-        <span className="flex text-neutral-800 dark:text-neutral-300">
-          Blogs <br />
-        </span>
-        <span className="flex text-neutral-400 dark:text-neutral-600">
-          & Articles.
-        </span>
-      </h1>
+      <PageHeading
+        title="Blogs"
+        subtitle="& Articles."
+        className="mt-12 mb-8 text-3xl/snug md:mb-12"
+      />
       <div className="mb-24 space-y-2.5 text-neutral-800 dark:text-neutral-400">
         {allBlogs.map((blog) => (
           <div key={blog.slug}>

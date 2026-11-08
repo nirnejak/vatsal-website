@@ -1,4 +1,3 @@
-import Image from "next/image"
 
 import CoverImage from "./cover.png"
 import HalfStep from "./half_step.png"
@@ -11,7 +10,7 @@ import SmallStep from "./small_step.png"
   A simple guide to TD learning, step-size dynamics, and SARSA’s on-policy updates.
 </span>
 
-<Image src={CoverImage} alt={"MAB Cover"} placeholder="blur" />
+<Cover src={CoverImage} alt={"Cover image for Reinforcement Learning: SARSA"} placeholder="blur" />
 
 Before we introduce SARSA, let’s step back and look carefully at how our Monte Carlo (MC) learner updates its knowledge. In the MC setting, whenever a particular state–action pair $(s,a)$ appears in an episode, we eventually obtain a **sample return**:
 
@@ -205,7 +204,7 @@ Let’s start with Initial estimate $Q_0 = 0$ and compare both update rules, MC 
 
 Let’s put it into a diagram to visualize it better
 
-<Image src={HalfStep} alt={"MAB Cover"} placeholder="blur" />
+<Image src={HalfStep} alt={"Diagram of value estimate updates by step size"} placeholder="blur" />
 
 As we can see, Monte Carlo (1/k) smoothing gradually stabilizes as more data is collected, converging toward the true average of the returns. Over time, it becomes very stable after many samples, but as a result, it tends to react slowly to new information.
 
@@ -235,7 +234,7 @@ But it also means:
 - early mistakes dominate for a while,
 - the learning curve becomes smooth but sluggish.
 
-<Image src={SmallStep} alt={"MAB Cover"} placeholder="blur" />
+<Image src={SmallStep} alt={"Smooth but sluggish learning curve with a small step size"} placeholder="blur" />
 
 On the opposite end of the spectrum:
 
@@ -260,7 +259,7 @@ With $\alpha = 0.9$:
 - the curve becomes jagged and volatile,
 - the estimate can quickly adapt to changes (great for non-stationary tasks).
 
-<Image src={LargeStep} alt={"MAB Cover"} placeholder="blur" />
+<Image src={LargeStep} alt={"Jagged, volatile learning curve with a large step size"} placeholder="blur" />
 
 ## From one episode at a time to one step at a time
 

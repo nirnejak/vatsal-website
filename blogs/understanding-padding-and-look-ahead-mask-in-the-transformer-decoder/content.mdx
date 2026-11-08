@@ -1,4 +1,3 @@
-import Image from "next/image"
 
 import CoverImage from "./banner.jpg"
 
@@ -10,7 +9,7 @@ import CoverImage from "./banner.jpg"
   enabling efficient and accurate sequence processing in NLP tasks.
 </span>
 
-<Image src={CoverImage} alt={"Cover"} placeholder="blur" />
+<Cover src={CoverImage} alt={"Cover image for Padding and Look-Ahead Mask in the Transformer Decoder"} placeholder="blur" />
 
 The Transformer model revolutionized natural language processing by enabling parallel processing of sequential data through self-attention mechanisms. Two critical components that ensure the model handles sequences correctly are the **padding mask** and the **look-ahead mask**. These masks address issues related to variable-length sequences and autoregressive sequence generation, respectively. Let's delve into how they work, complete with proper equations and examples.
 

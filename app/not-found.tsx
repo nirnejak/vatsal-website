@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Link } from "next-view-transitions"
 import type * as React from "react"
 
+import PageHeading from "@/components/atoms/PageHeading"
 import getMetadata from "@/utils/metadata"
 
 export const metadata: Metadata = getMetadata({
@@ -14,16 +15,7 @@ const NotFoundPage: React.FC = () => {
   return (
     <main className="flex min-h-dvh items-center justify-center">
       <div className="mx-auto w-full max-w-145 px-4 md:px-0">
-        <h1>
-          <span className="flex text-3xl/snug font-semibold text-neutral-800 dark:text-neutral-300">
-            Not <br />
-          </span>
-          <span className="flex text-3xl/snug font-semibold text-neutral-800 dark:text-neutral-300">
-            <span className="text-neutral-400 dark:text-neutral-600">
-              Found.
-            </span>
-          </span>
-        </h1>
+        <PageHeading title="Not" subtitle="Found." className="text-3xl/snug" />
         <p className="mt-10 text-neutral-800 dark:text-neutral-400">
           Cannot find the page you{"'"}re looking for, go{" "}
           <Link

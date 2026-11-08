@@ -1,4 +1,3 @@
-import Image from "next/image"
 
 import CoverImage from "./cover.png"
 import Iterations from "./iterations.png"
@@ -11,7 +10,7 @@ import MDPState from "./mdp_state.png"
   Explore policy evaluation and improvement to optimize drone navigation and eventually making drone smarter.
 </span>
 
-<Image src={CoverImage} alt={"MAB Cover"} placeholder="blur" />
+<Cover src={CoverImage} alt={"Cover image for Reinforcement Learning: Policy Iteration"} placeholder="blur" />
 
 So far, we’ve seen our little delivery drone follow a **random policy,** a set of directions assigned to each block without any reasoning. The result? Endless wandering, wasted battery, and sometimes even crashes into no-fly zones.
 
@@ -36,7 +35,7 @@ For example, if our drone starts at **state 14**, it could:
 - Go RIGHT → UP → UP → LEFT → LEFT → UP → no-fly zone (-1)
 - Or get pushed sideways by the wind and drift endlessly…
 
-<Image src={MDPState} alt={"MAB Cover"} placeholder="blur" />
+<Image src={MDPState} alt={"Grid world with numbered states"} placeholder="blur" />
 
 Each sequence yields a different total reward. The number of such possibilities explodes exponentially, making it impossible to enumerate them all. So how can we estimate the value of a state without replaying every future flight path?
 
@@ -50,7 +49,7 @@ That is, instead of exploring *all possible* futures, we fix the drone’s behav
 > If the drone always follows this policy, what’s the expected total reward starting from each state?
 > 
 
-<Image src={Policy} alt={"MAB Cover"} placeholder="blur" />
+<Image src={Policy} alt={"Grid world showing the action the policy takes in each state"} placeholder="blur" />
 
 Now that our drone has a fixed set of instructions, the blue-arrow policy, let’s watch what happens when it tries to compute the value of a state.
 
@@ -416,7 +415,7 @@ This loop is called **Policy Iteration**, and it’s one of the most elegant ide
 
 When we start Policy Evaluation the second time, we **don’t reset utilities to zero**. We simply continue from the values we already computed. Since they’re already close to the truth, the second round converges much faster.
 
-<Image src={Iterations} alt={"MAB Cover"} placeholder="blur" />
+<Image src={Iterations} alt={"Diagram of repeated policy evaluation and improvement rounds"} placeholder="blur" />
 
 $\textbf{Algorithm:} \\[12pt] \textbf{Input: } r(s),\ p(s' \mid s,a),\ \gamma,\ \theta \\[10pt] 1.\hspace{0.5cm} \text{initialize } \pi(s) \text{ randomly} \\[8pt] 2.\hspace{0.5cm} \text{initialize } V(s) \text{ with zeros} \\[10pt] 3.\hspace{0.5cm} \text{stable} \leftarrow \text{false} \\[12pt] 4.\hspace{0.5cm} \text{while stable} = \text{false do} \\[10pt] 5.\hspace{1.2cm} V(s) \leftarrow \text{policy\_evaluation}\big(r(s),\ p(s' \mid s,a),\ \gamma,\ \theta,\ \pi(s),\ V(s)\big) \\[10pt] 6.\hspace{1.2cm} \pi(s),\ \text{change} \leftarrow \text{policy\_improvement}\big(p(s' \mid s,a),\ \pi(s),\ V(s)\big) \\[10pt] 7.\hspace{1.2cm} \text{if change} = \text{false then} \\[6pt] 8.\hspace{2cm} \text{stable} \leftarrow \text{true} \\[12pt] 9.\hspace{0.3cm} \pi^*(s) \leftarrow \pi(s) \\[12pt] 10.\hspace{0.3cm} \text{return } \pi^*(s)$
 ### Conclusion
