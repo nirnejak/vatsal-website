@@ -1,9 +1,6 @@
 import createMDX from "@next/mdx"
 import type { NextConfig } from "next"
 
-import rehypeKatex from "rehype-katex"
-import remarkMath from "remark-math"
-
 const nextConfig: NextConfig = {
   reactCompiler: true,
   trailingSlash: true,
@@ -13,8 +10,9 @@ const nextConfig: NextConfig = {
 
 const withMDX = createMDX({
   options: {
-    remarkPlugins: [remarkMath],
-    rehypePlugins: [rehypeKatex],
+    // Turbopack requires serializable loader options, so plugins are named by string
+    remarkPlugins: ["remark-math"],
+    rehypePlugins: ["rehype-katex"],
   },
 })
 
