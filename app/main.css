@@ -23,5 +23,5 @@
 }
 
 article > img:first-of-type {
-  @apply scale-100 rounded-xl my-0 border-0;
+  @apply my-0 scale-100 rounded-xl border-0;
 }

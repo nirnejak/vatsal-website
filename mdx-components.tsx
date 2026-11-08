@@ -14,7 +14,7 @@ const BlogWrapper: React.FC<Props> = ({ children }) => {
     <main className="mx-auto w-full max-w-145 px-4 md:px-0">
       <article
         className={classNames(
-          "prose prose-neutral dark:prose-invert mb-24 prose:leading-snug prose:tracking-tight",
+          "prose prose-neutral dark:prose-invert prose:leading-snug prose:tracking-tight mb-24",
           "prose-p:opacity-85 dark:prose-p:opacity-80",
           "prose-blockquote:opacity-85 dark:prose-blockquote:opacity-80",
           "prose-headings:font-semibold prose-headings:opacity-85 dark:prose-headings:opacity-80",
@@ -58,7 +58,6 @@ const components: MDXComponents = {
         </code>
       )
     } else {
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: syntax highlighted code from shiki
       return <code dangerouslySetInnerHTML={{ __html: codeHTML }} {...props} />
     }
   },
